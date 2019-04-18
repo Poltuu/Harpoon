@@ -10,15 +10,15 @@ using System.Web;
 
 namespace Harpoon
 {
-    public class WebHookValidator : IWebHookValidator
+    public class DefaultWebHookValidator : IWebHookValidator
     {
         private static readonly HashSet<string> ValidSchemes = new HashSet<string> { Uri.UriSchemeHttp.ToString(), Uri.UriSchemeHttps.ToString() };
 
         private readonly IWebHookActionProvider _webHookActionProvider;
-        private readonly ILogger<WebHookValidator> _logger;
+        private readonly ILogger<DefaultWebHookValidator> _logger;
         private readonly HttpClient _httpClient;
 
-        public WebHookValidator(IWebHookActionProvider webHookActionProvider, ILogger<WebHookValidator> logger, HttpClient httpClient)
+        public DefaultWebHookValidator(IWebHookActionProvider webHookActionProvider, ILogger<DefaultWebHookValidator> logger, HttpClient httpClient)
         {
             _webHookActionProvider = webHookActionProvider ?? throw new ArgumentNullException(nameof(webHookActionProvider));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));

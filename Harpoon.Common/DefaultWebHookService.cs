@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 
 namespace Harpoon
 {
-    public class WebHookService : IWebHookService
+    public class DefaultWebHookService : IWebHookService
     {
         private readonly IWebHookStore _webHookStore;
         private readonly IWebHookSender _webHookSender;
 
-        public WebHookService(IWebHookStore webHookStore, IWebHookSender webHookSender)
+        public DefaultWebHookService(IWebHookStore webHookStore, IWebHookSender webHookSender)
         {
             _webHookStore = webHookStore ?? throw new ArgumentNullException(nameof(webHookStore));
             _webHookSender = webHookSender ?? throw new ArgumentNullException(nameof(webHookSender));

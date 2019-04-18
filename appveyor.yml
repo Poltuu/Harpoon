@@ -1,0 +1,27 @@
+image: Visual Studio 2019
+
+version: 2.0.{build}
+
+environment:
+  global:
+    DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+    DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+branches:
+  only:
+    - master
+
+# Do not build feature branch with open Pull Requests
+skip_branch_with_pr: true
+
+configuration: Release
+platform: Any CPU
+
+install:
+  - choco install dotnetcore-sdk --version 2.2.105
+
+before_build:
+- dotnet restore
+
+build_script:
+- ps: dotnet build Harpoon.sln -c Debug -v minimal

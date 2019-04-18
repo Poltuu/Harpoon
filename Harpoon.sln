@@ -3,15 +3,19 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28803.156
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Harpoon.Common", "Harpoon.Common\Harpoon.Common.csproj", "{E87D9459-4872-4DF1-80D0-5DDDC99AEA6F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Harpoon.Common", "Harpoon.Common\Harpoon.Common.csproj", "{E87D9459-4872-4DF1-80D0-5DDDC99AEA6F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Harpoon.Registration", "Harpoon.Registration\Harpoon.Registration.csproj", "{CAB92CAE-8D46-4AE3-A062-117C8F2AD9E7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Harpoon.Sender", "Harpoon.Sender\Harpoon.Sender.csproj", "{E65BB06F-9DB0-4086-8F54-1182F272373A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Harpoon.Registration.EFStorage", "Harpoon.Registration.EFStorage\Harpoon.Registration.EFStorage.csproj", "{19BCDEFB-C41F-400B-BA04-48B68B80D21A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Harpoon.Registration.EFStorage", "Harpoon.Registration.EFStorage\Harpoon.Registration.EFStorage.csproj", "{19BCDEFB-C41F-400B-BA04-48B68B80D21A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Harpoon.Controllers", "Harpoon.Controllers\Harpoon.Controllers.csproj", "{F1C6393D-C9BA-43A8-AD96-87CBCDD316C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Harpoon.Controllers", "Harpoon.Controllers\Harpoon.Controllers.csproj", "{F1C6393D-C9BA-43A8-AD96-87CBCDD316C5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Harpoon", "Harpoon\Harpoon.csproj", "{EE6173DD-6FC6-471F-807F-57060379B6B5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Harpoon.Sender.Background", "Harpoon.Sender.Background\Harpoon.Sender.Background.csproj", "{3D487D01-5273-406B-90D3-BF9ACCA39A23}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +43,14 @@ Global
 		{F1C6393D-C9BA-43A8-AD96-87CBCDD316C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F1C6393D-C9BA-43A8-AD96-87CBCDD316C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F1C6393D-C9BA-43A8-AD96-87CBCDD316C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE6173DD-6FC6-471F-807F-57060379B6B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE6173DD-6FC6-471F-807F-57060379B6B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE6173DD-6FC6-471F-807F-57060379B6B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE6173DD-6FC6-471F-807F-57060379B6B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D487D01-5273-406B-90D3-BF9ACCA39A23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D487D01-5273-406B-90D3-BF9ACCA39A23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D487D01-5273-406B-90D3-BF9ACCA39A23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D487D01-5273-406B-90D3-BF9ACCA39A23}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -5,6 +5,6 @@ namespace Harpoon.Registration
 {
     public interface IPrincipalIdGetter
     {
-        Task<string> GetWebHookRegistrationIdAsync(IPrincipal user);
+        Task<string> GetPrincipalIdForWebHookRegistrationAsync(IPrincipal principal);
     }
 }

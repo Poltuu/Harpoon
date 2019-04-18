@@ -11,7 +11,7 @@ namespace Harpoon.Controllers
     [ApiExplorerSettings(GroupName = "WebHooks")]
     public class WebHookActionsController : ControllerBase
     {
-        IWebHookActionProvider _webHookActionProvider;
+        private readonly IWebHookActionProvider _webHookActionProvider;
 
         public WebHookActionsController(IWebHookActionProvider webHookActionProvider)
         {

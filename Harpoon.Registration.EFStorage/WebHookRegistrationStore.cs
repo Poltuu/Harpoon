@@ -16,9 +16,9 @@ namespace Harpoon.Registration.EFStorage
         private readonly TContext _context;
         private readonly IPrincipalIdGetter _idGetter;
         private readonly IDataProtector _dataProtector;
-        private readonly ILogger<IWebHookRegistrationStore> _logger;
+        private readonly ILogger<WebHookRegistrationStore<TContext>> _logger;
 
-        public WebHookRegistrationStore(TContext context, IPrincipalIdGetter idGetter, IDataProtector dataProtector, ILogger<IWebHookRegistrationStore> logger)
+        public WebHookRegistrationStore(TContext context, IPrincipalIdGetter idGetter, IDataProtector dataProtector, ILogger<WebHookRegistrationStore<TContext>> logger)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _idGetter = idGetter ?? throw new ArgumentNullException(nameof(idGetter));
@@ -44,7 +44,7 @@ namespace Harpoon.Registration.EFStorage
 
         public async Task<IWebHook> GetWebHookAsync(IPrincipal user, Guid id)
         {
-            var key = await _idGetter.GetWebHookRegistrationIdAsync(user);
+            var key = await _idGetter.GetPrincipalIdForWebHookRegistrationAsync(user);
             var webHook = await _context.Registrations
                 .Where(r => r.PrincipalId == key && r.WebHookId == id)
                 .Select(r => r.WebHook)
@@ -64,7 +64,7 @@ namespace Harpoon.Registration.EFStorage
 
         public async Task<IReadOnlyList<IWebHook>> GetWebHooksAsync(IPrincipal user)
         {
-            var key = await _idGetter.GetWebHookRegistrationIdAsync(user);
+            var key = await _idGetter.GetPrincipalIdForWebHookRegistrationAsync(user);
             var webHooks = await _context.Registrations
                 .Where(r => r.PrincipalId == key)
                 .Select(r => r.WebHook)
@@ -98,7 +98,7 @@ namespace Harpoon.Registration.EFStorage
 
         public async Task<WebHookRegistrationStoreResult> InsertWebHookAsync(IPrincipal user, IWebHook webHook)
         {
-            var key = await _idGetter.GetWebHookRegistrationIdAsync(user);
+            var key = await _idGetter.GetPrincipalIdForWebHookRegistrationAsync(user);
             var registration = new Registration
             {
                 PrincipalId = key,
@@ -130,7 +130,7 @@ namespace Harpoon.Registration.EFStorage
 
         public async Task<WebHookRegistrationStoreResult> UpdateWebHookAsync(IPrincipal user, IWebHook webHook)
         {
-            var key = await _idGetter.GetWebHookRegistrationIdAsync(user);
+            var key = await _idGetter.GetPrincipalIdForWebHookRegistrationAsync(user);
             var dbWebHook = await _context.Registrations
                 .Where(r => r.PrincipalId == key && r.WebHookId == webHook.Id)
                 .Select(r => r.WebHook)
@@ -166,7 +166,7 @@ namespace Harpoon.Registration.EFStorage
 
         public async Task<WebHookRegistrationStoreResult> DeleteWebHookAsync(IPrincipal user, Guid id)
         {
-            var key = await _idGetter.GetWebHookRegistrationIdAsync(user);
+            var key = await _idGetter.GetPrincipalIdForWebHookRegistrationAsync(user);
             var registration = await _context.Registrations.Where(r => r.PrincipalId == key && r.WebHookId == id).FirstOrDefaultAsync();
 
             if (registration == null)
@@ -189,7 +189,7 @@ namespace Harpoon.Registration.EFStorage
 
         public async Task DeleteWebHooksAsync(IPrincipal user)
         {
-            var key = await _idGetter.GetWebHookRegistrationIdAsync(user);
+            var key = await _idGetter.GetPrincipalIdForWebHookRegistrationAsync(user);
             var registrations = await _context.Registrations.Where(r => r.PrincipalId == key).ToListAsync();
 
             if (registrations == null || registrations.Count == 0)
