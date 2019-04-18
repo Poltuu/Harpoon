@@ -7,7 +7,7 @@ namespace Harpoon
     {
         Guid Id { get; set; }
 
-        Uri Callback { get; set; }
+        Uri Callback { get; }
 
         string Secret { get; set; }
 
