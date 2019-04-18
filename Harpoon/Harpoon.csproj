@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Harpoon.Registration.EFStorage\Harpoon.Registration.EFStorage.csproj" />
-    <ProjectReference Include="..\Harpoon.Sender\Harpoon.Sender.csproj" />
+    <ProjectReference Include="..\Harpoon.Sender.Background\Harpoon.Sender.Background.csproj" />
   </ItemGroup>
 
 </Project>

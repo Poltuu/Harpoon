@@ -35,7 +35,7 @@ namespace Harpoon.Sender.Background
                     using (var scope = _services.CreateScope())
                     {
                         var service = scope.ServiceProvider.GetRequiredService<TWebHookSender>();
-                        await service.SendAsync(notification, webHooks);
+                        await service.SendAsync(notification, webHooks, stoppingToken);
                     }
                 }
                 catch (Exception ex)

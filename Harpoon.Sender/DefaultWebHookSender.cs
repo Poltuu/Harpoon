@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Harpoon.Sender
@@ -22,7 +23,7 @@ namespace Harpoon.Sender
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public Task SendAsync(IWebHookNotification notification, IReadOnlyList<IWebHook> webHooks)
+        public Task SendAsync(IWebHookNotification notification, IReadOnlyList<IWebHook> webHooks, CancellationToken token)
         {
             if (notification == null)
             {
@@ -34,10 +35,15 @@ namespace Harpoon.Sender
                 throw new ArgumentNullException(nameof(webHooks));
             }
 
-            return Task.WhenAll(webHooks.Select(w => SendAsync(notification, w)));
+            if (webHooks.Count == 0)
+            {
+                return Task.CompletedTask;
+            }
+
+            return Task.WhenAll(webHooks.Select(w => SendAsync(notification, w, token)));
         }
 
-        private async Task SendAsync(IWebHookNotification notification, IWebHook webHook)
+        private async Task SendAsync(IWebHookNotification notification, IWebHook webHook, CancellationToken token)
         {
             if (webHook == null)
             {
@@ -47,7 +53,7 @@ namespace Harpoon.Sender
             try
             {
                 var request = CreateRequest(notification, webHook);
-                var response = await _httpClient.SendAsync(request);
+                var response = await _httpClient.SendAsync(request, token);
 
                 _logger.LogInformation($"WebHook {webHook.Id} send. Status: {response.StatusCode}.");
 
@@ -76,13 +82,11 @@ namespace Harpoon.Sender
 
         protected virtual Task OnNotFoundAsync(IWebHookNotification notification, IWebHook webHook)
         {
-            webHook.IsPaused = true;
             return Task.CompletedTask;
         }
 
         protected virtual Task OnFailureAsync(Exception exception, IWebHookNotification notification, IWebHook webHook)
         {
-            webHook.IsPaused = true;
             return Task.CompletedTask;
         }
 

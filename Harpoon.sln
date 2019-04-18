@@ -17,6 +17,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Harpoon", "Harpoon\Harpoon.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Harpoon.Sender.Background", "Harpoon.Sender.Background\Harpoon.Sender.Background.csproj", "{3D487D01-5273-406B-90D3-BF9ACCA39A23}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{FA70A910-B4A6-43B6-826D-330C4D41F101}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Harpoon.Tests", "Harpoon.Tests\Harpoon.Tests.csproj", "{43D43D29-5E50-41C2-83D4-742913690E34}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,9 +55,16 @@ Global
 		{3D487D01-5273-406B-90D3-BF9ACCA39A23}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3D487D01-5273-406B-90D3-BF9ACCA39A23}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3D487D01-5273-406B-90D3-BF9ACCA39A23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43D43D29-5E50-41C2-83D4-742913690E34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43D43D29-5E50-41C2-83D4-742913690E34}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43D43D29-5E50-41C2-83D4-742913690E34}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43D43D29-5E50-41C2-83D4-742913690E34}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{43D43D29-5E50-41C2-83D4-742913690E34} = {FA70A910-B4A6-43B6-826D-330C4D41F101}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FC8E9CF5-623E-4D65-9202-126CDCCEB5D0}

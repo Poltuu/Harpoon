@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Harpoon
@@ -15,7 +16,7 @@ namespace Harpoon
             _webHookSender = webHookSender ?? throw new ArgumentNullException(nameof(webHookSender));
         }
 
-        public async Task<int> NotifyAsync(IWebHookNotification notification)
+        public async Task<int> NotifyAsync(IWebHookNotification notification, CancellationToken token)
         {
             if (notification == null)
             {
@@ -23,17 +24,26 @@ namespace Harpoon
             }
 
             var webHooks = await _webHookStore.GetAllWebHooksAsync(notification.ActionId);
+            var filteredWebHooks = webHooks.Where(w => FiltersMatch(w, notification)).ToList();
 
-            await _webHookSender.SendAsync(notification, webHooks.Where(w => MatchesFilters(w, notification)).ToList());
+            if (filteredWebHooks.Count != 0)
+            {
+                await _webHookSender.SendAsync(notification, filteredWebHooks, token);
+            }
 
-            return webHooks.Count;
+            return filteredWebHooks.Count;
         }
 
-        protected virtual bool MatchesFilters(IWebHook webHook, IWebHookNotification notification)
+        protected virtual bool FiltersMatch(IWebHook webHook, IWebHookNotification notification)
         {
+            if (webHook.Filters == null)
+            {
+                throw new InvalidOperationException("WebHook need to expose filters to be considered valid and ready to be send");
+            }
+
             return webHook.Filters
                 .Where(f => f.ActionId == notification.ActionId)
-                .Any(f => f.Parameters.Count == 0 || f.Parameters.All(kvp => notification.Payload.ContainsKey(kvp.Key) && notification.Payload[kvp.Key].Equals(kvp.Value)));
+                .Any(f => f.Parameters == null || f.Parameters.Count == 0 || f.Parameters.All(kvp => notification.Payload.ContainsKey(kvp.Key) && notification.Payload[kvp.Key].Equals(kvp.Value)));
         }
     }
 }

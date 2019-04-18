@@ -32,6 +32,7 @@ namespace Harpoon.Registration.EFStorage
                 .Select(r => r.WebHook)
                 .Where(w => !w.IsPaused && w.Filters.Any(f => f.ActionId == action))
                 .Include(w => w.Filters)
+                .AsNoTracking()
                 .ToListAsync();
 
             foreach (var webHook in webHooks)

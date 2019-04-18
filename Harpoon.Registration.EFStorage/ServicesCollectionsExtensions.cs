@@ -34,5 +34,20 @@ namespace Microsoft.Extensions.DependencyInjection
 
             return harpoon;
         }
+
+        /// <summary>
+        /// Data protection configuration is required
+        /// </summary>
+        /// <typeparam name="TContext"></typeparam>
+        /// <param name="harpoon"></param>
+        /// <param name="dataProtection"></param>
+        /// <returns></returns>
+        public static IHarpoonBuilder UseEfStorage<TContext, TWebHookActionProvider>(this IHarpoonBuilder harpoon, Action<IDataProtectionBuilder> dataProtection)
+            where TContext : DbContext, IRegistrationsContext
+            where TWebHookActionProvider : class, IWebHookActionProvider
+        {
+            harpoon.Services.TryAddScoped<IWebHookActionProvider, TWebHookActionProvider>();
+            return harpoon.UseEfStorage<TContext>(dataProtection);
+        }
     }
 }

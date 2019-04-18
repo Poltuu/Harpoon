@@ -81,9 +81,9 @@ namespace Harpoon
 
         protected virtual async Task VerifyFiltersAsync(IWebHook webHook)
         {
-            if (webHook.Filters.Count == 0)
+            if (webHook.Filters == null || webHook.Filters.Count == 0)
             {
-                throw new ArgumentException("WebHooks need to target at least one action");
+                throw new ArgumentException("WebHooks need to target at least one action. Wildcard is not allowed.");
             }
 
             var actions = await _webHookActionProvider.GetAvailableActionsAsync();
@@ -93,11 +93,15 @@ namespace Harpoon
                 if (!actions.ContainsKey(filter.ActionId))
                 {
                     errors.Add($" - Action {filter.ActionId} is not valid.");
+                    continue;
                 }
 
-                foreach (var invalidParam in filter.Parameters.Keys.Where(k => !actions[filter.ActionId].AvailableParameters.Contains(k)))
+                if(filter.Parameters != null)
                 {
-                    errors.Add($" - {invalidParam} is not a valid parameter to filter the action {filter.ActionId}.");
+                    foreach (var invalidParam in filter.Parameters.Keys.Where(k => !actions[filter.ActionId].AvailableParameters.Contains(k)))
+                    {
+                        errors.Add($" - {invalidParam} is not a valid parameter to filter the action {filter.ActionId}.");
+                    }
                 }
             }
 
