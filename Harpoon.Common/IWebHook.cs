@@ -5,11 +5,13 @@ namespace Harpoon
 {
     public interface IWebHook
     {
-        Guid Id { get; }
+        Guid Id { get; set; }
 
-        Uri Callback { get; }
+        Uri Callback { get; set; }
 
-        string Secret { get; }
+        string Secret { get; set; }
+
+        bool IsPaused { get; set; }
 
         IReadOnlyCollection<IWebHookFilter> Filters { get; }
     }

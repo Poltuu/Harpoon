@@ -53,35 +53,37 @@ namespace Harpoon.Sender
 
                 if (response.IsSuccessStatusCode)
                 {
-                    await OnWebHookSuccessAsync(notification, webHook);
+                    await OnSuccessAsync(notification, webHook);
                     return;
                 }
                 else if (response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.Gone)
                 {
-                    await OnWebHookNotFoundAsync(notification, webHook);
+                    await OnNotFoundAsync(notification, webHook);
                     return;
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                _logger.LogError($"WebHook {webHook.Id} failed. Response: {ex.Message}.", ex);
-                await OnWebHookFailureAsync(notification, webHook);
+                _logger.LogError($"WebHook {webHook.Id} failed: {e.Message}.", e);
+                await OnFailureAsync(e, notification, webHook);
             }
         }
 
-        protected virtual Task OnWebHookSuccessAsync(IWebHookNotification notification, IWebHook webHook)
+        protected virtual Task OnSuccessAsync(IWebHookNotification notification, IWebHook webHook)
         {
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
 
-        protected virtual Task OnWebHookNotFoundAsync(IWebHookNotification notification, IWebHook webHook)
+        protected virtual Task OnNotFoundAsync(IWebHookNotification notification, IWebHook webHook)
         {
-            return Task.FromResult(true);
+            webHook.IsPaused = true;
+            return Task.CompletedTask;
         }
 
-        protected virtual Task OnWebHookFailureAsync(IWebHookNotification notification, IWebHook webHook)
+        protected virtual Task OnFailureAsync(Exception exception, IWebHookNotification notification, IWebHook webHook)
         {
-            return Task.FromResult(true);
+            webHook.IsPaused = true;
+            return Task.CompletedTask;
         }
 
         protected virtual HttpRequestMessage CreateRequest(IWebHookNotification notification, IWebHook webHook)
