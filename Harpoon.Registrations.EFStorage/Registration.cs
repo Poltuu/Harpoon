@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Harpoon.Registration.EFStorage
+namespace Harpoon.Registrations.EFStorage
 {
     public class Registration
     {

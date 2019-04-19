@@ -1,4 +1,4 @@
-using Harpoon.Registration.EFStorage;
+using Harpoon.Registrations.EFStorage;
 using Moq;
 using System;
 using System.Collections.Generic;

@@ -1,4 +1,4 @@
-﻿namespace Harpoon.Registration
+﻿namespace Harpoon.Registrations
 {
     public enum WebHookRegistrationStoreResult
     {

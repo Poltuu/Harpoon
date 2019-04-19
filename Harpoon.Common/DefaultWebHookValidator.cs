@@ -96,7 +96,7 @@ namespace Harpoon
                     continue;
                 }
 
-                if(filter.Parameters != null)
+                if (filter.Parameters != null)
                 {
                     foreach (var invalidParam in filter.Parameters.Keys.Where(k => !actions[filter.ActionId].AvailableParameters.Contains(k)))
                     {

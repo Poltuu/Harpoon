@@ -5,11 +5,11 @@ VisualStudioVersion = 16.0.28803.156
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Harpoon.Common", "Harpoon.Common\Harpoon.Common.csproj", "{E87D9459-4872-4DF1-80D0-5DDDC99AEA6F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Harpoon.Registration", "Harpoon.Registration\Harpoon.Registration.csproj", "{CAB92CAE-8D46-4AE3-A062-117C8F2AD9E7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Harpoon.Registrations", "Harpoon.Registrations\Harpoon.Registrations.csproj", "{CAB92CAE-8D46-4AE3-A062-117C8F2AD9E7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Harpoon.Sender", "Harpoon.Sender\Harpoon.Sender.csproj", "{E65BB06F-9DB0-4086-8F54-1182F272373A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Harpoon.Registration.EFStorage", "Harpoon.Registration.EFStorage\Harpoon.Registration.EFStorage.csproj", "{19BCDEFB-C41F-400B-BA04-48B68B80D21A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Harpoon.Registrations.EFStorage", "Harpoon.Registrations.EFStorage\Harpoon.Registrations.EFStorage.csproj", "{19BCDEFB-C41F-400B-BA04-48B68B80D21A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Harpoon.Controllers", "Harpoon.Controllers\Harpoon.Controllers.csproj", "{F1C6393D-C9BA-43A8-AD96-87CBCDD316C5}"
 EndProject

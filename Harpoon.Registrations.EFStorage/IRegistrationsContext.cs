@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace Harpoon.Registration.EFStorage
+namespace Harpoon.Registrations.EFStorage
 {
     public interface IRegistrationsContext
     {

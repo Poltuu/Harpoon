@@ -1,7 +1,7 @@
 ﻿using System.Security.Principal;
 using System.Threading.Tasks;
 
-namespace Harpoon.Registration
+namespace Harpoon.Registrations
 {
     public interface IPrincipalIdGetter
     {

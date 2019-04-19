@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace Harpoon.Tests
 {
@@ -18,6 +19,18 @@ namespace Harpoon.Tests
                 return Task.FromResult(new HttpResponseMessage { StatusCode = Status, Content = new StringContent(Content) });
             }
         }
+
+        class QueryHandler : HttpMessageHandler
+        {
+            public string Parameter { get; set; }
+
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                var response = HttpUtility.ParseQueryString(request.RequestUri.Query)[Parameter];
+                return Task.FromResult(new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = new StringContent(response) });
+            }
+        }
+
         class Failer : HttpMessageHandler
         {
             public Exception Exception { get; set; }
@@ -31,6 +44,11 @@ namespace Harpoon.Tests
         public static HttpClient Get(HttpStatusCode status, string content)
         {
             return new HttpClient(new MoqHandler { Status = status, Content = content });
+        }
+
+        public static HttpClient ReturnQueryParam(string queryParameter)
+        {
+            return new HttpClient(new QueryHandler { Parameter = queryParameter });
         }
 
         public static HttpClient AlwaysFail(Exception exception)

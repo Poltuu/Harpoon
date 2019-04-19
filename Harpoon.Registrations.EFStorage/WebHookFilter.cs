@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Harpoon.Registration.EFStorage
+namespace Harpoon.Registrations.EFStorage
 {
     public class WebHookFilter : IWebHookFilter
     {

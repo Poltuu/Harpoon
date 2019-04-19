@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
 
-namespace Harpoon.Registration
+namespace Harpoon.Registrations
 {
     public class DefaultPrincipalIdGetter : IPrincipalIdGetter
     {

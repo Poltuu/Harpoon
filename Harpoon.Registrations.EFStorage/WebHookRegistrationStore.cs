@@ -8,21 +8,26 @@ using System.Linq;
 using System.Security.Principal;
 using System.Threading.Tasks;
 
-namespace Harpoon.Registration.EFStorage
+namespace Harpoon.Registrations.EFStorage
 {
+    public static class DataProtection
+    {
+        public const string Purpose = "WebHookStorage";
+    }
+
     public class WebHookRegistrationStore<TContext> : IWebHookRegistrationStore, IWebHookStore
         where TContext : DbContext, IRegistrationsContext
     {
         private readonly TContext _context;
         private readonly IPrincipalIdGetter _idGetter;
-        private readonly IDataProtector _dataProtector;
+        private readonly IDataProtectionProvider _dataProtectionProvider;
         private readonly ILogger<WebHookRegistrationStore<TContext>> _logger;
 
-        public WebHookRegistrationStore(TContext context, IPrincipalIdGetter idGetter, IDataProtector dataProtector, ILogger<WebHookRegistrationStore<TContext>> logger)
+        public WebHookRegistrationStore(TContext context, IPrincipalIdGetter idGetter, IDataProtectionProvider dataProtectionProvider, ILogger<WebHookRegistrationStore<TContext>> logger)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _idGetter = idGetter ?? throw new ArgumentNullException(nameof(idGetter));
-            _dataProtector = dataProtector ?? throw new ArgumentNullException(nameof(dataProtector));
+            _dataProtectionProvider = dataProtectionProvider ?? throw new ArgumentNullException(nameof(dataProtectionProvider));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -88,8 +93,9 @@ namespace Harpoon.Registration.EFStorage
                 return;
             }
 
-            webHook.Secret = _dataProtector.Unprotect(webHook.ProtectedSecret);
-            webHook.Callback = new Uri(_dataProtector.Unprotect(webHook.ProtectedCallback));
+            var protector = GetProtector();
+            webHook.Secret = protector.Unprotect(webHook.ProtectedSecret);
+            webHook.Callback = new Uri(protector.Unprotect(webHook.ProtectedCallback));
 
             foreach (var filter in webHook.Filters)
             {
@@ -97,17 +103,20 @@ namespace Harpoon.Registration.EFStorage
             }
         }
 
+        private IDataProtector GetProtector() => _dataProtectionProvider.CreateProtector(DataProtection.Purpose);
+
         public async Task<WebHookRegistrationStoreResult> InsertWebHookAsync(IPrincipal user, IWebHook webHook)
         {
             var key = await _idGetter.GetPrincipalIdForWebHookRegistrationAsync(user);
+            var protector = GetProtector();
             var registration = new Registration
             {
                 PrincipalId = key,
                 WebHook = new WebHook
                 {
                     Id = webHook.Id == default ? Guid.NewGuid() : webHook.Id,
-                    ProtectedCallback = _dataProtector.Protect(webHook.Callback.ToString()),
-                    ProtectedSecret = _dataProtector.Protect(webHook.Secret),
+                    ProtectedCallback = protector.Protect(webHook.Callback.ToString()),
+                    ProtectedSecret = protector.Protect(webHook.Secret),
                     Filters = webHook.Filters.Select(f => new WebHookFilter
                     {
                         ActionId = f.ActionId,
@@ -142,10 +151,11 @@ namespace Harpoon.Registration.EFStorage
             {
                 return WebHookRegistrationStoreResult.NotFound;
             }
+            var protector = GetProtector();
 
             dbWebHook.IsPaused = webHook.IsPaused;
-            dbWebHook.ProtectedCallback = _dataProtector.Protect(webHook.Callback.ToString());
-            dbWebHook.ProtectedSecret = _dataProtector.Protect(webHook.Secret);
+            dbWebHook.ProtectedCallback = protector.Protect(webHook.Callback.ToString());
+            dbWebHook.ProtectedSecret = protector.Protect(webHook.Secret);
             _context.RemoveRange(dbWebHook.Filters);
             dbWebHook.Filters = webHook.Filters.Select(f => new WebHookFilter
             {

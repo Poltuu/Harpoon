@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Harpoon.Registration\Harpoon.Registration.csproj" />
+    <ProjectReference Include="..\Harpoon.Registrations\Harpoon.Registrations.csproj" />
   </ItemGroup>
 
 </Project>
