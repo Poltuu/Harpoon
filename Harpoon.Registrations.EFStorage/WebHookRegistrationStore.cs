@@ -10,11 +10,6 @@ using System.Threading.Tasks;
 
 namespace Harpoon.Registrations.EFStorage
 {
-    public static class DataProtection
-    {
-        public const string Purpose = "WebHookStorage";
-    }
-
     public class WebHookRegistrationStore<TContext> : IWebHookRegistrationStore, IWebHookStore
         where TContext : DbContext, IRegistrationsContext
     {

@@ -9,32 +9,41 @@ namespace Harpoon.Registrations
     {
         public Task<string> GetPrincipalIdForWebHookRegistrationAsync(IPrincipal principal)
         {
+            return Task.FromResult(GetPrincipalIdForWebHookRegistration(principal));
+        }
+
+        private string GetPrincipalIdForWebHookRegistration(IPrincipal principal)
+        {
             if (principal == null)
             {
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            string result = null;
             if (principal is ClaimsPrincipal claimsPrincipal)
             {
-                result = claimsPrincipal?.FindFirst(ClaimTypes.Name)?.Value;
-                if (result == null)
+                if (TryGetNotNullClaimValue(claimsPrincipal, ClaimTypes.Name, out var name))
                 {
-                    result = claimsPrincipal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                    return name;
+                }
+
+                if (TryGetNotNullClaimValue(claimsPrincipal, ClaimTypes.NameIdentifier, out var nameIdentifier))
+                {
+                    return nameIdentifier;
                 }
             }
 
-            if (result == null && principal.Identity != null)
+            if (principal.Identity?.Name != null)
             {
-                result = principal.Identity.Name;
+                return principal.Identity.Name;
             }
 
-            if (result == null)
-            {
-                throw new ArgumentException("Current principal id could not be found.");
-            }
+            throw new ArgumentException("Current principal id could not be found.");
+        }
 
-            return Task.FromResult(result);
+        private bool TryGetNotNullClaimValue(ClaimsPrincipal principal, string claimType, out string result)
+        {
+            result = principal.FindFirst(claimType)?.Value;
+            return result != null;
         }
     }
 }

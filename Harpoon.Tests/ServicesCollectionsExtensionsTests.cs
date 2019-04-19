@@ -1,5 +1,6 @@
 ﻿using Harpoon.Registrations;
 using Harpoon.Registrations.EFStorage;
+using Harpoon.Sender;
 using Harpoon.Sender.Background;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
@@ -85,6 +86,7 @@ namespace Harpoon.Tests
 
             var provider = services.BuildServiceProvider();
             Assert.NotNull(provider.GetRequiredService<IWebHookService>());
+            Assert.NotNull(provider.GetRequiredService<ISignatureService>());
             Assert.NotNull(provider.GetRequiredService<IWebHookValidator>());
             Assert.NotNull(provider.GetRequiredService<IWebHookSender>());
         }

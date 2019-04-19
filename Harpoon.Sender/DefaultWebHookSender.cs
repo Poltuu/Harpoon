@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,12 +13,17 @@ namespace Harpoon.Sender
 {
     public class DefaultWebHookSender : IWebHookSender
     {
+        public const string ActionKey = "Action";
+        public const string SignatureHeader = "X-Signature-SHA256";
+
         private readonly HttpClient _httpClient;
+        private readonly ISignatureService _signatureService;
         private readonly ILogger<DefaultWebHookSender> _logger;
 
-        public DefaultWebHookSender(HttpClient httpClient, ILogger<DefaultWebHookSender> logger)
+        public DefaultWebHookSender(HttpClient httpClient, ISignatureService signatureService, ILogger<DefaultWebHookSender> logger)
         {
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            _signatureService = signatureService ?? throw new ArgumentNullException(nameof(signatureService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -53,19 +57,22 @@ namespace Harpoon.Sender
             try
             {
                 var request = CreateRequest(notification, webHook);
-                var response = await _httpClient.SendAsync(request, token);
-
-                _logger.LogInformation($"WebHook {webHook.Id} send. Status: {response.StatusCode}.");
+                var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token);
 
                 if (response.IsSuccessStatusCode)
                 {
+                    _logger.LogInformation($"WebHook {webHook.Id} send. Status: {response.StatusCode}.");
                     await OnSuccessAsync(notification, webHook);
-                    return;
                 }
                 else if (response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.Gone)
                 {
+                    _logger.LogInformation($"WebHook {webHook.Id} send. Status: {response.StatusCode}.");
                     await OnNotFoundAsync(notification, webHook);
-                    return;
+                }
+                else
+                {
+                    _logger.LogError($"WebHook {webHook.Id} failed. Status: {response.StatusCode}");
+                    await OnFailureAsync(null, notification, webHook);
                 }
             }
             catch (Exception e)
@@ -94,8 +101,7 @@ namespace Harpoon.Sender
         {
             var request = new HttpRequestMessage(HttpMethod.Post, webHook.Callback);
 
-            var body = CreateBody(notification);
-            var serializedBody = JsonConvert.SerializeObject(body);
+            var serializedBody = JsonConvert.SerializeObject(CreateBody(notification));
             request.Content = new StringContent(serializedBody, Encoding.UTF8, "application/json");
 
             SignRequest(webHook, request, serializedBody);
@@ -103,23 +109,31 @@ namespace Harpoon.Sender
             return request;
         }
 
-        protected virtual Dictionary<string, object> CreateBody(IWebHookNotification notification)
+        protected virtual IReadOnlyDictionary<string, object> CreateBody(IWebHookNotification notification)
         {
+            if (notification.Payload == null || notification.Payload.Count == 0)
+            {
+                return new Dictionary<string, object>
+                {
+                    [ActionKey] = notification.ActionId
+                };
+            }
+
+            if (notification.Payload.ContainsKey(ActionKey))
+            {
+                return notification.Payload;
+            }
+
             return new Dictionary<string, object>(notification.Payload)
             {
-                ["Action"] = notification.ActionId
+                [ActionKey] = notification.ActionId
             };
         }
 
         protected virtual void SignRequest(IWebHook webHook, HttpRequestMessage request, string serializedBody)
         {
-            var secret = Encoding.UTF8.GetBytes(webHook.Secret);
-            using (var hasher = new HMACSHA256(secret))
-            {
-                var data = Encoding.UTF8.GetBytes(serializedBody);
-                var sha256 = hasher.ComputeHash(data);
-                request.Headers.Add("X-Signature-SHA256", EncodingUtilities.ToHex(sha256));
-            }
+            var signature = _signatureService.GetSignature(webHook.Secret, serializedBody);
+            request.Headers.Add(SignatureHeader, signature);
         }
     }
 }

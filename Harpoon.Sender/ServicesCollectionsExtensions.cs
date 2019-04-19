@@ -18,6 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             harpoon.Services.TryAddScoped<IWebHookSender, DefaultWebHookSender>();
+            harpoon.Services.TryAddSingleton<ISignatureService, DefaultSignatureService>();
 
             var httpClientBuilder = harpoon.Services.AddHttpClient<IWebHookSender, DefaultWebHookSender>();
             webHookSender(httpClientBuilder);

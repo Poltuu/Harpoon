@@ -41,7 +41,37 @@ namespace Harpoon.Tests
             }
         }
 
-        public static HttpClient Get(HttpStatusCode status, string content)
+        class CallbackHandler : HttpMessageHandler
+        {
+            public Func<HttpRequestMessage, Task<HttpResponseMessage>> Callback { get; set; }
+
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                return (await Callback(request)) ?? new HttpResponseMessage(HttpStatusCode.OK);
+            }
+        }
+
+        public static HttpClient Callback(Func<HttpRequestMessage, Task<HttpResponseMessage>> callback)
+        {
+            return new HttpClient(new CallbackHandler { Callback = callback });
+        }
+
+        public static HttpClient Callback(Func<HttpRequestMessage, HttpResponseMessage> callback)
+        {
+            return new HttpClient(new CallbackHandler { Callback = m => Task.FromResult(callback(m)) });
+        }
+
+        public static HttpClient Callback(Func<HttpRequestMessage, Task> callback)
+        {
+            return new HttpClient(new CallbackHandler { Callback = async m => { await callback(m); return null; } });
+        }
+
+        public static HttpClient Callback(Action<HttpRequestMessage> callback)
+        {
+            return new HttpClient(new CallbackHandler { Callback = m => { callback(m); return Task.FromResult<HttpResponseMessage>(null); } });
+        }
+
+        public static HttpClient Static(HttpStatusCode status, string content)
         {
             return new HttpClient(new MoqHandler { Status = status, Content = content });
         }

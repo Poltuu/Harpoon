@@ -37,7 +37,7 @@ namespace Harpoon.Tests
             var actions = new Mock<IWebHookActionProvider>();
             actions.Setup(s => s.GetAvailableActionsAsync()).ReturnsAsync(actionsDico);
             var logger = new Mock<ILogger<DefaultWebHookValidator>>();
-            var client = HttpClientMocker.Get(System.Net.HttpStatusCode.NotFound, "fail");
+            var client = HttpClientMocker.Static(System.Net.HttpStatusCode.NotFound, "fail");
             var service = new DefaultWebHookValidator(actions.Object, logger.Object, client);
 
             await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Secret = "tooshort" }));
