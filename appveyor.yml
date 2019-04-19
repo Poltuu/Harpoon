@@ -18,10 +18,17 @@ configuration: Release
 platform: Any CPU
 
 install:
-  - choco install dotnetcore-sdk --version 2.2.105
+- choco install dotnetcore-sdk --version 2.2.105
+- choco install opencover.portable
+- choco install codecov
 
 before_build:
 - dotnet restore
 
-build_script:
-- ps: dotnet build Harpoon.sln -c Debug -v minimal
+build:
+  project: Harpoon.sln
+  verbosity: minimal
+
+test_script:
+- OpenCover.Console.exe -register:user -target:"%xunit20%\xunit.console.x86.exe" -targetargs:".\Harpoon.Tests\bin\Release\netcoreapp2.2\Harpoon.Tests.dll -noshadow" -filter:"+[UnitTestTargetProject*]* -[MyUnitTests*]*" -output:".\Harpoon_coverage.xml"
+- codecov -f "Harpoon_coverage.xml"
