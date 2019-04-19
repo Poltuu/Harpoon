@@ -15,14 +15,14 @@ namespace Harpoon.Registrations.EFStorage
     {
         private readonly TContext _context;
         private readonly IPrincipalIdGetter _idGetter;
-        private readonly IDataProtectionProvider _dataProtectionProvider;
+        private readonly IDataProtector _dataProtector;
         private readonly ILogger<WebHookRegistrationStore<TContext>> _logger;
 
         public WebHookRegistrationStore(TContext context, IPrincipalIdGetter idGetter, IDataProtectionProvider dataProtectionProvider, ILogger<WebHookRegistrationStore<TContext>> logger)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _idGetter = idGetter ?? throw new ArgumentNullException(nameof(idGetter));
-            _dataProtectionProvider = dataProtectionProvider ?? throw new ArgumentNullException(nameof(dataProtectionProvider));
+            _dataProtector = dataProtectionProvider?.CreateProtector(DataProtection.Purpose) ?? throw new ArgumentNullException(nameof(dataProtectionProvider));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -88,9 +88,8 @@ namespace Harpoon.Registrations.EFStorage
                 return;
             }
 
-            var protector = GetProtector();
-            webHook.Secret = protector.Unprotect(webHook.ProtectedSecret);
-            webHook.Callback = new Uri(protector.Unprotect(webHook.ProtectedCallback));
+            webHook.Secret = _dataProtector.Unprotect(webHook.ProtectedSecret);
+            webHook.Callback = new Uri(_dataProtector.Unprotect(webHook.ProtectedCallback));
 
             foreach (var filter in webHook.Filters)
             {
@@ -98,20 +97,22 @@ namespace Harpoon.Registrations.EFStorage
             }
         }
 
-        private IDataProtector GetProtector() => _dataProtectionProvider.CreateProtector(DataProtection.Purpose);
-
         public async Task<WebHookRegistrationStoreResult> InsertWebHookAsync(IPrincipal user, IWebHook webHook)
         {
+            if (webHook == null)
+            {
+                throw new ArgumentNullException(nameof(webHook));
+            }
+
             var key = await _idGetter.GetPrincipalIdForWebHookRegistrationAsync(user);
-            var protector = GetProtector();
             var registration = new Registration
             {
                 PrincipalId = key,
                 WebHook = new WebHook
                 {
                     Id = webHook.Id == default ? Guid.NewGuid() : webHook.Id,
-                    ProtectedCallback = protector.Protect(webHook.Callback.ToString()),
-                    ProtectedSecret = protector.Protect(webHook.Secret),
+                    ProtectedCallback = _dataProtector.Protect(webHook.Callback.ToString()),
+                    ProtectedSecret = _dataProtector.Protect(webHook.Secret),
                     Filters = webHook.Filters.Select(f => new WebHookFilter
                     {
                         ActionId = f.ActionId,
@@ -135,6 +136,11 @@ namespace Harpoon.Registrations.EFStorage
 
         public async Task<WebHookRegistrationStoreResult> UpdateWebHookAsync(IPrincipal user, IWebHook webHook)
         {
+            if (webHook == null)
+            {
+                throw new ArgumentNullException(nameof(webHook));
+            }
+
             var key = await _idGetter.GetPrincipalIdForWebHookRegistrationAsync(user);
             var dbWebHook = await _context.Registrations
                 .Where(r => r.PrincipalId == key && r.WebHookId == webHook.Id)
@@ -146,11 +152,10 @@ namespace Harpoon.Registrations.EFStorage
             {
                 return WebHookRegistrationStoreResult.NotFound;
             }
-            var protector = GetProtector();
 
             dbWebHook.IsPaused = webHook.IsPaused;
-            dbWebHook.ProtectedCallback = protector.Protect(webHook.Callback.ToString());
-            dbWebHook.ProtectedSecret = protector.Protect(webHook.Secret);
+            dbWebHook.ProtectedCallback = _dataProtector.Protect(webHook.Callback.ToString());
+            dbWebHook.ProtectedSecret = _dataProtector.Protect(webHook.Secret);
             _context.RemoveRange(dbWebHook.Filters);
             dbWebHook.Filters = webHook.Filters.Select(f => new WebHookFilter
             {

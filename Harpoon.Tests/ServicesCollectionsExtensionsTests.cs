@@ -1,15 +1,12 @@
 ﻿using Harpoon.Registrations;
-using Harpoon.Registrations.EFStorage;
 using Harpoon.Sender;
 using Harpoon.Sender.Background;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Moq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -17,12 +14,6 @@ namespace Harpoon.Tests
 {
     public class ServicesCollectionsExtensionsTests
     {
-        class TestContext : DbContext, IRegistrationsContext
-        {
-            public DbSet<Registration> Registrations { get; set; }
-            IQueryable<Registration> IRegistrationsContext.Registrations => Registrations;
-        }
-
         class TestWebHookActionProvider : IWebHookActionProvider
         {
             public Task<IReadOnlyDictionary<string, WebHookAction>> GetAvailableActionsAsync()

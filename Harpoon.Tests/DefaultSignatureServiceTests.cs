@@ -1,5 +1,4 @@
 ﻿using Harpoon.Sender;
-using Harpoon.Sender.Background;
 using System;
 using Xunit;
 
