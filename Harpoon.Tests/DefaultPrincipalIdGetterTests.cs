@@ -14,7 +14,7 @@ namespace Harpoon.Tests
         {
             var service = new DefaultPrincipalIdGetter();
 
-            await Assert.ThrowsAsync<ArgumentNullException>(() => service.GetPrincipalIdForWebHookRegistrationAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => service.GetPrincipalIdAsync(null));
         }
 
         public static IEnumerable<object[]> NameScenario => new List<object[]>
@@ -41,10 +41,10 @@ namespace Harpoon.Tests
         public async Task DefaultOrder(ClaimsPrincipal principal, string expectedName)
         {
             var service = new DefaultPrincipalIdGetter();
-            Assert.Equal(expectedName, await service.GetPrincipalIdForWebHookRegistrationAsync(principal));
+            Assert.Equal(expectedName, await service.GetPrincipalIdAsync(principal));
 
             principal = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim> { }, "scheme", "NameType", ClaimTypes.Role));
-            await Assert.ThrowsAsync<ArgumentException>(() => service.GetPrincipalIdForWebHookRegistrationAsync(principal));
+            await Assert.ThrowsAsync<ArgumentException>(() => service.GetPrincipalIdAsync(principal));
         }
 
         [Fact]
@@ -53,7 +53,7 @@ namespace Harpoon.Tests
             var service = new DefaultPrincipalIdGetter();
 
             var principal = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim> { }, "scheme", "NameType", ClaimTypes.Role));
-            await Assert.ThrowsAsync<ArgumentException>(() => service.GetPrincipalIdForWebHookRegistrationAsync(principal));
+            await Assert.ThrowsAsync<ArgumentException>(() => service.GetPrincipalIdAsync(principal));
         }
     }
 }

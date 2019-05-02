@@ -7,7 +7,7 @@ namespace Harpoon.Registrations
 {
     public class DefaultPrincipalIdGetter : IPrincipalIdGetter
     {
-        public Task<string> GetPrincipalIdForWebHookRegistrationAsync(IPrincipal principal)
+        public Task<string> GetPrincipalIdAsync(IPrincipal principal)
         {
             return Task.FromResult(GetPrincipalIdForWebHookRegistration(principal));
         }

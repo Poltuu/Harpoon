@@ -52,7 +52,7 @@ namespace Harpoon.Tests
         public void AddHarpoonWithEfTests()
         {
             var services = new ServiceCollection();
-            services.AddEntityFrameworkInMemoryDatabase().AddDbContext<TestContext>();
+            services.AddEntityFrameworkSqlServer().AddDbContext<TestContext>();
             services.AddHarpoon().UseEfStorage<TestContext, TestWebHookActionProvider>((purpose, b) => b.UseEphemeralDataProtectionProvider());
 
             services.AddSingleton(new Mock<IWebHookSender>().Object);

@@ -28,8 +28,7 @@ namespace Harpoon.Registrations.EFStorage
 
         public async Task<IReadOnlyList<IWebHook>> GetAllWebHooksAsync(string action)
         {
-            var webHooks = await _context.Registrations
-                .Select(r => r.WebHook)
+            var webHooks = await _context.WebHooks
                 .Where(w => !w.IsPaused && w.Filters.Any(f => f.ActionId == action))
                 .Include(w => w.Filters)
                 .AsNoTracking()
@@ -45,10 +44,9 @@ namespace Harpoon.Registrations.EFStorage
 
         public async Task<IWebHook> GetWebHookAsync(IPrincipal user, Guid id)
         {
-            var key = await _idGetter.GetPrincipalIdForWebHookRegistrationAsync(user);
-            var webHook = await _context.Registrations
-                .Where(r => r.PrincipalId == key && r.WebHookId == id)
-                .Select(r => r.WebHook)
+            var key = await _idGetter.GetPrincipalIdAsync(user);
+            var webHook = await _context.WebHooks
+                .Where(w => w.PrincipalId == key && w.Id == id)
                 .Include(w => w.Filters)
                 .AsNoTracking()
                 .FirstOrDefaultAsync();
@@ -65,10 +63,9 @@ namespace Harpoon.Registrations.EFStorage
 
         public async Task<IReadOnlyList<IWebHook>> GetWebHooksAsync(IPrincipal user)
         {
-            var key = await _idGetter.GetPrincipalIdForWebHookRegistrationAsync(user);
-            var webHooks = await _context.Registrations
-                .Where(r => r.PrincipalId == key)
-                .Select(r => r.WebHook)
+            var key = await _idGetter.GetPrincipalIdAsync(user);
+            var webHooks = await _context.WebHooks
+                .Where(w => w.PrincipalId == key)
                 .Include(w => w.Filters)
                 .AsNoTracking()
                 .ToListAsync();
@@ -90,11 +87,6 @@ namespace Harpoon.Registrations.EFStorage
 
             webHook.Secret = _dataProtector.Unprotect(webHook.ProtectedSecret);
             webHook.Callback = new Uri(_dataProtector.Unprotect(webHook.ProtectedCallback));
-
-            foreach (var filter in webHook.Filters)
-            {
-                filter.Parameters = JsonConvert.DeserializeObject<Dictionary<string, object>>(filter.ParametersJson);
-            }
         }
 
         public async Task<WebHookRegistrationStoreResult> InsertWebHookAsync(IPrincipal user, IWebHook webHook)
@@ -104,32 +96,49 @@ namespace Harpoon.Registrations.EFStorage
                 throw new ArgumentNullException(nameof(webHook));
             }
 
-            var key = await _idGetter.GetPrincipalIdForWebHookRegistrationAsync(user);
-            var registration = new Registration
+            if (webHook.Id == default)
             {
+                throw new ArgumentException("WebHook id needs to be set by client.");
+            }
+
+            if (webHook.Callback == null)
+            {
+                throw new ArgumentException("WebHook callback needs to be set.");
+            }
+
+            if (webHook.Secret == null)
+            {
+                throw new ArgumentException("WebHook secret needs to be set.");
+            }
+
+            if (webHook.Filters == null)
+            {
+                throw new ArgumentException("WebHook filters needs to be set.");
+            }
+
+            var key = await _idGetter.GetPrincipalIdAsync(user);
+            var dbWebHook = new WebHook
+            {
+                Id = webHook.Id,
                 PrincipalId = key,
-                WebHook = new WebHook
+                ProtectedCallback = _dataProtector.Protect(webHook.Callback.ToString()),
+                ProtectedSecret = _dataProtector.Protect(webHook.Secret),
+                Filters = webHook.Filters.Select(f => new WebHookFilter
                 {
-                    Id = webHook.Id == default ? Guid.NewGuid() : webHook.Id,
-                    ProtectedCallback = _dataProtector.Protect(webHook.Callback.ToString()),
-                    ProtectedSecret = _dataProtector.Protect(webHook.Secret),
-                    Filters = webHook.Filters.Select(f => new WebHookFilter
-                    {
-                        ActionId = f.ActionId,
-                        ParametersJson = JsonConvert.SerializeObject(f.Parameters)
-                    }).ToList()
-                }
+                    ActionId = f.ActionId,
+                    Parameters = f.Parameters == null ? null : new Dictionary<string, object>(f.Parameters)
+                }).ToList()
             };
 
             try
             {
-                _context.Add(registration);
+                _context.Add(dbWebHook);
                 await _context.SaveChangesAsync();
                 return WebHookRegistrationStoreResult.Success;
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"WebHook {registration.WebHook.Id} insertion failed : {e.Message}");
+                _logger.LogError(e, $"WebHook {dbWebHook.Id} insertion failed : {e.Message}");
                 return WebHookRegistrationStoreResult.InternalError;
             }
         }
@@ -141,10 +150,9 @@ namespace Harpoon.Registrations.EFStorage
                 throw new ArgumentNullException(nameof(webHook));
             }
 
-            var key = await _idGetter.GetPrincipalIdForWebHookRegistrationAsync(user);
-            var dbWebHook = await _context.Registrations
-                .Where(r => r.PrincipalId == key && r.WebHookId == webHook.Id)
-                .Select(r => r.WebHook)
+            var key = await _idGetter.GetPrincipalIdAsync(user);
+            var dbWebHook = await _context.WebHooks
+                .Where(w => w.PrincipalId == key && w.Id == webHook.Id)
                 .Include(w => w.Filters)
                 .FirstOrDefaultAsync();
 
@@ -154,14 +162,26 @@ namespace Harpoon.Registrations.EFStorage
             }
 
             dbWebHook.IsPaused = webHook.IsPaused;
-            dbWebHook.ProtectedCallback = _dataProtector.Protect(webHook.Callback.ToString());
-            dbWebHook.ProtectedSecret = _dataProtector.Protect(webHook.Secret);
-            _context.RemoveRange(dbWebHook.Filters);
-            dbWebHook.Filters = webHook.Filters.Select(f => new WebHookFilter
+
+            if (webHook.Callback != null)
             {
-                ActionId = f.ActionId,
-                ParametersJson = JsonConvert.SerializeObject(f.Parameters)
-            }).ToList();
+                dbWebHook.ProtectedCallback = _dataProtector.Protect(webHook.Callback.ToString());
+            }
+
+            if (!string.IsNullOrEmpty(webHook.Secret))
+            {
+                dbWebHook.ProtectedSecret = _dataProtector.Protect(webHook.Secret);
+            }
+
+            if (webHook.Filters != null)
+            {
+                _context.RemoveRange(dbWebHook.Filters);
+                dbWebHook.Filters = webHook.Filters.Select(f => new WebHookFilter
+                {
+                    ActionId = f.ActionId,
+                    Parameters = new Dictionary<string, object>(f.Parameters)
+                }).ToList();
+            }
 
             try
             {
@@ -177,15 +197,15 @@ namespace Harpoon.Registrations.EFStorage
 
         public async Task<WebHookRegistrationStoreResult> DeleteWebHookAsync(IPrincipal user, Guid id)
         {
-            var key = await _idGetter.GetPrincipalIdForWebHookRegistrationAsync(user);
-            var registration = await _context.Registrations.Where(r => r.PrincipalId == key && r.WebHookId == id).FirstOrDefaultAsync();
+            var key = await _idGetter.GetPrincipalIdAsync(user);
+            var webHook = await _context.WebHooks.Where(w => w.PrincipalId == key && w.Id == id).FirstOrDefaultAsync();
 
-            if (registration == null)
+            if (webHook == null)
             {
                 return WebHookRegistrationStoreResult.NotFound;
             }
 
-            _context.Remove(registration);
+            _context.Remove(webHook);
             try
             {
                 await _context.SaveChangesAsync();
@@ -200,17 +220,17 @@ namespace Harpoon.Registrations.EFStorage
 
         public async Task DeleteWebHooksAsync(IPrincipal user)
         {
-            var key = await _idGetter.GetPrincipalIdForWebHookRegistrationAsync(user);
-            var registrations = await _context.Registrations.Where(r => r.PrincipalId == key).ToListAsync();
+            var key = await _idGetter.GetPrincipalIdAsync(user);
+            var webHooks = await _context.WebHooks.Where(r => r.PrincipalId == key).ToListAsync();
 
-            if (registrations == null || registrations.Count == 0)
+            if (webHooks == null || webHooks.Count == 0)
             {
                 return;
             }
 
             try
             {
-                _context.RemoveRange(registrations);
+                _context.RemoveRange(webHooks);
                 await _context.SaveChangesAsync();
             }
             catch (Exception e)

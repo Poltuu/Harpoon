@@ -4,6 +4,6 @@ namespace Harpoon.Registrations.EFStorage
 {
     public interface IRegistrationsContext
     {
-        IQueryable<Registration> Registrations { get;}
+        IQueryable<WebHook> WebHooks { get;}
     }
 }
