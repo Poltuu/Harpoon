@@ -1,15 +1,13 @@
-image: Visual Studio 2019
+image: Visual Studio 2017
 
-version: 2.0.{build}
+version: 0.0.0.{build}
 
 environment:
+  APPVEYOR_SAVE_CACHE_ON_ERROR: true
   global:
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
     DOTNET_CLI_TELEMETRY_OPTOUT: 1
-
-branches:
-  only:
-    - master
+  Harpoon_Connection_String: "Server=(local)\\SQL2017;Database=TEST_HARPOON_{0};User ID=sa;Password=Password12!;Trusted_Connection=True;MultipleActiveResultSets=true"
 
 # Do not build feature branch with open Pull Requests
 skip_branch_with_pr: true
@@ -17,18 +15,56 @@ skip_branch_with_pr: true
 configuration: Release
 platform: Any CPU
 
+cache:
+  - '%USERPROFILE%\.nuget\packages'
+  - C:\ProgramData\chocolatey\bin -> appveyor.yml
+  - C:\ProgramData\chocolatey\lib -> appveyor.yml
+  - '%LocalAppData%\NuGet\v3-cache'
+
+services:
+  - mssql2017
+
 install:
-- choco install dotnetcore-sdk --version 2.2.105
+# - choco install dotnetcore-sdk --version 2.2.105
 - choco install opencover.portable
 - choco install codecov
 
 before_build:
+- ps: wget "https://raw.githubusercontent.com/rducom/ALM/master/build/ComputeVersion.ps1" -outfile "ComputeVersion.ps1"
+- ps: . .\ComputeVersion.ps1
+- ps: $version = Compute "Harpoon\Harpoon.csproj" $env:APPVEYOR_BUILD_NUMBER $env:APPVEYOR_REPO_TAG $env:APPVEYOR_PULL_REQUEST_NUMBER
+- ps: Update-AppveyorBuild -Version $version.Semver
 - dotnet restore
+
+dotnet_csproj:
+  patch: true
+  file: '**\*.csproj'
+  version: '{version}'
+  package_version: '{version}'
+  assembly_version: '{version}'
+  file_version: '{version}'
+  informational_version: '{version}'
 
 build:
   project: Harpoon.sln
   verbosity: minimal
+  publish_nuget: true
+  publish_nuget_symbols: true 
 
 test_script:
-- OpenCover.Console.exe -register:user -target:"%xunit20%\xunit.console.x86.exe" -targetargs:".\Harpoon.Tests\bin\Release\netcoreapp2.2\Harpoon.Tests.dll -noshadow" -filter:"+[UnitTestTargetProject*]* -[MyUnitTests*]*" -output:".\Harpoon_coverage.xml"
-- codecov -f "Harpoon_coverage.xml"
+- OpenCover.Console.exe -returntargetcode -oldstyle -register:user -target:"C:\Program Files\dotnet\dotnet.exe" -targetargs:"test  /p:DebugType=full -c Debug Harpoon.sln" -filter:"+[Harpoon*]* -[*Tests*]*" -output:Harpoon_coverage.xml
+- codecov -f Harpoon_coverage.xml
+
+artifacts:
+  - path: '**\*.nupkg'
+
+deploy:
+- provider: NuGet
+  name: nuget_release
+  api_key:
+    secure: oy2nu7iodplisynzvl2az6pvl54nx5zebkb2eer4vcmkqi
+  skip_symbols: false
+  artifact: /.*\.nupkg/
+  on:
+    APPVEYOR_REPO_TAG: true
+    deploy_public: true

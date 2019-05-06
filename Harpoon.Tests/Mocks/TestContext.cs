@@ -53,7 +53,15 @@ namespace Harpoon.Tests.Mocks
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer($@"Server=(localdb)\mssqllocaldb;Database=TEST_HARPOON_{DbName};Trusted_Connection=True;MultipleActiveResultSets=true");
+            var connectionString = Environment.GetEnvironmentVariable("Harpoon_Connection_String");
+            if (connectionString == null)
+            {
+                optionsBuilder.UseSqlServer($@"Server=(localdb)\mssqllocaldb;Database=TEST_HARPOON_{DbName};Trusted_Connection=True;MultipleActiveResultSets=true");
+            }
+            else
+            {
+                optionsBuilder.UseSqlServer(string.Format(connectionString, DbName));
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

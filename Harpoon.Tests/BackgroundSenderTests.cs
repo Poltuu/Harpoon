@@ -1,5 +1,6 @@
 ﻿using Harpoon.Registrations.EFStorage;
 using Harpoon.Sender.Background;
+using Harpoon.Tests.Fixtures;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -12,8 +13,15 @@ using Xunit;
 
 namespace Harpoon.Tests
 {
-    public class BackgroundSenderTests
+    public class BackgroundSenderTests : IClassFixture<BackgroundSenderFixture>
     {
+        private readonly BackgroundSenderFixture _fixture;
+
+        public BackgroundSenderTests(BackgroundSenderFixture fixture)
+        {
+            _fixture = fixture;
+        }
+
         [Fact]
         public async Task ArgNullAsync()
         {
@@ -49,69 +57,14 @@ namespace Harpoon.Tests
             Assert.Equal(1, count);
         }
 
-        public class FakeWebHookSender : IWebHookSender
-        {
-            public static int Count { get; private set; }
-            public Task SendAsync(IWebHookNotification notification, IReadOnlyList<IWebHook> webHooks, CancellationToken token)
-            {
-                Count++;
-                return Task.CompletedTask;
-            }
-        }
-
         [Fact]
         public async Task NormalWithHostedServiceAsync()
         {
-            var services = new ServiceCollection();
-            services.AddSingleton(new Mock<ILogger<QueuedHostedService<FakeWebHookSender>>>().Object);
-            services.AddScoped<FakeWebHookSender>();
-            services.AddHostedService<QueuedHostedService<FakeWebHookSender>>();
-            services.AddSingleton<WebHooksQueue>();
-
-            var provider = services.BuildServiceProvider();
-            var backGroundService = provider.GetRequiredService<IHostedService>() as QueuedHostedService<FakeWebHookSender>;
-
-            var service = new BackgroundSender(provider.GetRequiredService<WebHooksQueue>());
-            await backGroundService.StartAsync(CancellationToken.None);
-
+            var service = new BackgroundSender(_fixture.Services.GetRequiredService<WebHooksQueue>());
             await service.SendAsync(new WebHookNotification(), new List<IWebHook> { new WebHook() }, CancellationToken.None);
-            await Task.Delay(10);
-            Assert.Equal(1, FakeWebHookSender.Count);
 
-            await backGroundService.StopAsync(CancellationToken.None);
-        }
-
-        public class FailerWebHookSender : IWebHookSender
-        {
-            public static int Count { get; private set; }
-            public Task SendAsync(IWebHookNotification notification, IReadOnlyList<IWebHook> webHooks, CancellationToken token)
-            {
-                Count++;
-                throw new Exception("");
-            }
-        }
-
-        [Fact]
-        public async Task FailWithHostedServiceAsync()
-        {
-            var services = new ServiceCollection();
-            services.AddSingleton(new Mock<ILogger<QueuedHostedService<FailerWebHookSender>>>().Object);
-            services.AddScoped<FailerWebHookSender>();
-            services.AddHostedService<QueuedHostedService<FailerWebHookSender>>();
-            services.AddSingleton<WebHooksQueue>();
-
-            var provider = services.BuildServiceProvider();
-            var backGroundService = provider.GetRequiredService<IHostedService>() as QueuedHostedService<FailerWebHookSender>;
-
-            var service = new BackgroundSender(provider.GetRequiredService<WebHooksQueue>());
-            await backGroundService.StartAsync(CancellationToken.None);
-
-            await service.SendAsync(new WebHookNotification(), new List<IWebHook> { new WebHook() }, CancellationToken.None);
-            await Task.Delay(10);
-            Assert.Equal(1, FailerWebHookSender.Count);
-
-            await backGroundService.StopAsync(CancellationToken.None);
-            //no exception thrown is success here
+            await Task.Delay(1000);
+            Assert.Equal(1, BackgroundSenderFixture.FakeWebHookSenderCount);
         }
     }
 }
