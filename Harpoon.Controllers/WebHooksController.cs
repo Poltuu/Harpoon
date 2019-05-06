@@ -42,17 +42,16 @@ namespace Harpoon.Controllers
         /// <summary>
         /// Gets the webHook belonging to the current user with the given <paramref name="id"/>.
         /// </summary>
-        [HttpGet]
         [HttpGet("{id}", Name = GetByIdAsyncActionName)]
         [ProducesResponseType(404)]
         public async Task<ActionResult<IWebHook>> GetByIdAsync(Guid id)
         {
             var webHook = await _webHookRegistrationStore.GetWebHookAsync(User, id);
-            if (webHook != null)
+            if (webHook == null)
             {
-                return Ok(webHook);
+                return NotFound();
             }
-            return NotFound();
+            return Ok(webHook);
         }
 
         /// <summary>
@@ -61,7 +60,7 @@ namespace Harpoon.Controllers
         [HttpPost]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult> PostAsync(WebHookDTO webHook)
+        public async Task<ActionResult> PostAsync([FromBody]WebHookDTO webHook)
         {
             if (webHook == null)
             {
@@ -105,7 +104,7 @@ namespace Harpoon.Controllers
         [HttpPut("{id}")]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> PutAsync(Guid id, WebHookDTO webHook)
+        public async Task<IActionResult> PutAsync(Guid id, [FromBody]WebHookDTO webHook)
         {
             if (webHook == null)
             {
@@ -167,7 +166,7 @@ namespace Harpoon.Controllers
         /// Deletes all webhooks for current user.
         /// </summary>
         [Route("")]
-        public async Task<IActionResult> DeleteAll()
+        public async Task<IActionResult> Delete()
         {
             try
             {

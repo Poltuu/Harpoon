@@ -1,5 +1,7 @@
 ﻿using Harpoon.Registrations;
 using Harpoon.Registrations.EFStorage;
+using Harpoon.Tests.Fixtures;
+using Harpoon.Tests.Mocks;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,23 +29,23 @@ namespace Harpoon.Tests
             var getter = new Mock<IPrincipalIdGetter>();
             var dataprotection = new Mock<IDataProtectionProvider>();
             dataprotection.Setup(s => s.CreateProtector(It.IsAny<string>())).Returns(new Mock<IDataProtector>().Object);
-            var logger = new Mock<ILogger<WebHookRegistrationStore<TestContext>>>();
+            var logger = new Mock<ILogger<WebHookRegistrationStore<TestContext1>>>();
 
-            Assert.Throws<ArgumentNullException>(() => new WebHookRegistrationStore<TestContext>(null, getter.Object, dataprotection.Object, logger.Object));
-            Assert.Throws<ArgumentNullException>(() => new WebHookRegistrationStore<TestContext>(new TestContext(), null, dataprotection.Object, logger.Object));
-            Assert.Throws<ArgumentNullException>(() => new WebHookRegistrationStore<TestContext>(new TestContext(), getter.Object, null, logger.Object));
-            Assert.Throws<ArgumentNullException>(() => new WebHookRegistrationStore<TestContext>(new TestContext(), getter.Object, dataprotection.Object, null));
+            Assert.Throws<ArgumentNullException>(() => new WebHookRegistrationStore<TestContext1>(null, getter.Object, dataprotection.Object, logger.Object));
+            Assert.Throws<ArgumentNullException>(() => new WebHookRegistrationStore<TestContext1>(new TestContext1(), null, dataprotection.Object, logger.Object));
+            Assert.Throws<ArgumentNullException>(() => new WebHookRegistrationStore<TestContext1>(new TestContext1(), getter.Object, null, logger.Object));
+            Assert.Throws<ArgumentNullException>(() => new WebHookRegistrationStore<TestContext1>(new TestContext1(), getter.Object, dataprotection.Object, null));
 
             dataprotection.Setup(s => s.CreateProtector(It.IsAny<string>())).Returns((IDataProtector)null);
-            Assert.Throws<ArgumentNullException>(() => new WebHookRegistrationStore<TestContext>(new TestContext(), getter.Object, dataprotection.Object, logger.Object));
+            Assert.Throws<ArgumentNullException>(() => new WebHookRegistrationStore<TestContext1>(new TestContext1(), getter.Object, dataprotection.Object, logger.Object));
 
-            var store = _fixture.Provider.GetRequiredService<WebHookRegistrationStore<TestContext>>();
+            var store = _fixture.Provider.GetRequiredService<WebHookRegistrationStore<TestContext1>>();
 
             await Assert.ThrowsAsync<ArgumentNullException>(() => store.InsertWebHookAsync(null, null));
             await Assert.ThrowsAsync<ArgumentNullException>(() => store.UpdateWebHookAsync(null, null));
         }
 
-        private async Task SeedAsync(TestContext context)
+        private async Task SeedAsync(TestContext1 context)
         {
             var actions = new[] { "action1", "action2" };
             var pauses = new[] { true, false };
@@ -62,7 +64,7 @@ namespace Harpoon.Tests
             await context.SaveChangesAsync();
         }
 
-        private WebHook AddWebHook(TestContext context, Guid id, string principal, string action, bool isPaused)
+        private WebHook AddWebHook(TestContext1 context, Guid id, string principal, string action, bool isPaused)
         {
             var result = new WebHook
             {
@@ -89,9 +91,9 @@ namespace Harpoon.Tests
         public async Task GetAllTests()
         {
             var services = _fixture.Provider;
-            var context = services.GetRequiredService<TestContext>();
+            var context = services.GetRequiredService<TestContext1>();
             await SeedAsync(context);
-            var store = services.GetRequiredService<WebHookRegistrationStore<TestContext>>();
+            var store = services.GetRequiredService<WebHookRegistrationStore<TestContext1>>();
 
             var webHooks = await store.GetAllWebHooksAsync("action1");
 
@@ -118,14 +120,14 @@ namespace Harpoon.Tests
         public async Task GetForCurrentUserTests()
         {
             var services = _fixture.Provider;
-            var context = services.GetRequiredService<TestContext>();
+            var context = services.GetRequiredService<TestContext1>();
 
             var webHook1 = AddWebHook(context, Guid.NewGuid(), "principal1", "action1", false);
             var webHook2 = AddWebHook(context, Guid.NewGuid(), "principal1", "action1", true);
             var webHook3 = AddWebHook(context, Guid.NewGuid(), "principal2", "action1", false);
             await context.SaveChangesAsync();
 
-            var store = services.GetRequiredService<WebHookRegistrationStore<TestContext>>();
+            var store = services.GetRequiredService<WebHookRegistrationStore<TestContext1>>();
 
             var webhook = await store.GetWebHookAsync(null, webHook1.Id);
             Assert.NotNull(webhook);
@@ -154,7 +156,7 @@ namespace Harpoon.Tests
         [MemberData(nameof(InsertScenario))]
         public async Task InsertArgsTests(Guid id, Uri callback, string secret, List<WebHookFilter> filters)
         {
-            var store = _fixture.Provider.GetRequiredService<WebHookRegistrationStore<TestContext>>();
+            var store = _fixture.Provider.GetRequiredService<WebHookRegistrationStore<TestContext1>>();
 
             var webHook = new WebHook
             {
@@ -171,8 +173,8 @@ namespace Harpoon.Tests
         public async Task InsertTests()
         {
             var services = _fixture.Provider;
-            var context = services.GetRequiredService<TestContext>();
-            var store = services.GetRequiredService<WebHookRegistrationStore<TestContext>>();
+            var context = services.GetRequiredService<TestContext1>();
+            var store = services.GetRequiredService<WebHookRegistrationStore<TestContext1>>();
 
             var webHook = new WebHook
             {
@@ -194,7 +196,7 @@ namespace Harpoon.Tests
         [Fact]
         public async Task NotFoundTests()
         {
-            var store = _fixture.Provider.GetRequiredService<WebHookRegistrationStore<TestContext>>();
+            var store = _fixture.Provider.GetRequiredService<WebHookRegistrationStore<TestContext1>>();
 
             Assert.Equal(WebHookRegistrationStoreResult.NotFound, await store.UpdateWebHookAsync(null, new WebHook()));
             Assert.Equal(WebHookRegistrationStoreResult.NotFound, await store.DeleteWebHookAsync(null, Guid.NewGuid()));
@@ -239,7 +241,7 @@ namespace Harpoon.Tests
         [MemberData(nameof(UpdateScenario))]
         public async Task UpdateTests(bool paused, Uri callback, string secret, List<WebHookFilter> filters)
         {
-            var store = _fixture.Provider.GetRequiredService<WebHookRegistrationStore<TestContext>>();
+            var store = _fixture.Provider.GetRequiredService<WebHookRegistrationStore<TestContext1>>();
 
             var webHook = new WebHook
             {
@@ -276,7 +278,7 @@ namespace Harpoon.Tests
         [Fact]
         public async Task DeleteTestsAsync()
         {
-            var store = _fixture.Provider.GetRequiredService<WebHookRegistrationStore<TestContext>>();
+            var store = _fixture.Provider.GetRequiredService<WebHookRegistrationStore<TestContext1>>();
 
             var webHook = new WebHook
             {
@@ -302,7 +304,7 @@ namespace Harpoon.Tests
         [Fact]
         public async Task DeleteUserTestsAsync()
         {
-            var store = _fixture.Provider.GetRequiredService<WebHookRegistrationStore<TestContext>>();
+            var store = _fixture.Provider.GetRequiredService<WebHookRegistrationStore<TestContext1>>();
 
             //does not throw
             await store.DeleteWebHooksAsync(null);

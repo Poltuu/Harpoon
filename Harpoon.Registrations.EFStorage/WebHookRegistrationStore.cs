@@ -179,7 +179,7 @@ namespace Harpoon.Registrations.EFStorage
                 dbWebHook.Filters = webHook.Filters.Select(f => new WebHookFilter
                 {
                     ActionId = f.ActionId,
-                    Parameters = new Dictionary<string, object>(f.Parameters)
+                    Parameters = f.Parameters == null ? null : new Dictionary<string, object>(f.Parameters)
                 }).ToList();
             }
 

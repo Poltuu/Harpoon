@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 
-namespace Harpoon.Tests
+namespace Harpoon.Tests.Mocks
 {
     public class HttpClientMocker
     {

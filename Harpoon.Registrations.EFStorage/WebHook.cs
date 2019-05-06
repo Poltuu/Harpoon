@@ -20,5 +20,10 @@ namespace Harpoon.Registrations.EFStorage
         public List<WebHookFilter> Filters { get; set; }
 
         IReadOnlyCollection<IWebHookFilter> IWebHook.Filters => Filters;
+
+        public WebHook()
+        {
+            Filters = new List<WebHookFilter>();
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Harpoon.Registrations;
 using Harpoon.Sender;
 using Harpoon.Sender.Background;
+using Harpoon.Tests.Mocks;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -29,8 +30,8 @@ namespace Harpoon.Tests
             Assert.Throws<ArgumentNullException>(() => services.AddHarpoon(null));
             Assert.Throws<ArgumentNullException>(() => services.AddHarpoon().UseDefaultSender(null));
             Assert.Throws<ArgumentNullException>(() => services.AddHarpoon().UseDefaultSenderInBackground(null));
-            Assert.Throws<ArgumentNullException>(() => services.AddHarpoon().UseEfStorage<TestContext>(null));
-            Assert.Throws<ArgumentNullException>(() => services.AddHarpoon().UseEfStorage<TestContext>((p, b) => { }, null));
+            Assert.Throws<ArgumentNullException>(() => services.AddHarpoon().UseEfStorage<TestContext1>(null));
+            Assert.Throws<ArgumentNullException>(() => services.AddHarpoon().UseEfStorage<TestContext1>((p, b) => { }, null));
         }
 
         [Fact]
@@ -52,8 +53,8 @@ namespace Harpoon.Tests
         public void AddHarpoonWithEfTests()
         {
             var services = new ServiceCollection();
-            services.AddEntityFrameworkSqlServer().AddDbContext<TestContext>();
-            services.AddHarpoon().UseEfStorage<TestContext, TestWebHookActionProvider>((purpose, b) => b.UseEphemeralDataProtectionProvider());
+            services.AddEntityFrameworkSqlServer().AddDbContext<TestContext1>();
+            services.AddHarpoon().UseEfStorage<TestContext1, TestWebHookActionProvider>((purpose, b) => b.UseEphemeralDataProtectionProvider());
 
             services.AddSingleton(new Mock<IWebHookSender>().Object);
 

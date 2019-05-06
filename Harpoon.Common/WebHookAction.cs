@@ -8,5 +8,10 @@ namespace Harpoon
         public string Description { get; set; }
 
         public HashSet<string> AvailableParameters { get; set; }
+
+        public WebHookAction()
+        {
+            AvailableParameters = new HashSet<string>();
+        }
     }
 }

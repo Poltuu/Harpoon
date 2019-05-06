@@ -141,11 +141,11 @@ namespace Harpoon
                     return;
                 }
 
-                throw new ArgumentException($"WebHook {webHook.Id} callback verification failed. Response is incorrect: {response}");
+                throw new ArgumentException($"WebHook {webHook.Id} callback verification failed. Response is incorrect: {response}.{Environment.NewLine}To cancel callback verification, add `noecho` as a query parameter.");
             }
             catch (Exception e)
             {
-                var message = $"WebHook {webHook.Id} callback verification failed: {e.Message}";
+                var message = $"WebHook {webHook.Id} callback verification failed: {e.Message}.{Environment.NewLine}To cancel callback verification, add `noecho` as a query parameter.";
                 _logger.LogError(message, e);
                 throw new ArgumentException(message);
             }

@@ -1,4 +1,5 @@
 ﻿using Harpoon.Registrations.EFStorage;
+using Harpoon.Tests.Mocks;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;

@@ -1,5 +1,6 @@
 ﻿using Harpoon.Registrations;
 using Harpoon.Registrations.EFStorage;
+using Harpoon.Tests.Mocks;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -8,7 +9,7 @@ using System;
 using System.Security.Principal;
 using System.Threading.Tasks;
 
-namespace Harpoon.Tests
+namespace Harpoon.Tests.Fixtures
 {
     public class DatabaseFixture : IDisposable
     {
@@ -19,7 +20,7 @@ namespace Harpoon.Tests
         private IServiceProvider GetProvider()
         {
             var services = new ServiceCollection();
-            services.AddEntityFrameworkSqlServer().AddDbContext<TestContext>();
+            services.AddEntityFrameworkSqlServer().AddDbContext<TestContext1>();
 
             var getter = new Mock<IPrincipalIdGetter>();
             getter.Setup(g => g.GetPrincipalIdAsync(It.IsAny<IPrincipal>())).Returns(Task.FromResult("principal1"));
@@ -31,13 +32,12 @@ namespace Harpoon.Tests
             protector.Setup(s => s.CreateProtector(It.IsAny<string>())).Returns(protector.Object);
             services.AddSingleton<IDataProtectionProvider>(protector.Object);
 
-            services.AddSingleton(new Mock<ILogger<WebHookRegistrationStore<TestContext>>>().Object);
-            services.AddSingleton<WebHookRegistrationStore<TestContext>>();
+            services.AddSingleton(new Mock<ILogger<WebHookRegistrationStore<TestContext1>>>().Object);
+            services.AddSingleton<WebHookRegistrationStore<TestContext1>>();
 
             var result = services.BuildServiceProvider();
 
-            var context = result.GetRequiredService<TestContext>();
-            context.Database.EnsureCreated();
+            result.GetRequiredService<TestContext1>().Database.EnsureCreated();
 
             return result;
         }
@@ -46,7 +46,7 @@ namespace Harpoon.Tests
         {
             if (_provider != null)
             {
-                var context = _provider.GetRequiredService<TestContext>();
+                var context = _provider.GetRequiredService<TestContext1>();
                 context.Database.EnsureDeleted();
             }
         }

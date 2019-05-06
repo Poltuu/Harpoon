@@ -1,5 +1,6 @@
 ﻿using Harpoon.Registrations.EFStorage;
 using Harpoon.Sender;
+using Harpoon.Tests.Mocks;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;

@@ -12,5 +12,10 @@ namespace Harpoon.Registrations.EFStorage
         public Dictionary<string, object> Parameters { get; set; }
 
         IReadOnlyDictionary<string, object> IWebHookFilter.Parameters => Parameters;
+
+        public WebHookFilter()
+        {
+            Parameters = new Dictionary<string, object>();
+        }
     }
 }
