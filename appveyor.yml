@@ -13,19 +13,18 @@ environment:
 skip_branch_with_pr: true
 
 configuration: Release
-platform: Any CPU
+#platform: Any CPU
 
 cache:
-  - '%USERPROFILE%\.nuget\packages'
-  - C:\ProgramData\chocolatey\bin -> appveyor.yml
-  - C:\ProgramData\chocolatey\lib -> appveyor.yml
-  - '%LocalAppData%\NuGet\v3-cache'
+  - '%USERPROFILE%\.nuget\packages' #-> appveyor.yml
+  - C:\ProgramData\chocolatey\bin #-> appveyor.yml
+  - C:\ProgramData\chocolatey\lib #-> appveyor.yml
+  - '%LocalAppData%\NuGet\v3-cache' #-> appveyor.yml
 
 services:
   - mssql2017
 
 install:
-# - choco install dotnetcore-sdk --version 2.2.105
 - choco install opencover.portable
 - choco install codecov
 
