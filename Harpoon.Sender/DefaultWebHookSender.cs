@@ -14,6 +14,8 @@ namespace Harpoon.Sender
     public class DefaultWebHookSender : IWebHookSender
     {
         public const string TriggerKey = "Trigger";
+        public const string TimestampKey = "Timestamp";
+        public const string UniqueIdKey = "NotificationId";
         public const string SignatureHeader = "X-Signature-SHA256";
 
         private readonly HttpClient _httpClient;
@@ -115,18 +117,18 @@ namespace Harpoon.Sender
             {
                 return new Dictionary<string, object>
                 {
-                    [TriggerKey] = notification.TriggerId
+                    [TriggerKey] = notification.TriggerId,
+                    [TimestampKey] = DateTime.UtcNow,
+                    [UniqueIdKey] = Guid.NewGuid(),
                 };
             }
 
-            if (notification.Payload.ContainsKey(TriggerKey))
-            {
-                return notification.Payload;
-            }
-
+            //keys may be overwritten
             return new Dictionary<string, object>(notification.Payload)
             {
-                [TriggerKey] = notification.TriggerId
+                [TriggerKey] = notification.TriggerId,
+                [TimestampKey] = DateTime.UtcNow,
+                [UniqueIdKey] = Guid.NewGuid()
             };
         }
 

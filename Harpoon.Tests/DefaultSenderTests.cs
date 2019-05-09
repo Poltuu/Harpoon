@@ -71,7 +71,6 @@ namespace Harpoon.Tests
             new object[] { null },
             new object[] { new Dictionary<string,object>() },
             new object[] { new Dictionary<string, object> { ["param1"] = "value1" } },
-            new object[] { new Dictionary<string, object> { [DefaultWebHookSender.TriggerKey] = "value1" } },
         };
 
         [Theory]
@@ -96,10 +95,9 @@ namespace Harpoon.Tests
                 var content = JsonConvert.DeserializeObject<Dictionary<string, string>>(await m.Content.ReadAsStringAsync());
                 Assert.NotNull(content);
                 Assert.Contains(DefaultWebHookSender.TriggerKey, content.Keys);
-                if (notif.Payload == null || !notif.Payload.ContainsKey(DefaultWebHookSender.TriggerKey))
-                {
-                    Assert.Equal(notif.TriggerId, content[DefaultWebHookSender.TriggerKey]);
-                }
+                Assert.Equal(notif.TriggerId, content[DefaultWebHookSender.TriggerKey]);
+                Assert.Contains(DefaultWebHookSender.TimestampKey, content.Keys);
+                Assert.Contains(DefaultWebHookSender.UniqueIdKey, content.Keys);
 
                 if (notif.Payload != null)
                 {
