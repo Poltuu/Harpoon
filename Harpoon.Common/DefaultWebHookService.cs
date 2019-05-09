@@ -23,7 +23,7 @@ namespace Harpoon
                 throw new ArgumentNullException(nameof(notification));
             }
 
-            var webHooks = await _webHookStore.GetAllWebHooksAsync(notification.ActionId);
+            var webHooks = await _webHookStore.GetAllWebHooksAsync(notification.TriggerId);
             var filteredWebHooks = webHooks.Where(w => FiltersMatch(w, notification)).ToList();
 
             if (filteredWebHooks.Count != 0)
@@ -42,7 +42,7 @@ namespace Harpoon
             }
 
             return webHook.Filters
-                .Where(f => f.ActionId == notification.ActionId)
+                .Where(f => f.TriggerId == notification.TriggerId)
                 .Any(f => f.Parameters == null || f.Parameters.Count == 0 || f.Parameters.All(kvp => notification.Payload.ContainsKey(kvp.Key) && notification.Payload[kvp.Key].Equals(kvp.Value)));
         }
     }

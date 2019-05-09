@@ -4,7 +4,7 @@ namespace Harpoon
 {
     public interface IWebHookNotification
     {
-        string ActionId { get; }
+        string TriggerId { get; }
         IReadOnlyDictionary<string, object> Payload { get; }
     }
 }

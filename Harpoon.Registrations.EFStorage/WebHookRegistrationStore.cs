@@ -26,10 +26,10 @@ namespace Harpoon.Registrations.EFStorage
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<IReadOnlyList<IWebHook>> GetAllWebHooksAsync(string action)
+        public async Task<IReadOnlyList<IWebHook>> GetAllWebHooksAsync(string trigger)
         {
             var webHooks = await _context.WebHooks
-                .Where(w => !w.IsPaused && w.Filters.Any(f => f.ActionId == action))
+                .Where(w => !w.IsPaused && w.Filters.Any(f => f.TriggerId == trigger))
                 .Include(w => w.Filters)
                 .AsNoTracking()
                 .ToListAsync();
@@ -125,7 +125,7 @@ namespace Harpoon.Registrations.EFStorage
                 ProtectedSecret = _dataProtector.Protect(webHook.Secret),
                 Filters = webHook.Filters.Select(f => new WebHookFilter
                 {
-                    ActionId = f.ActionId,
+                    TriggerId = f.TriggerId,
                     Parameters = f.Parameters == null ? null : new Dictionary<string, object>(f.Parameters)
                 }).ToList()
             };
@@ -178,7 +178,7 @@ namespace Harpoon.Registrations.EFStorage
                 _context.RemoveRange(dbWebHook.Filters);
                 dbWebHook.Filters = webHook.Filters.Select(f => new WebHookFilter
                 {
-                    ActionId = f.ActionId,
+                    TriggerId = f.TriggerId,
                     Parameters = f.Parameters == null ? null : new Dictionary<string, object>(f.Parameters)
                 }).ToList();
             }

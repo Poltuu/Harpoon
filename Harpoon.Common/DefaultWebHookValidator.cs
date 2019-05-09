@@ -14,13 +14,13 @@ namespace Harpoon
     {
         private static readonly HashSet<string> ValidSchemes = new HashSet<string> { Uri.UriSchemeHttp.ToString(), Uri.UriSchemeHttps.ToString() };
 
-        private readonly IWebHookActionProvider _webHookActionProvider;
+        private readonly IWebHookTriggerProvider _webHookTriggerProvider;
         private readonly ILogger<DefaultWebHookValidator> _logger;
         private readonly HttpClient _httpClient;
 
-        public DefaultWebHookValidator(IWebHookActionProvider webHookActionProvider, ILogger<DefaultWebHookValidator> logger, HttpClient httpClient)
+        public DefaultWebHookValidator(IWebHookTriggerProvider webHookTriggerProvider, ILogger<DefaultWebHookValidator> logger, HttpClient httpClient)
         {
-            _webHookActionProvider = webHookActionProvider ?? throw new ArgumentNullException(nameof(webHookActionProvider));
+            _webHookTriggerProvider = webHookTriggerProvider ?? throw new ArgumentNullException(nameof(webHookTriggerProvider));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         }
@@ -83,24 +83,24 @@ namespace Harpoon
         {
             if (webHook.Filters == null || webHook.Filters.Count == 0)
             {
-                throw new ArgumentException("WebHooks need to target at least one action. Wildcard is not allowed.");
+                throw new ArgumentException("WebHooks need to target at least one trigger. Wildcard is not allowed.");
             }
 
-            var actions = await _webHookActionProvider.GetAvailableActionsAsync();
+            var triggers = await _webHookTriggerProvider.GetAvailableTriggersAsync();
             var errors = new List<string>();
             foreach (var filter in webHook.Filters)
             {
-                if (!actions.ContainsKey(filter.ActionId))
+                if (!triggers.ContainsKey(filter.TriggerId))
                 {
-                    errors.Add($" - Action {filter.ActionId} is not valid.");
+                    errors.Add($" - Trigger {filter.TriggerId} is not valid.");
                     continue;
                 }
 
                 if (filter.Parameters != null)
                 {
-                    foreach (var invalidParam in filter.Parameters.Keys.Where(k => !actions[filter.ActionId].AvailableParameters.Contains(k)))
+                    foreach (var invalidParam in filter.Parameters.Keys.Where(k => !triggers[filter.TriggerId].Template.ContainsKey(k)))
                     {
-                        errors.Add($" - {invalidParam} is not a valid parameter to filter the action {filter.ActionId}.");
+                        errors.Add($" - {invalidParam} is not a valid parameter to filter the trigger {filter.TriggerId}.");
                     }
                 }
             }

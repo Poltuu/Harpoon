@@ -17,17 +17,17 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="harpoon"></param>
         /// <param name="dataProtection"></param>
         /// <returns></returns>
-        public static IHarpoonBuilder UseEfStorage<TContext, TWebHookActionProvider>(this IHarpoonBuilder harpoon, Action<string, IDataProtectionBuilder> dataProtection)
+        public static IHarpoonBuilder UseEfStorage<TContext, TWebHookTriggerProvider>(this IHarpoonBuilder harpoon, Action<string, IDataProtectionBuilder> dataProtection)
             where TContext : DbContext, IRegistrationsContext
-            where TWebHookActionProvider : class, IWebHookActionProvider
+            where TWebHookTriggerProvider : class, IWebHookTriggerProvider
         {
-            harpoon.Services.TryAddScoped<IWebHookActionProvider, TWebHookActionProvider>();
+            harpoon.Services.TryAddScoped<IWebHookTriggerProvider, TWebHookTriggerProvider>();
             return harpoon.UseEfStorage<TContext>(dataProtection);
         }
 
         /// <summary>
         /// Data protection configuration is required. String parameter is the Purpose or created IDataProtector.
-        /// IWebHookActionProvider needs to be configured.
+        /// TWebHookTriggerProvider needs to be configured.
         /// </summary>
         /// <typeparam name="TContext"></typeparam>
         /// <param name="harpoon"></param>
@@ -39,7 +39,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         /// <summary>
         /// Data protection configuration is required. String parameter is the Purpose or created IDataProtector.
-        /// IWebHookActionProvider needs to be configured.
+        /// TWebHookTriggerProvider needs to be configured.
         /// </summary>
         /// <typeparam name="TContext"></typeparam>
         /// <param name="harpoon"></param>

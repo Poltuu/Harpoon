@@ -5,6 +5,6 @@ namespace Harpoon
 {
     public interface IWebHookStore
     {
-        Task<IReadOnlyList<IWebHook>> GetAllWebHooksAsync(string action);
+        Task<IReadOnlyList<IWebHook>> GetAllWebHooksAsync(string trigger);
     }
 }

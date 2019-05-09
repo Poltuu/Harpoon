@@ -59,7 +59,7 @@ namespace Harpoon.Tests
         [Fact]
         public async Task FilterOnParametersAsync()
         {
-            var actionId = "myAction";
+            var trigger = "noun.verb";
             var webHooks = new List<WebHook>
             {
                 new WebHook
@@ -68,7 +68,7 @@ namespace Harpoon.Tests
                     {
                         new WebHookFilter
                         {
-                            ActionId = actionId,
+                            TriggerId = trigger,
                             Parameters = null, //valid
                         }
                     }
@@ -79,7 +79,7 @@ namespace Harpoon.Tests
                     {
                         new WebHookFilter
                         {
-                            ActionId = actionId,
+                            TriggerId = trigger,
                             Parameters = new Dictionary<string, object>(), //valid
                         }
                     }
@@ -90,7 +90,7 @@ namespace Harpoon.Tests
                     {
                         new WebHookFilter
                         {
-                            ActionId = actionId,
+                            TriggerId = trigger,
                             Parameters = new Dictionary<string, object> //valid
                             {
                                 ["property"] = 2,
@@ -105,7 +105,7 @@ namespace Harpoon.Tests
                     {
                         new WebHookFilter
                         {
-                            ActionId = actionId,
+                            TriggerId = trigger,
                             Parameters = new Dictionary<string, object>
                             {
                                 ["property"] = 2,
@@ -121,7 +121,7 @@ namespace Harpoon.Tests
                     {
                         new WebHookFilter
                         {
-                            ActionId = actionId,
+                            TriggerId = trigger,
                             Parameters = new Dictionary<string, object>
                             {
                                 ["property"] = 20, //not valid
@@ -136,7 +136,7 @@ namespace Harpoon.Tests
                     {
                         new WebHookFilter
                         {
-                            ActionId = actionId,
+                            TriggerId = trigger,
                             Parameters = new Dictionary<string, object>
                             {
                                 ["property"] = 20,
@@ -148,7 +148,7 @@ namespace Harpoon.Tests
             };
             var payload = new WebHookNotification
             {
-                ActionId = actionId,
+                TriggerId = trigger,
                 Payload = new Dictionary<string, object>
                 {
                     ["property"] = 2,

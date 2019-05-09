@@ -71,12 +71,12 @@ namespace Harpoon.Tests
             new object[] { null },
             new object[] { new Dictionary<string,object>() },
             new object[] { new Dictionary<string, object> { ["param1"] = "value1" } },
-            new object[] { new Dictionary<string, object> { [DefaultWebHookSender.ActionKey] = "value1" } },
+            new object[] { new Dictionary<string, object> { [DefaultWebHookSender.TriggerKey] = "value1" } },
         };
 
         [Theory]
         [MemberData(nameof(PayloadData))]
-        public async Task NormalScenarioAsync(Dictionary<string,object> payload)
+        public async Task NormalScenarioAsync(Dictionary<string, object> payload)
         {
             var logger = new Mock<ILogger<DefaultWebHookSender>>();
             var signature = "FIXED_SIGNATURE";
@@ -84,7 +84,7 @@ namespace Harpoon.Tests
             signatureService.Setup(s => s.GetSignature(It.IsAny<string>(), It.IsAny<string>())).Returns(signature);
 
             var webHook = new WebHook { Callback = new Uri("http://www.example.com") };
-            var notif = new WebHookNotification { ActionId = "ActionID", Payload = payload };
+            var notif = new WebHookNotification { TriggerId = "noun.verb", Payload = payload };
 
             var callbackHasBeenCalled = false;
             var httpClient = HttpClientMocker.Callback(async m =>
@@ -95,10 +95,10 @@ namespace Harpoon.Tests
 
                 var content = JsonConvert.DeserializeObject<Dictionary<string, string>>(await m.Content.ReadAsStringAsync());
                 Assert.NotNull(content);
-                Assert.Contains(DefaultWebHookSender.ActionKey, content.Keys);
-                if (notif.Payload == null || !notif.Payload.ContainsKey(DefaultWebHookSender.ActionKey))
+                Assert.Contains(DefaultWebHookSender.TriggerKey, content.Keys);
+                if (notif.Payload == null || !notif.Payload.ContainsKey(DefaultWebHookSender.TriggerKey))
                 {
-                    Assert.Equal(notif.ActionId, content[DefaultWebHookSender.ActionKey]);
+                    Assert.Equal(notif.TriggerId, content[DefaultWebHookSender.TriggerKey]);
                 }
 
                 if (notif.Payload != null)
@@ -130,7 +130,7 @@ namespace Harpoon.Tests
             var signature = new Mock<ISignatureService>();
 
             var webHook = new WebHook { Callback = new Uri("http://www.example.com") };
-            var notif = new WebHookNotification { ActionId = "ActionID" };
+            var notif = new WebHookNotification { TriggerId = "noun.verb" };
 
             var httpClient = HttpClientMocker.Static(code, "");
 
@@ -147,7 +147,7 @@ namespace Harpoon.Tests
             var signature = new Mock<ISignatureService>();
 
             var webHook = new WebHook { Callback = new Uri("http://www.example.com") };
-            var notif = new WebHookNotification { ActionId = "ActionID" };
+            var notif = new WebHookNotification { TriggerId = "noun.verb" };
 
             var httpClient = HttpClientMocker.AlwaysFail(new Exception());
 

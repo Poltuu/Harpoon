@@ -7,7 +7,7 @@ namespace Harpoon.Registrations.EFStorage
     {
         public Guid Id { get; set; }
 
-        public string ActionId { get; set; }
+        public string TriggerId { get; set; }
 
         public Dictionary<string, object> Parameters { get; set; }
 

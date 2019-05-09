@@ -13,7 +13,7 @@ namespace Harpoon.Sender
 {
     public class DefaultWebHookSender : IWebHookSender
     {
-        public const string ActionKey = "Action";
+        public const string TriggerKey = "Trigger";
         public const string SignatureHeader = "X-Signature-SHA256";
 
         private readonly HttpClient _httpClient;
@@ -115,18 +115,18 @@ namespace Harpoon.Sender
             {
                 return new Dictionary<string, object>
                 {
-                    [ActionKey] = notification.ActionId
+                    [TriggerKey] = notification.TriggerId
                 };
             }
 
-            if (notification.Payload.ContainsKey(ActionKey))
+            if (notification.Payload.ContainsKey(TriggerKey))
             {
                 return notification.Payload;
             }
 
             return new Dictionary<string, object>(notification.Payload)
             {
-                [ActionKey] = notification.ActionId
+                [TriggerKey] = notification.TriggerId
             };
         }
 

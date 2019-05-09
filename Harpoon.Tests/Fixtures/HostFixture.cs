@@ -44,9 +44,9 @@ namespace Harpoon.Tests.Fixtures
 
                 services.AddHarpoon().UseEfStorage<TestContext2>((p, b) => { }).UseDefaultSenderInBackground();
 
-                var actionProvider = new Mock<IWebHookActionProvider>();
-                actionProvider.Setup(p => p.GetAvailableActionsAsync()).ReturnsAsync(new Dictionary<string, WebHookAction> { ["action1"] = new WebHookAction { Id = "action1" } });
-                services.AddSingleton(actionProvider.Object);
+                var triggerProvider = new Mock<IWebHookTriggerProvider>();
+                triggerProvider.Setup(p => p.GetAvailableTriggersAsync()).ReturnsAsync(new Dictionary<string, WebHookTrigger> { ["noun.verb"] = new WebHookTrigger { Id = "noun.verb" } });
+                services.AddSingleton(triggerProvider.Object);
 
                 services.AddAuthentication(o =>
                 {

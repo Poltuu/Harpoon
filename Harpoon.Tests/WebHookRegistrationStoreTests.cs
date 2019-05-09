@@ -47,24 +47,24 @@ namespace Harpoon.Tests
 
         private async Task SeedAsync(TestContext1 context)
         {
-            var actions = new[] { "action1", "action2" };
+            var triggers = new[] { "action1", "action2" };
             var pauses = new[] { true, false };
             var principals = new[] { "principal1", "principal2" };
 
             foreach (var principal in principals)
             {
-                foreach (var action in actions)
+                foreach (var trigger in triggers)
                 {
                     foreach (var pause in pauses)
                     {
-                        AddWebHook(context, Guid.NewGuid(), principal, action, pause);
+                        AddWebHook(context, Guid.NewGuid(), principal, trigger, pause);
                     }
                 }
             }
             await context.SaveChangesAsync();
         }
 
-        private WebHook AddWebHook(TestContext1 context, Guid id, string principal, string action, bool isPaused)
+        private WebHook AddWebHook(TestContext1 context, Guid id, string principal, string trigger, bool isPaused)
         {
             var result = new WebHook
             {
@@ -77,7 +77,7 @@ namespace Harpoon.Tests
                     {
                         new WebHookFilter
                         {
-                            ActionId = action,
+                            TriggerId = trigger,
                             Parameters = new Dictionary<string, object>()
                         }
                     }
@@ -207,32 +207,32 @@ namespace Harpoon.Tests
             new object[] { false, new Uri("http://www.example.org"), "secret",
                 new List<WebHookFilter>
                 {
-                    new WebHookFilter { ActionId = "action1", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
+                    new WebHookFilter { TriggerId = "action1", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
                 }
             },
             new object[] { true, new Uri("http://www.example.org"), "secret",
                 new List<WebHookFilter>
                 {
-                    new WebHookFilter { ActionId = "action1", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
+                    new WebHookFilter { TriggerId = "action1", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
                 }
             },
             new object[] { false, new Uri("http://www.example2.org"), "secret",
                 new List<WebHookFilter>
                 {
-                    new WebHookFilter { ActionId = "action1", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
+                    new WebHookFilter { TriggerId = "action1", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
                 }
             },
             new object[] { false, new Uri("http://www.example.org"), "secret2",
                 new List<WebHookFilter>
                 {
-                    new WebHookFilter { ActionId = "action1", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
+                    new WebHookFilter { TriggerId = "action1", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
                 }
             },
             new object[] { false, new Uri("http://www.example.org"), "secret",
                 new List<WebHookFilter>
                 {
-                    new WebHookFilter { ActionId = "action1", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } },
-                    new WebHookFilter { ActionId = "action2", Parameters = new Dictionary<string, object>() }
+                    new WebHookFilter { TriggerId = "action1", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } },
+                    new WebHookFilter { TriggerId = "action2", Parameters = new Dictionary<string, object>() }
                 }
             },
         };
@@ -250,7 +250,7 @@ namespace Harpoon.Tests
                 Secret = "secret",
                 Filters = new List<WebHookFilter>
                 {
-                    new WebHookFilter { ActionId = "action1", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
+                    new WebHookFilter { TriggerId = "action1", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
                 }
             };
             await store.InsertWebHookAsync(null, webHook);
@@ -287,7 +287,7 @@ namespace Harpoon.Tests
                 Secret = "secret",
                 Filters = new List<WebHookFilter>
                 {
-                    new WebHookFilter { ActionId = "action1", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
+                    new WebHookFilter { TriggerId = "action1", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
                 }
             };
             await store.InsertWebHookAsync(null, webHook);
@@ -317,7 +317,7 @@ namespace Harpoon.Tests
                 Secret = "secret",
                 Filters = new List<WebHookFilter>
                 {
-                    new WebHookFilter { ActionId = "action1", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
+                    new WebHookFilter { TriggerId = "action1", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
                 }
             };
             await store.InsertWebHookAsync(null, webHook);

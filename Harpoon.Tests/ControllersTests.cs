@@ -66,9 +66,9 @@ namespace Harpoon.Tests
         }
 
         [Fact]
-        public async Task GetAllActionsTestsAsync()
+        public async Task GetAllTriggersTestsAsync()
         {
-            var response = await _fixture.Client.GetAsync("/api/webhooks/actions");
+            var response = await _fixture.Client.GetAsync("/api/webhooks/triggers");
             Assert.True(response.IsSuccessStatusCode);
         }
 
@@ -90,7 +90,7 @@ namespace Harpoon.Tests
                 {
                     new WebHookFilterDTO
                     {
-                        ActionId = "action1"
+                        TriggerId = "noun.verb"
                     }
                 }
             };
@@ -120,7 +120,7 @@ namespace Harpoon.Tests
                 {
                     new WebHookFilterDTO
                     {
-                        ActionId = "action1"
+                        TriggerId = "noun.verb"
                     }
                 }
             };
@@ -162,7 +162,7 @@ namespace Harpoon.Tests
                 {
                     new WebHookFilterDTO
                     {
-                        ActionId = "action1"
+                        TriggerId = "noun.verb"
                     }
                 }
             };
