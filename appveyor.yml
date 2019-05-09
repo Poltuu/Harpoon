@@ -1,6 +1,7 @@
 image: Visual Studio 2017
 
 version: 0.0.0.{build}
+skip_branch_with_pr: true
 
 environment:
   APPVEYOR_SAVE_CACHE_ON_ERROR: true
@@ -9,17 +10,13 @@ environment:
     DOTNET_CLI_TELEMETRY_OPTOUT: 1
   Harpoon_Connection_String: "Server=(local)\\SQL2017;Database=TEST_HARPOON_{0};User ID=sa;Password=Password12!;Trusted_Connection=True;MultipleActiveResultSets=true"
 
-# Do not build feature branch with open Pull Requests
-skip_branch_with_pr: true
-
 configuration: Release
-#platform: Any CPU
 
 cache:
-  - '%USERPROFILE%\.nuget\packages' #-> appveyor.yml
-  - C:\ProgramData\chocolatey\bin #-> appveyor.yml
-  - C:\ProgramData\chocolatey\lib #-> appveyor.yml
-  - '%LocalAppData%\NuGet\v3-cache' #-> appveyor.yml
+  - C:\ProgramData\chocolatey\bin -> appveyor.yml
+  - C:\ProgramData\chocolatey\lib -> appveyor.yml
+  - '%USERPROFILE%\.nuget\packages -> **\*.csproj'
+  - '%LocalAppData%\NuGet\v3-cache -> **\*.csproj'
 
 services:
   - mssql2017
@@ -29,11 +26,11 @@ install:
 - choco install codecov
 
 before_build:
+- dotnet restore
 - ps: wget "https://raw.githubusercontent.com/rducom/ALM/master/build/ComputeVersion.ps1" -outfile "ComputeVersion.ps1"
 - ps: . .\ComputeVersion.ps1
 - ps: $version = Compute "Harpoon\Harpoon.csproj" $env:APPVEYOR_BUILD_NUMBER $env:APPVEYOR_REPO_TAG $env:APPVEYOR_PULL_REQUEST_NUMBER
 - ps: Update-AppveyorBuild -Version $version.Semver
-- dotnet restore
 
 dotnet_csproj:
   patch: true
@@ -45,7 +42,6 @@ dotnet_csproj:
   informational_version: '{version}'
 
 build:
-  project: Harpoon.sln
   verbosity: minimal
   publish_nuget: true
   publish_nuget_symbols: true 
@@ -54,16 +50,9 @@ test_script:
 - OpenCover.Console.exe -returntargetcode -oldstyle -register:user -target:"C:\Program Files\dotnet\dotnet.exe" -targetargs:"test  /p:DebugType=full -c Debug Harpoon.sln" -filter:"+[Harpoon*]* -[*Tests*]*" -output:Harpoon_coverage.xml
 - codecov -f Harpoon_coverage.xml
 
-artifacts:
-  - path: '**\*.nupkg'
-
 deploy:
 - provider: NuGet
-  name: nuget_release
   api_key:
-    secure: oy2nu7iodplisynzvl2az6pvl54nx5zebkb2eer4vcmkqi
-  skip_symbols: false
-  artifact: /.*\.nupkg/
+    secure: ZgE98SOlPZYmk0o6FDdf3qQd2oij9awTlKcpsyMyuO8jz0x6zmBBcFaiYjsSlnSR
   on:
     APPVEYOR_REPO_TAG: true
-    deploy_public: true
