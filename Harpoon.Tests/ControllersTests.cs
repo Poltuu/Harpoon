@@ -1,10 +1,17 @@
-﻿using Harpoon.Controllers.Models;
+﻿using Harpoon.Controllers;
+using Harpoon.Controllers.Models;
+using Harpoon.Registrations;
 using Harpoon.Tests.Fixtures;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -21,9 +28,47 @@ namespace Harpoon.Tests
         }
 
         [Fact]
+        public async Task FailCases()
+        {
+            var services = new ServiceCollection();
+            var failedStore = new Mock<IWebHookRegistrationStore>();
+            failedStore.Setup(s => s.InsertWebHookAsync(It.IsAny<IPrincipal>(), It.IsAny<IWebHook>())).ThrowsAsync(new Exception(""));
+            failedStore.Setup(s => s.UpdateWebHookAsync(It.IsAny<IPrincipal>(), It.IsAny<IWebHook>())).ThrowsAsync(new Exception(""));
+            failedStore.Setup(s => s.DeleteWebHookAsync(It.IsAny<IPrincipal>(), It.IsAny<Guid>())).ThrowsAsync(new Exception(""));
+            failedStore.Setup(s => s.DeleteWebHooksAsync(It.IsAny<IPrincipal>())).ThrowsAsync(new Exception(""));
+            services.AddSingleton(failedStore.Object);
+
+            var failedValidator = new Mock<IWebHookValidator>();
+            failedValidator.Setup(s => s.ValidateAsync(It.IsAny<IWebHook>())).ThrowsAsync(new Exception(""));
+            services.AddSingleton(failedValidator.Object);
+
+            var failController1 = new WebHooksController(failedStore.Object, new Mock<ILogger<WebHooksController>>().Object, failedValidator.Object);
+            Assert.Equal(500, ((await failController1.PostAsync(new WebHookDTO())) as StatusCodeResult).StatusCode);
+            Assert.Equal(500, ((await failController1.PutAsync(new Guid(), new WebHookDTO())) as StatusCodeResult).StatusCode);
+
+            var failController2 = new WebHooksController(failedStore.Object, new Mock<ILogger<WebHooksController>>().Object, new Mock<IWebHookValidator>().Object);
+            Assert.Equal(500, ((await failController2.PostAsync(new WebHookDTO())) as StatusCodeResult).StatusCode);
+            Assert.Equal(500, ((await failController2.PutAsync(new Guid(), new WebHookDTO())) as StatusCodeResult).StatusCode);
+            Assert.Equal(500, ((await failController2.DeleteAsync(new Guid())) as StatusCodeResult).StatusCode);
+            Assert.Equal(500, ((await failController2.DeleteAsync()) as StatusCodeResult).StatusCode);
+
+            var failedStore2 = new Mock<IWebHookRegistrationStore>();
+            failedStore2.Setup(s => s.InsertWebHookAsync(It.IsAny<IPrincipal>(), It.IsAny<IWebHook>())).ReturnsAsync(WebHookRegistrationStoreResult.InternalError);
+            var failController3 = new WebHooksController(failedStore2.Object, new Mock<ILogger<WebHooksController>>().Object, new Mock<IWebHookValidator>().Object);
+            Assert.Equal(500, ((await failController3.PostAsync(new WebHookDTO())) as StatusCodeResult).StatusCode);
+        }
+
+        [Fact]
         public async Task GetAllTestsAsync()
         {
             var response = await _fixture.Client.GetAsync("/api/webhooks");
+            Assert.True(response.IsSuccessStatusCode);
+        }
+
+        [Fact]
+        public async Task GetAllActionsTestsAsync()
+        {
+            var response = await _fixture.Client.GetAsync("/api/webhooks/actions");
             Assert.True(response.IsSuccessStatusCode);
         }
 

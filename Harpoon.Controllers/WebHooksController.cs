@@ -148,7 +148,7 @@ namespace Harpoon.Controllers
         /// </summary>
         [Route("{id}")]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> Delete(Guid id)
+        public async Task<IActionResult> DeleteAsync(Guid id)
         {
             try
             {
@@ -166,7 +166,7 @@ namespace Harpoon.Controllers
         /// Deletes all webhooks for current user.
         /// </summary>
         [Route("")]
-        public async Task<IActionResult> Delete()
+        public async Task<IActionResult> DeleteAsync()
         {
             try
             {

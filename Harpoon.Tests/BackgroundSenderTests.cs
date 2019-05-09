@@ -63,7 +63,7 @@ namespace Harpoon.Tests
             var service = new BackgroundSender(_fixture.Services.GetRequiredService<WebHooksQueue>());
             await service.SendAsync(new WebHookNotification(), new List<IWebHook> { new WebHook() }, CancellationToken.None);
 
-            await Task.Delay(1000);
+            await Task.Delay(10000);
             Assert.Equal(1, BackgroundSenderFixture.FakeWebHookSenderCount);
         }
     }
