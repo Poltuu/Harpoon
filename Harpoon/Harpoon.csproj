@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <LangVersion>latest</LangVersion>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
     <AssemblyVersion>0.1.0.0</AssemblyVersion>
     <Version>0.1.0</Version>
   </PropertyGroup>
