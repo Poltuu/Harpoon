@@ -25,7 +25,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Harpoon.Controllers\Harpoon.Controllers.csproj" />
-    <ProjectReference Include="..\Harpoon\Harpoon.csproj" />
+    <ProjectReference Include="..\Harpoon.Sender.Background\Harpoon.Sender.Background.csproj" />
+    <ProjectReference Include="..\Harpoon.Sender.EF\Harpoon.Sender.EF.csproj" />
   </ItemGroup>
 
 </Project>
