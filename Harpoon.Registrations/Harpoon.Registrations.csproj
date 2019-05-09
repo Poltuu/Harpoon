@@ -3,8 +3,14 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <AssemblyVersion>0.1.0.0</AssemblyVersion>
-    <Version>0.1.0</Version>
+    <AssemblyVersion>0.1.5</AssemblyVersion>
+    <Version>0.1.5</Version>
+    <Authors>Romain V</Authors>
+    <Description>Harpoon provides support for sending your own WebHooks. This package contains the default for registration.</Description>
+    <PackageLicenseExpression>Unlicense</PackageLicenseExpression>
+    <PackageIconUrl>https://raw.githubusercontent.com/Poltuu/Harpoon/master/icon.png</PackageIconUrl>
+    <PackageTags>webhook</PackageTags>
+    <RepositoryUrl>https://github.com/Poltuu/Harpoon</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
