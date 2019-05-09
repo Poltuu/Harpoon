@@ -68,6 +68,23 @@ namespace Harpoon.Tests
         }
 
         [Fact]
+        public void AddHarpoonWithEfSenderTests()
+        {
+            var services = new ServiceCollection();
+            services.AddEntityFrameworkSqlServer().AddDbContext<TestContext1>();
+            services.AddHarpoon().UseDefaultEFSender<TestContext1>();
+
+            services.AddSingleton(new Mock<IWebHookStore>().Object);
+            services.AddSingleton(new Mock<IWebHookTriggerProvider>().Object);
+
+            var provider = services.BuildServiceProvider();
+            Assert.NotNull(provider.GetRequiredService<IWebHookService>());
+            Assert.NotNull(provider.GetRequiredService<ISignatureService>());
+            Assert.NotNull(provider.GetRequiredService<IWebHookValidator>());
+            Assert.NotNull(provider.GetRequiredService<IWebHookSender>());
+        }
+
+        [Fact]
         public void AddHarpoonWithDefaultSender()
         {
             var services = new ServiceCollection();

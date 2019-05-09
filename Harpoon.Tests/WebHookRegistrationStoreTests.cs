@@ -1,5 +1,7 @@
 ﻿using Harpoon.Registrations;
 using Harpoon.Registrations.EFStorage;
+using Harpoon.Sender;
+using Harpoon.Sender.EF;
 using Harpoon.Tests.Fixtures;
 using Harpoon.Tests.Mocks;
 using Microsoft.AspNetCore.DataProtection;
@@ -9,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -325,6 +328,28 @@ namespace Harpoon.Tests
             Assert.NotNull(dbWebHook);
 
             await store.DeleteWebHooksAsync(null);
+        }
+
+        [Theory]
+        [InlineData(System.Net.HttpStatusCode.NotFound)]
+        [InlineData(System.Net.HttpStatusCode.Gone)]
+        public async Task NotFoundScenarioAsync(System.Net.HttpStatusCode code)
+        {
+            var logger = new Mock<ILogger<EFWebHookSender<TestContext1>>>();
+            var signature = new Mock<ISignatureService>();
+
+            var context = _fixture.Provider.GetRequiredService<TestContext1>();
+            var webHook = AddWebHook(context, Guid.NewGuid(), "myPrincipalxxx", "noun.verb", false);
+            webHook.Callback = new Uri("http://example.org");
+            await context.SaveChangesAsync();
+            var notif = new WebHookNotification { TriggerId = "noun.verb" };
+
+            var httpClient = HttpClientMocker.Static(code, "");
+
+            var service = new EFWebHookSender<TestContext1>(httpClient, signature.Object, logger.Object, context);
+            await service.SendAsync(notif, new List<IWebHook> { webHook }, CancellationToken.None);
+
+            Assert.True((await context.WebHooks.FirstAsync(w => w.Id == webHook.Id)).IsPaused);
         }
     }
 }

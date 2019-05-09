@@ -14,15 +14,15 @@ namespace Harpoon
     {
         private static readonly HashSet<string> ValidSchemes = new HashSet<string> { Uri.UriSchemeHttp.ToString(), Uri.UriSchemeHttps.ToString() };
 
-        private readonly IWebHookTriggerProvider _webHookTriggerProvider;
-        private readonly ILogger<DefaultWebHookValidator> _logger;
-        private readonly HttpClient _httpClient;
+        protected IWebHookTriggerProvider WebHookTriggerProvider { get; private set; }
+        protected ILogger<DefaultWebHookValidator> Logger { get; private set; }
+        protected HttpClient HttpClient { get; private set; }
 
         public DefaultWebHookValidator(IWebHookTriggerProvider webHookTriggerProvider, ILogger<DefaultWebHookValidator> logger, HttpClient httpClient)
         {
-            _webHookTriggerProvider = webHookTriggerProvider ?? throw new ArgumentNullException(nameof(webHookTriggerProvider));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            WebHookTriggerProvider = webHookTriggerProvider ?? throw new ArgumentNullException(nameof(webHookTriggerProvider));
+            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            HttpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         }
 
         public virtual async Task ValidateAsync(IWebHook webHook)
@@ -86,7 +86,7 @@ namespace Harpoon
                 throw new ArgumentException("WebHooks need to target at least one trigger. Wildcard is not allowed.");
             }
 
-            var triggers = await _webHookTriggerProvider.GetAvailableTriggersAsync();
+            var triggers = await WebHookTriggerProvider.GetAvailableTriggersAsync();
             var errors = new List<string>();
             foreach (var filter in webHook.Filters)
             {
@@ -126,7 +126,7 @@ namespace Harpoon
             var query = HttpUtility.ParseQueryString(webHook.Callback.Query);
             if (query["noecho"] != null)
             {
-                _logger.LogInformation($"Webhook {webHook.Id} does not allow url verification (noecho query parameter has been found).");
+                Logger.LogInformation($"Webhook {webHook.Id} does not allow url verification (noecho query parameter has been found).");
                 return;
             }
 
@@ -134,7 +134,7 @@ namespace Harpoon
             {
                 var expectedResult = Guid.NewGuid();
                 var echoUri = new UriBuilder(webHook.Callback) { Query = "echo=" + expectedResult };
-                var response = await _httpClient.GetStringAsync(echoUri.Uri);
+                var response = await HttpClient.GetStringAsync(echoUri.Uri);
 
                 if (Guid.TryParse(response, out var responseResult) && responseResult == expectedResult)
                 {
@@ -146,7 +146,7 @@ namespace Harpoon
             catch (Exception e)
             {
                 var message = $"WebHook {webHook.Id} callback verification failed: {e.Message}.{Environment.NewLine}To cancel callback verification, add `noecho` as a query parameter.";
-                _logger.LogError(message, e);
+                Logger.LogError(message, e);
                 throw new ArgumentException(message);
             }
         }

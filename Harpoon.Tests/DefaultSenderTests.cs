@@ -1,5 +1,6 @@
 ﻿using Harpoon.Registrations.EFStorage;
 using Harpoon.Sender;
+using Harpoon.Sender.EF;
 using Harpoon.Tests.Mocks;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -44,6 +45,15 @@ namespace Harpoon.Tests
                 Successes += 1;
                 return base.OnSuccessAsync(notification, webHook);
             }
+        }
+
+        [Fact]
+        public void ArgNullEfSender()
+        {
+            var logger = new Mock<ILogger<EFWebHookSender<TestContext1>>>();
+            var httpClient = HttpClientMocker.Static(System.Net.HttpStatusCode.OK, "");
+            var signature = new Mock<ISignatureService>();
+            Assert.Throws<ArgumentNullException>(() => new EFWebHookSender<TestContext1>(httpClient, signature.Object, logger.Object, null));
         }
 
         [Fact]

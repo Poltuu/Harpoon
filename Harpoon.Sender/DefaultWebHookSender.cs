@@ -18,15 +18,15 @@ namespace Harpoon.Sender
         public const string UniqueIdKey = "NotificationId";
         public const string SignatureHeader = "X-Signature-SHA256";
 
-        private readonly HttpClient _httpClient;
-        private readonly ISignatureService _signatureService;
-        private readonly ILogger<DefaultWebHookSender> _logger;
+        protected HttpClient HttpClient { get; private set; }
+        protected ISignatureService SignatureService { get; private set; }
+        protected ILogger<DefaultWebHookSender> Logger { get; private set; }
 
         public DefaultWebHookSender(HttpClient httpClient, ISignatureService signatureService, ILogger<DefaultWebHookSender> logger)
         {
-            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-            _signatureService = signatureService ?? throw new ArgumentNullException(nameof(signatureService));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            HttpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            SignatureService = signatureService ?? throw new ArgumentNullException(nameof(signatureService));
+            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public Task SendAsync(IWebHookNotification notification, IReadOnlyList<IWebHook> webHooks, CancellationToken token)
@@ -59,27 +59,27 @@ namespace Harpoon.Sender
             try
             {
                 var request = CreateRequest(notification, webHook);
-                var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token);
+                var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    _logger.LogInformation($"WebHook {webHook.Id} send. Status: {response.StatusCode}.");
+                    Logger.LogInformation($"WebHook {webHook.Id} send. Status: {response.StatusCode}.");
                     await OnSuccessAsync(notification, webHook);
                 }
                 else if (response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.Gone)
                 {
-                    _logger.LogInformation($"WebHook {webHook.Id} send. Status: {response.StatusCode}.");
+                    Logger.LogInformation($"WebHook {webHook.Id} send. Status: {response.StatusCode}.");
                     await OnNotFoundAsync(notification, webHook);
                 }
                 else
                 {
-                    _logger.LogError($"WebHook {webHook.Id} failed. Status: {response.StatusCode}");
+                    Logger.LogError($"WebHook {webHook.Id} failed. Status: {response.StatusCode}");
                     await OnFailureAsync(null, notification, webHook);
                 }
             }
             catch (Exception e)
             {
-                _logger.LogError($"WebHook {webHook.Id} failed: {e.Message}.", e);
+                Logger.LogError($"WebHook {webHook.Id} failed: {e.Message}.", e);
                 await OnFailureAsync(e, notification, webHook);
             }
         }
@@ -134,7 +134,7 @@ namespace Harpoon.Sender
 
         protected virtual void SignRequest(IWebHook webHook, HttpRequestMessage request, string serializedBody)
         {
-            var signature = _signatureService.GetSignature(webHook.Secret, serializedBody);
+            var signature = SignatureService.GetSignature(webHook.Secret, serializedBody);
             request.Headers.Add(SignatureHeader, signature);
         }
     }
