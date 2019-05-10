@@ -5,17 +5,16 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Harpoon.Sender.Background
+namespace Harpoon.Background
 {
-    public class QueuedHostedService<TWebHookSender> : BackgroundService
-        where TWebHookSender : class, IWebHookSender
+    public class QueuedHostedService<TWorkItem> : BackgroundService
     {
         private readonly IServiceProvider _services;
-        private readonly ILogger<QueuedHostedService<TWebHookSender>> _logger;
+        private readonly ILogger<QueuedHostedService<TWorkItem>> _logger;
 
-        private readonly WebHooksQueue _webHooksQueue;
+        private readonly BackgroundQueue<TWorkItem> _webHooksQueue;
 
-        public QueuedHostedService(IServiceProvider services, ILogger<QueuedHostedService<TWebHookSender>> logger, WebHooksQueue webHooksQueue)
+        public QueuedHostedService(IServiceProvider services, ILogger<QueuedHostedService<TWorkItem>> logger, BackgroundQueue<TWorkItem> webHooksQueue)
         {
             _services = services ?? throw new ArgumentNullException(nameof(services));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -24,27 +23,27 @@ namespace Harpoon.Sender.Background
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("Queued Hosted Service is starting.");
+            _logger.LogInformation($"Queued Background Service of {typeof(TWorkItem).Name} is starting.");
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                var (notification, webHooks) = await _webHooksQueue.DequeueAsync(stoppingToken);
+                var workItem = await _webHooksQueue.DequeueAsync(stoppingToken);
 
                 try
                 {
                     using (var scope = _services.CreateScope())
                     {
-                        var service = scope.ServiceProvider.GetRequiredService<TWebHookSender>();
-                        await service.SendAsync(notification, webHooks, stoppingToken);
+                        var service = scope.ServiceProvider.GetRequiredService<IQueuedProcessor<TWorkItem>>();
+                        await service.ProcessAsync(workItem, stoppingToken);
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Queued Hosted Service error.");
+                    _logger.LogError(ex, $"Queued Hosted Service of {typeof(TWorkItem).Name}error.");
                 }
             }
 
-            _logger.LogInformation("Queued Hosted Service is stopping.");
+            _logger.LogInformation($"Queued Hosted Service of {typeof(TWorkItem).Name}is stopping.");
         }
     }
 }

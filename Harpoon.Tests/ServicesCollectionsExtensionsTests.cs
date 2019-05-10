@@ -1,6 +1,6 @@
-﻿using Harpoon.Registrations;
+﻿using Harpoon.Background;
+using Harpoon.Registrations;
 using Harpoon.Sender;
-using Harpoon.Sender.Background;
 using Harpoon.Tests.Mocks;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +19,7 @@ namespace Harpoon.Tests
         {
             public Task<IReadOnlyDictionary<string, WebHookTrigger>> GetAvailableTriggersAsync()
             {
-                throw new System.NotImplementedException();
+                throw new NotImplementedException();
             }
         }
 
@@ -28,38 +28,59 @@ namespace Harpoon.Tests
         {
             var services = new ServiceCollection();
             Assert.Throws<ArgumentNullException>(() => services.AddHarpoon(null));
-            Assert.Throws<ArgumentNullException>(() => services.AddHarpoon().UseDefaultSender(null));
-            Assert.Throws<ArgumentNullException>(() => services.AddHarpoon().UseDefaultSenderInBackground(null));
-            Assert.Throws<ArgumentNullException>(() => services.AddHarpoon().UseEfStorage<TestContext1>(null));
-            Assert.Throws<ArgumentNullException>(() => services.AddHarpoon().UseEfStorage<TestContext1>((p, b) => { }, null));
+            Assert.Throws<ArgumentNullException>(() => services.AddHarpoon(b => b.UseDefaultWebHookWorkItemProcessor(null)));
+            Assert.Throws<ArgumentNullException>(() => services.AddHarpoon(b => b.UseDefaultValidator(null)));
+            Assert.Throws<ArgumentNullException>(() => services.AddHarpoon(b => b.RegisterWebHooksUsingEfStorage<TestContext1>(null)));
+            Assert.Throws<ArgumentNullException>(() => services.AddHarpoon(b => b.RegisterWebHooksUsingEfStorage<TestContext1>(c => { }, null)));
         }
 
         [Fact]
-        public void AddHarpoonTests()
+        public void AddHarpoonUseAllSynchronousDefaultsTests()
         {
             var services = new ServiceCollection();
-            services.AddHarpoon();
-
+            services.AddHarpoon(b => b.UseAllSynchronousDefaults());
             services.AddSingleton(new Mock<IWebHookStore>().Object);
-            services.AddSingleton(new Mock<IWebHookSender>().Object); 
-            services.AddSingleton(new Mock<IWebHookTriggerProvider>().Object);
 
             var provider = services.BuildServiceProvider();
             Assert.NotNull(provider.GetRequiredService<IWebHookService>());
-            Assert.NotNull(provider.GetRequiredService<IWebHookValidator>());
+            Assert.NotNull(provider.GetRequiredService<IQueuedProcessor<IWebHookNotification>>());
+            Assert.NotNull(provider.GetRequiredService<IWebHookSender>());
+            Assert.NotNull(provider.GetRequiredService<IQueuedProcessor<IWebHookWorkItem>>());
+            Assert.NotNull(provider.GetRequiredService<ISignatureService>());
         }
 
         [Fact]
-        public void AddHarpoonWithEfTests()
+        public void AddHarpoonUseAllLocalDefaultsTests()
+        {
+            var services = new ServiceCollection();
+            services.AddHarpoon(b => b.UseAllLocalDefaults());
+            services.AddSingleton(new Mock<IWebHookStore>().Object);
+
+            var provider = services.BuildServiceProvider();
+            Assert.NotNull(provider.GetRequiredService<IWebHookService>());
+            Assert.NotNull(provider.GetRequiredService<BackgroundQueue<IWebHookNotification>>());
+            Assert.NotNull(provider.GetRequiredService<IEnumerable<IHostedService>>());
+            Assert.NotNull(provider.GetRequiredService<IQueuedProcessor<IWebHookNotification>>());
+            Assert.NotNull(provider.GetRequiredService<IWebHookSender>());
+            Assert.NotNull(provider.GetRequiredService<BackgroundQueue<IWebHookWorkItem>>());
+            Assert.NotNull(provider.GetRequiredService<IQueuedProcessor<IWebHookWorkItem>>());
+            Assert.NotNull(provider.GetRequiredService<ISignatureService>());
+        }
+
+        [Fact]
+        public void AddHarpoonRegisterWebHooksUsingEfStorageTests()
         {
             var services = new ServiceCollection();
             services.AddEntityFrameworkSqlServer().AddDbContext<TestContext1>();
-            services.AddHarpoon().UseEfStorage<TestContext1, TestWebHookTriggerProvider>((purpose, b) => b.UseEphemeralDataProtectionProvider());
+            services.AddHarpoon(h =>
+            {
+                h.RegisterWebHooksUsingEfStorage<TestContext1, TestWebHookTriggerProvider>(b => b.UseEphemeralDataProtectionProvider());
+                h.UseDefaultValidator();
+            });
 
-            services.AddSingleton(new Mock<IWebHookSender>().Object);
+            services.AddSingleton(new Mock<IWebHookTriggerProvider>().Object);
 
             var provider = services.BuildServiceProvider();
-            Assert.NotNull(provider.GetRequiredService<IWebHookService>());
             Assert.NotNull(provider.GetRequiredService<IWebHookValidator>());
             Assert.NotNull(provider.GetRequiredService<IWebHookTriggerProvider>());
             Assert.NotNull(provider.GetRequiredService<IPrincipalIdGetter>());
@@ -72,49 +93,11 @@ namespace Harpoon.Tests
         {
             var services = new ServiceCollection();
             services.AddEntityFrameworkSqlServer().AddDbContext<TestContext1>();
-            services.AddHarpoon().UseDefaultEFSender<TestContext1>();
-
-            services.AddSingleton(new Mock<IWebHookStore>().Object);
-            services.AddSingleton(new Mock<IWebHookTriggerProvider>().Object);
+            services.AddHarpoon(h => h.UseDefaultEFWebHookWorkItemProcessor<TestContext1>());
 
             var provider = services.BuildServiceProvider();
-            Assert.NotNull(provider.GetRequiredService<IWebHookService>());
+            Assert.NotNull(provider.GetRequiredService<IQueuedProcessor<IWebHookWorkItem>>());
             Assert.NotNull(provider.GetRequiredService<ISignatureService>());
-            Assert.NotNull(provider.GetRequiredService<IWebHookValidator>());
-            Assert.NotNull(provider.GetRequiredService<IWebHookSender>());
-        }
-
-        [Fact]
-        public void AddHarpoonWithDefaultSender()
-        {
-            var services = new ServiceCollection();
-            services.AddHarpoon().UseDefaultSender();
-
-            services.AddSingleton(new Mock<IWebHookStore>().Object);
-            services.AddSingleton(new Mock<IWebHookTriggerProvider>().Object);
-
-            var provider = services.BuildServiceProvider();
-            Assert.NotNull(provider.GetRequiredService<IWebHookService>());
-            Assert.NotNull(provider.GetRequiredService<ISignatureService>());
-            Assert.NotNull(provider.GetRequiredService<IWebHookValidator>());
-            Assert.NotNull(provider.GetRequiredService<IWebHookSender>());
-        }
-
-        [Fact]
-        public void AddHarpoonWithBackgroundSender()
-        {
-            var services = new ServiceCollection();
-            services.AddHarpoon().UseDefaultSenderInBackground();
-
-            services.AddSingleton(new Mock<IWebHookStore>().Object);
-            services.AddSingleton(new Mock<IWebHookTriggerProvider>().Object);
-
-            var provider = services.BuildServiceProvider();
-            Assert.NotNull(provider.GetRequiredService<IWebHookService>());
-            Assert.NotNull(provider.GetRequiredService<IWebHookValidator>());
-            Assert.NotNull(provider.GetRequiredService<IWebHookSender>());
-            Assert.NotNull(provider.GetRequiredService<WebHooksQueue>());
-            Assert.NotNull(provider.GetRequiredService<IHostedService>());
         }
     }
 }

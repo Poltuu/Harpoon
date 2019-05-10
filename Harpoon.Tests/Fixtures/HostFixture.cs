@@ -42,7 +42,11 @@ namespace Harpoon.Tests.Fixtures
                 services.AddMvcCore().AddJsonFormatters();
                 services.AddEntityFrameworkSqlServer().AddDbContext<TestContext2>();
 
-                services.AddHarpoon().UseEfStorage<TestContext2>((p, b) => { }).UseDefaultSenderInBackground();
+                services.AddHarpoon(h =>
+                {
+                    h.RegisterWebHooksUsingEfStorage<TestContext2>(b => { });
+                    h.UseDefaultValidator();
+                });
 
                 var triggerProvider = new Mock<IWebHookTriggerProvider>();
                 triggerProvider.Setup(p => p.GetAvailableTriggersAsync()).ReturnsAsync(new Dictionary<string, WebHookTrigger> { ["noun.verb"] = new WebHookTrigger { Id = "noun.verb" } });

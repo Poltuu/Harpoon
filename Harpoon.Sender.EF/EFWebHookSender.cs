@@ -18,9 +18,9 @@ namespace Harpoon.Sender.EF
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        protected override async Task OnNotFoundAsync(IWebHookNotification notification, IWebHook webHook)
+        protected override async Task OnNotFoundAsync(IWebHookWorkItem workItem)
         {
-            var dbWebHook = await _context.WebHooks.FirstOrDefaultAsync(w => w.Id == webHook.Id);
+            var dbWebHook = await _context.WebHooks.FirstOrDefaultAsync(w => w.Id == workItem.WebHook.Id);
             if (dbWebHook == null)
             {
                 return;
@@ -29,7 +29,7 @@ namespace Harpoon.Sender.EF
             dbWebHook.IsPaused = true;
             await _context.SaveChangesAsync();
 
-            Logger.LogInformation($"WebHook {webHook.Id} was paused.");
+            Logger.LogInformation($"WebHook {workItem.WebHook.Id} was paused.");
         }
     }
 }

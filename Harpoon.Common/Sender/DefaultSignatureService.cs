@@ -6,7 +6,7 @@ namespace Harpoon.Sender
 {
     public class DefaultSignatureService : ISignatureService
     {
-        protected readonly char[] HexLookup = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+        protected static readonly char[] HexLookup = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
         public string GetSignature(string secret, string content)
         {

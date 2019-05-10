@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Harpoon.Tests
 {
-    public class DefaultWebHookServiceTests
+    public class DefaultWebHookProcessorTests
     {
         [Fact]
         public async Task ArgNullAsync()
@@ -16,11 +16,11 @@ namespace Harpoon.Tests
             var store = new Mock<IWebHookStore>();
             var sender = new Mock<IWebHookSender>();
 
-            Assert.Throws<ArgumentNullException>(() => new DefaultWebHookService(null, sender.Object));
-            Assert.Throws<ArgumentNullException>(() => new DefaultWebHookService(store.Object, null));
+            Assert.Throws<ArgumentNullException>(() => new DefaultNotificationProcessor(null, sender.Object));
+            Assert.Throws<ArgumentNullException>(() => new DefaultNotificationProcessor(store.Object, null));
 
-            var service = new DefaultWebHookService(store.Object, sender.Object);
-            await Assert.ThrowsAsync<ArgumentNullException>(() => service.NotifyAsync(null, CancellationToken.None));
+            var service = new DefaultNotificationProcessor(store.Object, sender.Object);
+            await Assert.ThrowsAsync<ArgumentNullException>(() => service.ProcessAsync(null, CancellationToken.None));
         }
 
         [Fact]
@@ -30,11 +30,10 @@ namespace Harpoon.Tests
             store.Setup(s => s.GetAllWebHooksAsync(It.IsAny<string>())).ReturnsAsync(new List<IWebHook>());
             var sender = new Mock<IWebHookSender>();
 
-            var service = new DefaultWebHookService(store.Object, sender.Object);
-            var result = await service.NotifyAsync(new WebHookNotification(), CancellationToken.None);
+            var service = new DefaultNotificationProcessor(store.Object, sender.Object);
+            await service.ProcessAsync(new WebHookNotification(), CancellationToken.None);
 
-            Assert.Equal(0, result);
-            sender.Verify(s => s.SendAsync(It.IsAny<IWebHookNotification>(), It.IsAny<IReadOnlyList<IWebHook>>(), It.IsAny<CancellationToken>()), Times.Never);
+            sender.Verify(s => s.SendAsync(It.IsAny<IWebHookWorkItem>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
@@ -52,8 +51,8 @@ namespace Harpoon.Tests
             store.Setup(s => s.GetAllWebHooksAsync(It.IsAny<string>())).ReturnsAsync(webHooks);
             var sender = new Mock<IWebHookSender>();
 
-            var service = new DefaultWebHookService(store.Object, sender.Object);
-            await Assert.ThrowsAsync<InvalidOperationException>(() => service.NotifyAsync(new WebHookNotification(), CancellationToken.None));
+            var service = new DefaultNotificationProcessor(store.Object, sender.Object);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => service.ProcessAsync(new WebHookNotification(), CancellationToken.None));
         }
 
         [Fact]
@@ -161,11 +160,10 @@ namespace Harpoon.Tests
             store.Setup(s => s.GetAllWebHooksAsync(It.IsAny<string>())).ReturnsAsync(webHooks);
             var sender = new Mock<IWebHookSender>();
 
-            var service = new DefaultWebHookService(store.Object, sender.Object);
-            var result = await service.NotifyAsync(payload, CancellationToken.None);
+            var service = new DefaultNotificationProcessor(store.Object, sender.Object);
+            await service.ProcessAsync(payload, CancellationToken.None);
 
-            Assert.Equal(3, result);
-            sender.Verify(s => s.SendAsync(It.IsAny<IWebHookNotification>(), It.IsAny<IReadOnlyList<IWebHook>>(), It.IsAny<CancellationToken>()), Times.Once);
+            sender.Verify(s => s.SendAsync(It.IsAny<IWebHookWorkItem>(), It.IsAny<CancellationToken>()), Times.Exactly(3));
         }
     }
 }

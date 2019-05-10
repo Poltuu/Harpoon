@@ -28,22 +28,22 @@ namespace Harpoon.Tests
             {
             }
 
-            protected override Task OnFailureAsync(Exception exception, IWebHookNotification notification, IWebHook webHook)
+            protected override Task OnFailureAsync(Exception exception, IWebHookWorkItem webHookWorkItem)
             {
                 Failures += 1;
-                return base.OnFailureAsync(exception, notification, webHook);
+                return base.OnFailureAsync(exception, webHookWorkItem);
             }
 
-            protected override Task OnNotFoundAsync(IWebHookNotification notification, IWebHook webHook)
+            protected override Task OnNotFoundAsync(IWebHookWorkItem webHookWorkItem)
             {
                 NotFounds += 1;
-                return base.OnNotFoundAsync(notification, webHook);
+                return base.OnNotFoundAsync(webHookWorkItem);
             }
 
-            protected override Task OnSuccessAsync(IWebHookNotification notification, IWebHook webHook)
+            protected override Task OnSuccessAsync(IWebHookWorkItem webHookWorkItem)
             {
                 Successes += 1;
-                return base.OnSuccessAsync(notification, webHook);
+                return base.OnSuccessAsync(webHookWorkItem);
             }
         }
 
@@ -68,12 +68,7 @@ namespace Harpoon.Tests
             Assert.Throws<ArgumentNullException>(() => new DefaultWebHookSender(httpClient, signature.Object, null));
 
             var service = new DefaultWebHookSender(httpClient, signature.Object, logger.Object);
-            await Assert.ThrowsAsync<ArgumentNullException>(() => service.SendAsync(null, new List<IWebHook>(), CancellationToken.None));
-            await Assert.ThrowsAsync<ArgumentNullException>(() => service.SendAsync(new WebHookNotification(), null, CancellationToken.None));
-            await Assert.ThrowsAsync<ArgumentNullException>(() => service.SendAsync(new WebHookNotification(), new List<IWebHook> { null }, CancellationToken.None));
-
-            //empty scenario is also tested here
-            await service.SendAsync(new WebHookNotification(), new List<IWebHook> { }, CancellationToken.None);
+            await Assert.ThrowsAsync<ArgumentNullException>(() => service.SendAsync(null, CancellationToken.None));
         }
 
         public static IEnumerable<object[]> PayloadData => new List<object[]>
@@ -123,7 +118,7 @@ namespace Harpoon.Tests
             });
 
             var service = new CounterDefaultWebHookSender(httpClient, signatureService.Object, logger.Object);
-            await service.SendAsync(notif, new List<IWebHook> { webHook }, CancellationToken.None);
+            await service.SendAsync(new WebHookWorkItem(notif, webHook), CancellationToken.None);
 
             Assert.True(callbackHasBeenCalled);
             Assert.Equal(1, service.Successes);
@@ -143,7 +138,7 @@ namespace Harpoon.Tests
             var httpClient = HttpClientMocker.Static(code, "");
 
             var service = new CounterDefaultWebHookSender(httpClient, signature.Object, logger.Object);
-            await service.SendAsync(notif, new List<IWebHook> { webHook }, CancellationToken.None);
+            await service.SendAsync(new WebHookWorkItem(notif, webHook), CancellationToken.None);
 
             Assert.Equal(1, service.NotFounds);
         }
@@ -160,7 +155,7 @@ namespace Harpoon.Tests
             var httpClient = HttpClientMocker.AlwaysFail(new Exception());
 
             var service = new CounterDefaultWebHookSender(httpClient, signature.Object, logger.Object);
-            await service.SendAsync(notif, new List<IWebHook> { webHook }, CancellationToken.None);
+            await service.SendAsync(new WebHookWorkItem(notif, webHook), CancellationToken.None);
 
             Assert.Equal(1, service.Failures);
         }

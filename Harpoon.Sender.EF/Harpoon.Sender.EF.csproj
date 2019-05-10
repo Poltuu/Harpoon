@@ -15,7 +15,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Harpoon.Registrations.EFStorage\Harpoon.Registrations.EFStorage.csproj" />
-    <ProjectReference Include="..\Harpoon.Sender\Harpoon.Sender.csproj" />
   </ItemGroup>
 
 </Project>

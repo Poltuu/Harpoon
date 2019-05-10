@@ -1,10 +1,13 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Harpoon
 {
     public interface IWebHookService
     {
-        Task<int> NotifyAsync(IWebHookNotification notification, CancellationToken token);
+        /// <summary>
+        /// Start the notification process by adding the notification into a queue
+        /// </summary>
+        /// <param name="notification"></param>
+        Task NotifyAsync(IWebHookNotification notification);
     }
 }

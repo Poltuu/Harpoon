@@ -11,7 +11,7 @@ namespace Harpoon
 
         string Secret { get; set; }
 
-        bool IsPaused { get; set; }
+        bool IsPaused { get; }
 
         IReadOnlyCollection<IWebHookFilter> Filters { get; }
     }

@@ -1,11 +1,10 @@
-﻿using Harpoon.Sender.Background;
+﻿using Harpoon.Background;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,9 +12,9 @@ namespace Harpoon.Tests.Fixtures
 {
     public class BackgroundSenderFixture : IDisposable
     {
-        public class FakeWebHookSender : IWebHookSender
+        public class FakeWebHookSender : IQueuedProcessor<IWebHookWorkItem>
         {
-            public Task SendAsync(IWebHookNotification notification, IReadOnlyList<IWebHook> webHooks, CancellationToken token)
+            public Task ProcessAsync(IWebHookWorkItem workItem, CancellationToken token)
             {
                 FakeWebHookSenderCount++;
                 return Task.CompletedTask;
@@ -31,10 +30,10 @@ namespace Harpoon.Tests.Fixtures
         {
             _host = new HostBuilder().ConfigureServices(services =>
              {
-                 services.AddSingleton(new Mock<ILogger<QueuedHostedService<FakeWebHookSender>>>().Object);
-                 services.AddScoped<FakeWebHookSender>();
-                 services.AddHostedService<QueuedHostedService<FakeWebHookSender>>();
-                 services.AddSingleton<WebHooksQueue>();
+                 services.AddSingleton(new Mock<ILogger<QueuedHostedService<IWebHookWorkItem>>>().Object);
+                 services.AddScoped<IQueuedProcessor<IWebHookWorkItem>, FakeWebHookSender>();
+                 services.AddHostedService<QueuedHostedService<IWebHookWorkItem>>();
+                 services.AddSingleton<BackgroundQueue<IWebHookWorkItem>>();
              }).Build();
             _host.Start();
         }

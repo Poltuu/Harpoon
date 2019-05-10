@@ -7,13 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Harpoon.Common", "Harpoon.C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Harpoon.Registrations", "Harpoon.Registrations\Harpoon.Registrations.csproj", "{CAB92CAE-8D46-4AE3-A062-117C8F2AD9E7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Harpoon.Sender", "Harpoon.Sender\Harpoon.Sender.csproj", "{E65BB06F-9DB0-4086-8F54-1182F272373A}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Harpoon.Registrations.EFStorage", "Harpoon.Registrations.EFStorage\Harpoon.Registrations.EFStorage.csproj", "{19BCDEFB-C41F-400B-BA04-48B68B80D21A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Harpoon.Controllers", "Harpoon.Controllers\Harpoon.Controllers.csproj", "{F1C6393D-C9BA-43A8-AD96-87CBCDD316C5}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Harpoon.Sender.Background", "Harpoon.Sender.Background\Harpoon.Sender.Background.csproj", "{3D487D01-5273-406B-90D3-BF9ACCA39A23}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{FA70A910-B4A6-43B6-826D-330C4D41F101}"
 EndProject
@@ -35,10 +31,6 @@ Global
 		{CAB92CAE-8D46-4AE3-A062-117C8F2AD9E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CAB92CAE-8D46-4AE3-A062-117C8F2AD9E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CAB92CAE-8D46-4AE3-A062-117C8F2AD9E7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E65BB06F-9DB0-4086-8F54-1182F272373A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E65BB06F-9DB0-4086-8F54-1182F272373A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E65BB06F-9DB0-4086-8F54-1182F272373A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E65BB06F-9DB0-4086-8F54-1182F272373A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{19BCDEFB-C41F-400B-BA04-48B68B80D21A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{19BCDEFB-C41F-400B-BA04-48B68B80D21A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{19BCDEFB-C41F-400B-BA04-48B68B80D21A}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -47,10 +39,6 @@ Global
 		{F1C6393D-C9BA-43A8-AD96-87CBCDD316C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F1C6393D-C9BA-43A8-AD96-87CBCDD316C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F1C6393D-C9BA-43A8-AD96-87CBCDD316C5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3D487D01-5273-406B-90D3-BF9ACCA39A23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3D487D01-5273-406B-90D3-BF9ACCA39A23}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3D487D01-5273-406B-90D3-BF9ACCA39A23}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3D487D01-5273-406B-90D3-BF9ACCA39A23}.Release|Any CPU.Build.0 = Release|Any CPU
 		{43D43D29-5E50-41C2-83D4-742913690E34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{43D43D29-5E50-41C2-83D4-742913690E34}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{43D43D29-5E50-41C2-83D4-742913690E34}.Release|Any CPU.ActiveCfg = Release|Any CPU

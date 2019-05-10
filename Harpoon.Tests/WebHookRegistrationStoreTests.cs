@@ -347,7 +347,7 @@ namespace Harpoon.Tests
             var httpClient = HttpClientMocker.Static(code, "");
 
             var service = new EFWebHookSender<TestContext1>(httpClient, signature.Object, logger.Object, context);
-            await service.SendAsync(notif, new List<IWebHook> { webHook }, CancellationToken.None);
+            await service.SendAsync(new WebHookWorkItem(notif, webHook), CancellationToken.None);
 
             Assert.True((await context.WebHooks.FirstAsync(w => w.Id == webHook.Id)).IsPaused);
         }
