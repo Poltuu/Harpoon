@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Principal;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Harpoon.Registrations.EFStorage
@@ -84,8 +85,25 @@ namespace Harpoon.Registrations.EFStorage
                 return;
             }
 
-            webHook.Secret = _dataProtector.Unprotect(webHook.ProtectedSecret);
-            webHook.Callback = new Uri(_dataProtector.Unprotect(webHook.ProtectedCallback));
+            webHook.Secret = Unprotect(webHook.ProtectedSecret);
+            webHook.Callback = new Uri(Unprotect(webHook.ProtectedCallback));
+        }
+
+        private string Unprotect(string input)
+        {
+            try
+            {
+                return _dataProtector.Unprotect(input);
+            }
+            catch
+            {
+                if (!(_dataProtector is IPersistedDataProtector persistedProtector))
+                {
+                    throw;
+                }
+
+                return Encoding.UTF8.GetString(persistedProtector.DangerousUnprotect(Encoding.UTF8.GetBytes(input), true, out var _, out var _));
+            }
         }
 
         public async Task<WebHookRegistrationStoreResult> InsertWebHookAsync(IPrincipal user, IWebHook webHook)
