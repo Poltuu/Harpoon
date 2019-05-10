@@ -25,22 +25,9 @@ namespace Harpoon
                 throw new ArgumentNullException(nameof(notification));
             }
 
-            var webHooks = await _webHookStore.GetAllWebHooksAsync(notification.TriggerId);
-            var workItems = webHooks.Where(w => FiltersMatch(w, notification)).Select(w => new WebHookWorkItem(notification, w));
+            var webHooks = await _webHookStore.GetApplicableWebHooksAsync(notification);
 
-            await Task.WhenAll(workItems.Select(w => _webHookSender.SendAsync(w, token)));
-        }
-
-        protected virtual bool FiltersMatch(IWebHook webHook, IWebHookNotification notification)
-        {
-            if (webHook.Filters == null)
-            {
-                throw new InvalidOperationException("WebHook need to expose filters to be considered valid and ready to be send");
-            }
-
-            return webHook.Filters
-                .Where(f => f.TriggerId == notification.TriggerId)
-                .Any(f => f.Parameters == null || f.Parameters.Count == 0 || f.Parameters.All(kvp => notification.Payload.ContainsKey(kvp.Key) && notification.Payload[kvp.Key].Equals(kvp.Value)));
+            await Task.WhenAll(webHooks.Select(w => _webHookSender.SendAsync(new WebHookWorkItem(notification, w), token)));
         }
     }
 }

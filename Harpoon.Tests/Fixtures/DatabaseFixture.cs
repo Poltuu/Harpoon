@@ -31,9 +31,11 @@ namespace Harpoon.Tests.Fixtures
             protector.Setup(p => p.Unprotect(It.IsAny<byte[]>())).Returns<byte[]>(v => v);
             protector.Setup(s => s.CreateProtector(It.IsAny<string>())).Returns(protector.Object);
             services.AddSingleton<IDataProtectionProvider>(protector.Object);
+            services.AddSingleton<ISecretProtector, DefaultSecretProtector>();
 
             services.AddSingleton(new Mock<ILogger<WebHookRegistrationStore<TestContext1>>>().Object);
             services.AddSingleton<WebHookRegistrationStore<TestContext1>>();
+            services.AddSingleton<WebHookStore<TestContext1>>();
 
             var result = services.BuildServiceProvider();
 

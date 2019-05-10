@@ -44,7 +44,8 @@ namespace Harpoon.Tests.Fixtures
 
                 services.AddHarpoon(h =>
                 {
-                    h.RegisterWebHooksUsingEfStorage<TestContext2>(b => { });
+                    h.RegisterWebHooksUsingEfStorage<TestContext2>();
+                    h.UseDefaultDataProtection(p => { }, o => { });
                     h.UseDefaultValidator();
                 });
 

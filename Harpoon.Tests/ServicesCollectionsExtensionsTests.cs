@@ -3,6 +3,7 @@ using Harpoon.Registrations;
 using Harpoon.Sender;
 using Harpoon.Tests.Mocks;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Moq;
@@ -30,8 +31,12 @@ namespace Harpoon.Tests
             Assert.Throws<ArgumentNullException>(() => services.AddHarpoon(null));
             Assert.Throws<ArgumentNullException>(() => services.AddHarpoon(b => b.UseDefaultWebHookWorkItemProcessor(null)));
             Assert.Throws<ArgumentNullException>(() => services.AddHarpoon(b => b.UseDefaultValidator(null)));
-            Assert.Throws<ArgumentNullException>(() => services.AddHarpoon(b => b.RegisterWebHooksUsingEfStorage<TestContext1>(null)));
-            Assert.Throws<ArgumentNullException>(() => services.AddHarpoon(b => b.RegisterWebHooksUsingEfStorage<TestContext1>(c => { }, null)));
+            Assert.Throws<ArgumentNullException>(() => services.AddHarpoon(b => b.UseDefaultDataProtection(null, c => { })));
+            Assert.Throws<ArgumentNullException>(() => services.AddHarpoon(b => b.UseDefaultDataProtection(c => { }, null)));
+            Assert.Throws<ArgumentNullException>(() => services.AddHarpoon(b => b.UseDefaultEFWebHookWorkItemProcessor<TestContext1>(null)));
+
+            Assert.Throws<ArgumentNullException>(() => ModelBuilderExtensions.AddWebHookDefaultMapping(null));
+            Assert.Throws<ArgumentNullException>(() => ModelBuilderExtensions.AddWebHookFilterDefaultMapping(null));
         }
 
         [Fact]
@@ -74,7 +79,8 @@ namespace Harpoon.Tests
             services.AddEntityFrameworkSqlServer().AddDbContext<TestContext1>();
             services.AddHarpoon(h =>
             {
-                h.RegisterWebHooksUsingEfStorage<TestContext1, TestWebHookTriggerProvider>(b => b.UseEphemeralDataProtectionProvider());
+                h.RegisterWebHooksUsingEfStorage<TestContext1, TestWebHookTriggerProvider>();
+                h.UseDefaultDataProtection(b => b.UseEphemeralDataProtectionProvider(), o => { });
                 h.UseDefaultValidator();
             });
 

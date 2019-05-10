@@ -4,13 +4,13 @@ using Harpoon.Sender;
 using Harpoon.Sender.EF;
 using Harpoon.Tests.Fixtures;
 using Harpoon.Tests.Mocks;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -30,17 +30,13 @@ namespace Harpoon.Tests
         public async Task ArgNull()
         {
             var getter = new Mock<IPrincipalIdGetter>();
-            var dataprotection = new Mock<IDataProtectionProvider>();
-            dataprotection.Setup(s => s.CreateProtector(It.IsAny<string>())).Returns(new Mock<IDataProtector>().Object);
+            var dataprotection = new Mock<ISecretProtector>();
             var logger = new Mock<ILogger<WebHookRegistrationStore<TestContext1>>>();
 
             Assert.Throws<ArgumentNullException>(() => new WebHookRegistrationStore<TestContext1>(null, getter.Object, dataprotection.Object, logger.Object));
             Assert.Throws<ArgumentNullException>(() => new WebHookRegistrationStore<TestContext1>(new TestContext1(), null, dataprotection.Object, logger.Object));
             Assert.Throws<ArgumentNullException>(() => new WebHookRegistrationStore<TestContext1>(new TestContext1(), getter.Object, null, logger.Object));
             Assert.Throws<ArgumentNullException>(() => new WebHookRegistrationStore<TestContext1>(new TestContext1(), getter.Object, dataprotection.Object, null));
-
-            dataprotection.Setup(s => s.CreateProtector(It.IsAny<string>())).Returns((IDataProtector)null);
-            Assert.Throws<ArgumentNullException>(() => new WebHookRegistrationStore<TestContext1>(new TestContext1(), getter.Object, dataprotection.Object, logger.Object));
 
             var store = _fixture.Provider.GetRequiredService<WebHookRegistrationStore<TestContext1>>();
 
@@ -50,9 +46,41 @@ namespace Harpoon.Tests
 
         private async Task SeedAsync(TestContext1 context)
         {
-            var triggers = new[] { "action1", "action2" };
+            var triggers = new[] { "noun.verb", "noun.verb2" };
             var pauses = new[] { true, false };
             var principals = new[] { "principal1", "principal2" };
+            var parameters = new[] 
+            {
+                null,//Valid
+                new Dictionary<string, object>(),//valid
+                new Dictionary<string, object> //valid
+                {
+                    ["property"] = 2,
+                    ["otherProperty"] = "value"
+                },
+                new Dictionary<string, object>
+                {
+                    ["property"] = 2,
+                    ["otherProperty"] = "value",
+                    ["absentProperty"] = "absent" //not valid
+                },
+                new Dictionary<string, object>
+                {
+                    ["property"] = 20, //not valid
+                    ["otherProperty"] = "value"
+                },
+                new Dictionary<string, object>
+                {
+                    ["property"] = 20,
+                    ["otherProperty"] = "wrongValue" //not valid
+                },
+                new Dictionary<string, object>//valid
+                {
+                    ["property"] = 2,
+                    ["otherProperty"] = "value",
+                    ["thirdProperty"] = "nope"
+                }
+            };
 
             foreach (var principal in principals)
             {
@@ -60,14 +88,17 @@ namespace Harpoon.Tests
                 {
                     foreach (var pause in pauses)
                     {
-                        AddWebHook(context, Guid.NewGuid(), principal, trigger, pause);
+                        foreach (var parameter in parameters)
+                        {
+                            AddWebHook(context, Guid.NewGuid(), principal, trigger, pause, parameter);
+                        }
                     }
                 }
             }
             await context.SaveChangesAsync();
         }
 
-        private WebHook AddWebHook(TestContext1 context, Guid id, string principal, string trigger, bool isPaused)
+        private WebHook AddWebHook(TestContext1 context, Guid id, string principal, string trigger, bool isPaused, Dictionary<string, object> param)
         {
             var result = new WebHook
             {
@@ -77,13 +108,13 @@ namespace Harpoon.Tests
                 ProtectedCallback = "aHR0cDovL3d3dy5leGFtcGxlLm9yZw",
                 ProtectedSecret = "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXpBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWjEyMzQ1Njc4OTAtXw",
                 Filters = new List<WebHookFilter>
+                {
+                    new WebHookFilter
                     {
-                        new WebHookFilter
-                        {
-                            TriggerId = trigger,
-                            Parameters = new Dictionary<string, object>()
-                        }
+                        TriggerId = trigger,
+                        Parameters = param
                     }
+                }
             };
 
             context.Add(result);
@@ -96,10 +127,21 @@ namespace Harpoon.Tests
             var services = _fixture.Provider;
             var context = services.GetRequiredService<TestContext1>();
             await SeedAsync(context);
-            var store = services.GetRequiredService<WebHookRegistrationStore<TestContext1>>();
+            var store = services.GetRequiredService<WebHookStore<TestContext1>>();
 
-            var webHooks = await store.GetAllWebHooksAsync("action1");
+            var payload = new WebHookNotification
+            {
+                TriggerId = "noun.verb",
+                Payload = new Dictionary<string, object>
+                {
+                    ["property"] = 2,
+                    ["otherProperty"] = "value",
+                    ["thirdProperty"] = "nope"
+                }
+            };
+            var webHooks = await store.GetApplicableWebHooksAsync(payload);
 
+            Assert.Equal(4, webHooks.Count);
             Assert.All(webHooks, t =>
             {
                 Assert.NotEqual(Guid.Empty, t.Id);
@@ -125,9 +167,9 @@ namespace Harpoon.Tests
             var services = _fixture.Provider;
             var context = services.GetRequiredService<TestContext1>();
 
-            var webHook1 = AddWebHook(context, Guid.NewGuid(), "principal1", "action1", false);
-            var webHook2 = AddWebHook(context, Guid.NewGuid(), "principal1", "action1", true);
-            var webHook3 = AddWebHook(context, Guid.NewGuid(), "principal2", "action1", false);
+            var webHook1 = AddWebHook(context, Guid.NewGuid(), "principal1", "noun.verb", false, null);
+            var webHook2 = AddWebHook(context, Guid.NewGuid(), "principal1", "noun.verb", true, null);
+            var webHook3 = AddWebHook(context, Guid.NewGuid(), "principal2", "noun.verb", false, null);
             await context.SaveChangesAsync();
 
             var store = services.GetRequiredService<WebHookRegistrationStore<TestContext1>>();
@@ -210,32 +252,32 @@ namespace Harpoon.Tests
             new object[] { false, new Uri("http://www.example.org"), "secret",
                 new List<WebHookFilter>
                 {
-                    new WebHookFilter { TriggerId = "action1", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
+                    new WebHookFilter { TriggerId = "noun.verb", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
                 }
             },
             new object[] { true, new Uri("http://www.example.org"), "secret",
                 new List<WebHookFilter>
                 {
-                    new WebHookFilter { TriggerId = "action1", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
+                    new WebHookFilter { TriggerId = "noun.verb", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
                 }
             },
             new object[] { false, new Uri("http://www.example2.org"), "secret",
                 new List<WebHookFilter>
                 {
-                    new WebHookFilter { TriggerId = "action1", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
+                    new WebHookFilter { TriggerId = "noun.verb", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
                 }
             },
             new object[] { false, new Uri("http://www.example.org"), "secret2",
                 new List<WebHookFilter>
                 {
-                    new WebHookFilter { TriggerId = "action1", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
+                    new WebHookFilter { TriggerId = "noun.verb", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
                 }
             },
             new object[] { false, new Uri("http://www.example.org"), "secret",
                 new List<WebHookFilter>
                 {
-                    new WebHookFilter { TriggerId = "action1", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } },
-                    new WebHookFilter { TriggerId = "action2", Parameters = new Dictionary<string, object>() }
+                    new WebHookFilter { TriggerId = "noun.verb", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } },
+                    new WebHookFilter { TriggerId = "noun.verb2", Parameters = new Dictionary<string, object>() }
                 }
             },
         };
@@ -253,7 +295,7 @@ namespace Harpoon.Tests
                 Secret = "secret",
                 Filters = new List<WebHookFilter>
                 {
-                    new WebHookFilter { TriggerId = "action1", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
+                    new WebHookFilter { TriggerId = "noun.verb", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
                 }
             };
             await store.InsertWebHookAsync(null, webHook);
@@ -290,7 +332,7 @@ namespace Harpoon.Tests
                 Secret = "secret",
                 Filters = new List<WebHookFilter>
                 {
-                    new WebHookFilter { TriggerId = "action1", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
+                    new WebHookFilter { TriggerId = "noun.verb", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
                 }
             };
             await store.InsertWebHookAsync(null, webHook);
@@ -320,7 +362,7 @@ namespace Harpoon.Tests
                 Secret = "secret",
                 Filters = new List<WebHookFilter>
                 {
-                    new WebHookFilter { TriggerId = "action1", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
+                    new WebHookFilter { TriggerId = "noun.verb", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
                 }
             };
             await store.InsertWebHookAsync(null, webHook);
@@ -339,7 +381,7 @@ namespace Harpoon.Tests
             var signature = new Mock<ISignatureService>();
 
             var context = _fixture.Provider.GetRequiredService<TestContext1>();
-            var webHook = AddWebHook(context, Guid.NewGuid(), "myPrincipalxxx", "noun.verb", false);
+            var webHook = AddWebHook(context, Guid.NewGuid(), "myPrincipalxxx", "noun.verb", false, null);
             webHook.Callback = new Uri("http://example.org");
             await context.SaveChangesAsync();
             var notif = new WebHookNotification { TriggerId = "noun.verb" };

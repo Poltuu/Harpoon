@@ -10,55 +10,40 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class ServicesCollectionsExtensions
     {
-        /// <summary>
-        /// Data protection configuration is required.
-        /// </summary>
-        /// <typeparam name="TContext"></typeparam>
-        /// <param name="harpoon"></param>
-        /// <param name="dataProtection"></param>
-        /// <returns></returns>
-        public static IHarpoonBuilder RegisterWebHooksUsingEfStorage<TContext, TWebHookTriggerProvider>(this IHarpoonBuilder harpoon, Action<IDataProtectionBuilder> dataProtection)
+        public static IHarpoonBuilder RegisterWebHooksUsingEfStorage<TContext, TWebHookTriggerProvider>(this IHarpoonBuilder harpoon)
             where TContext : DbContext, IRegistrationsContext
             where TWebHookTriggerProvider : class, IWebHookTriggerProvider
         {
             harpoon.Services.TryAddScoped<IWebHookTriggerProvider, TWebHookTriggerProvider>();
-            return harpoon.RegisterWebHooksUsingEfStorage<TContext>(dataProtection);
+            return harpoon.RegisterWebHooksUsingEfStorage<TContext>();
         }
 
         /// <summary>
-        /// Data protection configuration is required.
         /// TWebHookTriggerProvider needs to be configured.
         /// </summary>
         /// <typeparam name="TContext"></typeparam>
         /// <param name="harpoon"></param>
         /// <param name="dataProtection"></param>
         /// <returns></returns>
-        public static IHarpoonBuilder RegisterWebHooksUsingEfStorage<TContext>(this IHarpoonBuilder harpoon, Action<IDataProtectionBuilder> dataProtection)
+        public static IHarpoonBuilder RegisterWebHooksUsingEfStorage<TContext>(this IHarpoonBuilder harpoon)
             where TContext : DbContext, IRegistrationsContext
-            => harpoon.RegisterWebHooksUsingEfStorage<TContext>(dataProtection, o => { });
+        {
+            harpoon.Services.TryAddScoped<IPrincipalIdGetter, DefaultPrincipalIdGetter>();
+            harpoon.Services.AddScoped<IWebHookStore, WebHookStore<TContext>>();
+            harpoon.Services.AddScoped<IWebHookRegistrationStore, WebHookRegistrationStore<TContext>>();
 
-        /// <summary>
-        /// Data protection configuration is required.
-        /// TWebHookTriggerProvider needs to be configured.
-        /// </summary>
-        /// <typeparam name="TContext"></typeparam>
-        /// <param name="harpoon"></param>
-        /// <param name="dataProtection"></param>
-        /// <returns></returns>
-        public static IHarpoonBuilder RegisterWebHooksUsingEfStorage<TContext>(this IHarpoonBuilder harpoon, Action<IDataProtectionBuilder> dataProtection, Action<DataProtectionOptions> setupAction)
-            where TContext : DbContext, IRegistrationsContext
+            return harpoon;
+        }
+
+        public static IHarpoonBuilder UseDefaultDataProtection(this IHarpoonBuilder harpoon, Action<IDataProtectionBuilder> dataProtection, Action<DataProtectionOptions> setupAction)
         {
             if (dataProtection == null)
             {
                 throw new ArgumentNullException("Data protection configuration is required.", nameof(dataProtection));
             }
 
-            harpoon.Services.TryAddScoped<IPrincipalIdGetter, DefaultPrincipalIdGetter>();
-            harpoon.Services.AddScoped<IWebHookStore, WebHookRegistrationStore<TContext>>();
-            harpoon.Services.AddScoped<IWebHookRegistrationStore, WebHookRegistrationStore<TContext>>();
-
+            harpoon.Services.TryAddScoped<ISecretProtector, DefaultSecretProtector>();
             dataProtection(harpoon.Services.AddDataProtection(setupAction));
-
             return harpoon;
         }
     }

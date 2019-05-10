@@ -1,45 +1,27 @@
-﻿using Microsoft.AspNetCore.DataProtection;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Principal;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Harpoon.Registrations.EFStorage
 {
-    public class WebHookRegistrationStore<TContext> : IWebHookRegistrationStore, IWebHookStore
+    public class WebHookRegistrationStore<TContext> : IWebHookRegistrationStore
         where TContext : DbContext, IRegistrationsContext
     {
         private readonly TContext _context;
         private readonly IPrincipalIdGetter _idGetter;
-        private readonly IDataProtector _dataProtector;
+        private readonly ISecretProtector _secretProtector;
         private readonly ILogger<WebHookRegistrationStore<TContext>> _logger;
 
-        public WebHookRegistrationStore(TContext context, IPrincipalIdGetter idGetter, IDataProtectionProvider dataProtectionProvider, ILogger<WebHookRegistrationStore<TContext>> logger)
+        public WebHookRegistrationStore(TContext context, IPrincipalIdGetter idGetter, ISecretProtector secretProtector, ILogger<WebHookRegistrationStore<TContext>> logger)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _idGetter = idGetter ?? throw new ArgumentNullException(nameof(idGetter));
-            _dataProtector = dataProtectionProvider?.CreateProtector(DataProtection.Purpose) ?? throw new ArgumentNullException(nameof(dataProtectionProvider));
+            _secretProtector = secretProtector ?? throw new ArgumentNullException(nameof(secretProtector));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
-
-        public async Task<IReadOnlyList<IWebHook>> GetAllWebHooksAsync(string trigger)
-        {
-            var webHooks = await _context.WebHooks
-                .Where(w => !w.IsPaused && w.Filters.Any(f => f.TriggerId == trigger))
-                .Include(w => w.Filters)
-                .AsNoTracking()
-                .ToListAsync();
-
-            foreach (var webHook in webHooks)
-            {
-                Prepare(webHook);
-            }
-
-            return webHooks;
         }
 
         public async Task<IWebHook> GetWebHookAsync(IPrincipal user, Guid id)
@@ -85,25 +67,8 @@ namespace Harpoon.Registrations.EFStorage
                 return;
             }
 
-            webHook.Secret = Unprotect(webHook.ProtectedSecret);
-            webHook.Callback = new Uri(Unprotect(webHook.ProtectedCallback));
-        }
-
-        private string Unprotect(string input)
-        {
-            try
-            {
-                return _dataProtector.Unprotect(input);
-            }
-            catch
-            {
-                if (!(_dataProtector is IPersistedDataProtector persistedProtector))
-                {
-                    throw;
-                }
-
-                return Encoding.UTF8.GetString(persistedProtector.DangerousUnprotect(Encoding.UTF8.GetBytes(input), true, out var _, out var _));
-            }
+            webHook.Secret = _secretProtector.Unprotect(webHook.ProtectedSecret);
+            webHook.Callback = new Uri(_secretProtector.Unprotect(webHook.ProtectedCallback));
         }
 
         public async Task<WebHookRegistrationStoreResult> InsertWebHookAsync(IPrincipal user, IWebHook webHook)
@@ -138,8 +103,8 @@ namespace Harpoon.Registrations.EFStorage
             {
                 Id = webHook.Id,
                 PrincipalId = key,
-                ProtectedCallback = _dataProtector.Protect(webHook.Callback.ToString()),
-                ProtectedSecret = _dataProtector.Protect(webHook.Secret),
+                ProtectedCallback = _secretProtector.Protect(webHook.Callback.ToString()),
+                ProtectedSecret = _secretProtector.Protect(webHook.Secret),
                 Filters = webHook.Filters.Select(f => new WebHookFilter
                 {
                     TriggerId = f.TriggerId,
@@ -182,12 +147,12 @@ namespace Harpoon.Registrations.EFStorage
 
             if (webHook.Callback != null)
             {
-                dbWebHook.ProtectedCallback = _dataProtector.Protect(webHook.Callback.ToString());
+                dbWebHook.ProtectedCallback = _secretProtector.Protect(webHook.Callback.ToString());
             }
 
             if (!string.IsNullOrEmpty(webHook.Secret))
             {
-                dbWebHook.ProtectedSecret = _dataProtector.Protect(webHook.Secret);
+                dbWebHook.ProtectedSecret = _secretProtector.Protect(webHook.Secret);
             }
 
             if (webHook.Filters != null)
