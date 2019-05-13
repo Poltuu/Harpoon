@@ -85,7 +85,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static IHarpoonBuilder ProcessWebHookWorkItemSynchronously(this IHarpoonBuilder harpoon)
         {
-            harpoon.Services.TryAddScoped<IWebHookSender>(p => p.GetRequiredService<IQueuedProcessor<IWebHookWorkItem>>() as IWebHookSender);
+            harpoon.Services.TryAddScoped(p => p.GetRequiredService<IQueuedProcessor<IWebHookWorkItem>>() as IWebHookSender);
             return harpoon;
         }
 
