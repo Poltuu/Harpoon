@@ -9,7 +9,7 @@ namespace Harpoon.Tests.Mocks
 {
     public class HttpClientMocker
     {
-        class MoqHandler : HttpMessageHandler
+        public class MoqHandler : DelegatingHandler
         {
             public HttpStatusCode Status { get; set; }
             public string Content { get; set; }
@@ -20,7 +20,7 @@ namespace Harpoon.Tests.Mocks
             }
         }
 
-        class QueryHandler : HttpMessageHandler
+        public class QueryHandler : DelegatingHandler
         {
             public string Parameter { get; set; }
 
@@ -31,7 +31,7 @@ namespace Harpoon.Tests.Mocks
             }
         }
 
-        class Failer : HttpMessageHandler
+        public class Failer : DelegatingHandler
         {
             public Exception Exception { get; set; }
 
@@ -41,13 +41,25 @@ namespace Harpoon.Tests.Mocks
             }
         }
 
-        class CallbackHandler : HttpMessageHandler
+        public class CallbackHandler : DelegatingHandler
         {
             public Func<HttpRequestMessage, Task<HttpResponseMessage>> Callback { get; set; }
 
             protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
                 return (await Callback(request)) ?? new HttpResponseMessage(HttpStatusCode.OK);
+            }
+        }
+
+        public class CounterHandler : DelegatingHandler
+        {
+            private int _counter;
+            public int Counter => _counter;
+
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                Interlocked.Increment(ref _counter);
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
             }
         }
 

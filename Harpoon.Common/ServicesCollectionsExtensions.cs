@@ -104,26 +104,5 @@ namespace Microsoft.Extensions.DependencyInjection
             harpoon.Services.AddHostedService<QueuedHostedService<IWebHookWorkItem>>();
             return harpoon;
         }
-
-        //Next : for rmq
-
-        //public static IServiceCollection UseAllRmqDefaults(this IHarpoonBuilder harpoon) => harpoon.UseAllLocalDefaults(b => { });
-        //public static IServiceCollection UseAllRmqDefaults(this IHarpoonBuilder harpoon, Action<IHttpClientBuilder> senderPolicy)
-        //    => harpoon.SendNotificationsToRmq()
-        //        .ReceiveNotificationsFromRmq()
-        //        .UseDefaultNotificationProcessor()
-        //        .SendWebHookWorkItemsToRmq()
-        //        .ReceiveWebHookWorkItemsFromRmq()
-        //        .UseDefaultWebHookWorkItemProcessor(senderPolicy)
-        //        .ConfigureRmq()
-        //        .Services;
-
-        //public static IHarpoonBuilder SendNotificationsToRmq(this IHarpoonBuilder harpoon) => harpoon;
-        //public static IHarpoonBuilder ReceiveNotificationsFromRmq(this IHarpoonBuilder harpoon) => harpoon;
-
-        //public static IHarpoonBuilder SendWebHookWorkItemsToRmq(this IHarpoonBuilder harpoon) => harpoon;
-        //public static IHarpoonBuilder ReceiveWebHookWorkItemsFromRmq(this IHarpoonBuilder harpoon) => harpoon;
-
-        //public static IHarpoonBuilder ConfigureRmq(this IHarpoonBuilder harpoon) => harpoon;
     }
 }

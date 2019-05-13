@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <AssemblyVersion>0.1.5</AssemblyVersion>
+    <Version>0.1.5</Version>
+    <Authors>Romain V</Authors>
+    <Description>Harpoon provides support for sending your own WebHooks. This package allows the queuing via MassTransit of notifications and webHookWorkItems.</Description>
+    <PackageLicenseExpression>Unlicense</PackageLicenseExpression>
+    <PackageIconUrl>https://raw.githubusercontent.com/Poltuu/Harpoon/master/icon.png</PackageIconUrl>
+    <PackageTags>webhook</PackageTags>
+    <RepositoryUrl>https://github.com/Poltuu/Harpoon</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MassTransit.Extensions.DependencyInjection" Version="5.3.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Harpoon.Common\Harpoon.Common.csproj" />
+  </ItemGroup>
+
+</Project>
