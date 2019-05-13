@@ -129,21 +129,23 @@ namespace Harpoon.Tests
                     hostConfigurator.Password("guest");
                 });
 
-                cfg.ConfigureNotificationsConsumer(p, "NotificationsQueue");
-                cfg.ConfigureWebHookWorkItemsConsumer(p, "WebHookWorkItemsQueue");
+                cfg.ConfigureNotificationsConsumer(p, "NotificationsFullTestsQueue");
+                cfg.ConfigureWebHookWorkItemsConsumer(p, "WebHookWorkItemsFullTestsQueue");
             }), x => x.UseAllMassTransitDefaults());
 
             var provider = services.BuildServiceProvider();
 
             var token = new CancellationTokenSource();
-            await provider.GetRequiredService<IHostedService>().StartAsync(token.Token);
-
-            var service = provider.GetRequiredService<IWebHookService>();
+            var hosts = provider.GetRequiredService<IEnumerable<IHostedService>>();
+            foreach (var host in hosts)
+            {
+                await host.StartAsync(token.Token);
+            }
 
             var notif = new WebHookNotification { TriggerId = "noun.verb" };
-            await service.NotifyAsync(notif);
+            await provider.GetRequiredService<IWebHookService>().NotifyAsync(notif);
 
-            await Task.Delay(10000);
+            await Task.Delay(20000);
 
             Assert.Equal(expectedWebHooksCount, counter.Counter);
             token.Cancel();

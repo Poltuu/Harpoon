@@ -4,6 +4,8 @@ version: 0.0.0.{build}
 skip_branch_with_pr: true
 
 environment:
+  rabbitmq_installer_path: "C:\\Users\\appveyor\\rabbitmq-server-3.7.6.exe"
+  rabbitmq_installer_download_url: "https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.7.6/rabbitmq-server-3.7.6.exe"
   APPVEYOR_SAVE_CACHE_ON_ERROR: true
   global:
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
@@ -18,15 +20,15 @@ configuration: Release
 cache:
   - C:\ProgramData\chocolatey\bin -> appveyor.yml
   - C:\ProgramData\chocolatey\lib -> appveyor.yml
-  - '%USERPROFILE%\.nuget\packages -> **\*.csproj, appveyor.yml'
-  - '%LocalAppData%\NuGet\v3-cache -> **\*.csproj, appveyor.yml'
+  - '%USERPROFILE%\.nuget\packages -> **\*.csproj'
+  - '%LocalAppData%\NuGet\v3-cache -> **\*.csproj'
+  - '%rabbitmq_installer_path% -> appveyor.yml'
 
 services:
   - mssql2017
 
 install:
-- choco install opencover.portable
-- choco install codecov
+- choco install opencover.portable codecov
 
 for:
 -
@@ -65,6 +67,13 @@ before_build:
 
 build:
   verbosity: minimal
+
+before_test:
+- ps: if (-Not (Test-Path "$env:rabbitmq_installer_path")) { (New-Object Net.WebClient).DownloadFile("$env:rabbitmq_installer_download_url", "$env:rabbitmq_installer_path") } else { Write-Host "Found" $env:rabbitmq_installer_path "in cache." }
+- start /B /WAIT %rabbitmq_installer_path% /S
+- ps: $rabbitPath = 'C:\Program Files\RabbitMQ Server\rabbitmq_server-3.7.6'
+- ps: Start-Process -Wait "$rabbitPath\sbin\rabbitmq-service.bat" "install"
+- ps: Start-Process -Wait "$rabbitPath\sbin\rabbitmq-service.bat" "start"
 
 test_script:
 - OpenCover.Console.exe -returntargetcode -oldstyle -register:user -target:"C:\Program Files\dotnet\dotnet.exe" -targetargs:"test  /p:DebugType=full -c Debug Harpoon.sln" -filter:"+[Harpoon*]* -[*Tests*]*" -output:Harpoon_coverage.xml
