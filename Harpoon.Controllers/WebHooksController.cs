@@ -1,5 +1,6 @@
 ﻿using Harpoon.Controllers.Models;
 using Harpoon.Registrations;
+using Harpoon.Swashbuckle;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -64,6 +65,7 @@ namespace Harpoon.Controllers
         [HttpPost]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
+        [WebHookSubscriptionPoint]
         public async Task<ActionResult> PostAsync([FromBody]WebHookDTO webHook)
         {
             if (webHook == null)

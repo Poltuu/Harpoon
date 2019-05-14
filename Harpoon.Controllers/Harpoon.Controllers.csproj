@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Harpoon.Registrations\Harpoon.Registrations.csproj" />
+    <ProjectReference Include="..\Harpoon.Swashbuckle\Harpoon.Swashbuckle.csproj" />
   </ItemGroup>
 
 </Project>

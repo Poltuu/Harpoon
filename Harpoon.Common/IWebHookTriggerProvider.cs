@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Harpoon
 {
@@ -12,9 +10,9 @@ namespace Harpoon
         /// <summary>
         /// Returns valid <see cref="WebHookTrigger"/> available for registration.
         /// This is used to validate <see cref="IWebHook"/> registration.
+        /// Typical implementation is expected to be in-memory
         /// </summary>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<IReadOnlyDictionary<string, WebHookTrigger>> GetAvailableTriggersAsync(CancellationToken cancellationToken = default);
+        IReadOnlyDictionary<string, WebHookTrigger> GetAvailableTriggers();
     }
 }

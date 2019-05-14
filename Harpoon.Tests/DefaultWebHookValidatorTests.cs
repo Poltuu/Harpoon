@@ -1,6 +1,7 @@
 ﻿using Harpoon.Registrations.EFStorage;
 using Harpoon.Tests.Mocks;
 using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -31,12 +32,26 @@ namespace Harpoon.Tests
         [Fact]
         public async Task InvalidCasesAsync()
         {
+            var schema = new OpenApiSchema
+            {
+                Properties = new Dictionary<string, OpenApiSchema>
+                {
+                    ["param1"] = new OpenApiSchema { Type = "integer" },
+                    ["param2"] = new OpenApiSchema { Type = "string" },
+                    ["param3"] = new OpenApiSchema { Type = "array", Items = new OpenApiSchema { Type = "integer" } },
+                    ["param4"] = new OpenApiSchema { Type = "array", Reference = new OpenApiReference() },
+                    ["number"] = new OpenApiSchema { Type = "number" },
+                    ["integer"] = new OpenApiSchema { Type = "integer" },
+                    ["bool"] = new OpenApiSchema { Type = "boolean" },
+                    ["object"] = new OpenApiSchema { Type = "object" },
+                }
+            };
             var triggersById = new Dictionary<string, WebHookTrigger>
             {
-                ["valid"] = new WebHookTrigger { Id = "valid", Template = new Dictionary<string, Type> { ["param1"] = typeof(int), ["param2"] = typeof(string) } },
+                ["valid"] = new WebHookTrigger { Id = "valid", Template = schema },
             };
             var triggers = new Mock<IWebHookTriggerProvider>();
-            triggers.Setup(s => s.GetAvailableTriggersAsync(It.IsAny<CancellationToken>())).ReturnsAsync(triggersById);
+            triggers.Setup(s => s.GetAvailableTriggers()).Returns(triggersById);
             var logger = new Mock<ILogger<DefaultWebHookValidator>>();
             var client = HttpClientMocker.Static(System.Net.HttpStatusCode.NotFound, "fail");
             var service = new DefaultWebHookValidator(triggers.Object, logger.Object, client);
@@ -46,7 +61,16 @@ namespace Harpoon.Tests
             await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook()));
             await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Filters = new List<WebHookFilter>() }));
             await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Filters = new List<WebHookFilter> { new WebHookFilter { TriggerId = "invalid" } } }));
+            await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Filters = new List<WebHookFilter> { new WebHookFilter { TriggerId = "valid", Parameters = new Dictionary<string, object> { [""] = "" } } } }));
             await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Filters = new List<WebHookFilter> { new WebHookFilter { TriggerId = "valid", Parameters = new Dictionary<string, object> { ["invalid"] = "" } } } }));
+            await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Filters = new List<WebHookFilter> { new WebHookFilter { TriggerId = "valid", Parameters = new Dictionary<string, object> { ["param3"] = "" } } } }));
+            await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Filters = new List<WebHookFilter> { new WebHookFilter { TriggerId = "valid", Parameters = new Dictionary<string, object> { ["param4.next"] = "" } } } }));
+            await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Filters = new List<WebHookFilter> { new WebHookFilter { TriggerId = "valid", Parameters = new Dictionary<string, object> { ["param1"] = "string" } } } }));
+            await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Filters = new List<WebHookFilter> { new WebHookFilter { TriggerId = "valid", Parameters = new Dictionary<string, object> { ["param1"] = null } } } }));
+            await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Filters = new List<WebHookFilter> { new WebHookFilter { TriggerId = "valid", Parameters = new Dictionary<string, object> { ["number"] = true } } } }));
+            await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Filters = new List<WebHookFilter> { new WebHookFilter { TriggerId = "valid", Parameters = new Dictionary<string, object> { ["integer"] = 2.3 } } } }));
+            await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Filters = new List<WebHookFilter> { new WebHookFilter { TriggerId = "valid", Parameters = new Dictionary<string, object> { ["boolean"] = 345 } } } }));
+            await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Filters = new List<WebHookFilter> { new WebHookFilter { TriggerId = "valid", Parameters = new Dictionary<string, object> { ["object"] = 23 } } } }));
             await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Filters = new List<WebHookFilter> { new WebHookFilter { TriggerId = "valid" } } }));
             await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Filters = new List<WebHookFilter> { new WebHookFilter { TriggerId = "valid" } }, Callback = new Uri("c:/data") }));
             await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Filters = new List<WebHookFilter> { new WebHookFilter { TriggerId = "valid" } }, Callback = new Uri("ftp://data") }));
@@ -97,13 +121,21 @@ namespace Harpoon.Tests
         [MemberData(nameof(ValidCasesData))]
         public async Task ValidCasesAsync(WebHook validWebHook)
         {
+            var schema = new OpenApiSchema
+            {
+                Properties = new Dictionary<string, OpenApiSchema>
+                {
+                    ["param1"] = new OpenApiSchema { Type = "integer" },
+                    ["param2"] = new OpenApiSchema { Type = "string" },
+                }
+            };
             var triggersById = new Dictionary<string, WebHookTrigger>
             {
-                ["valid"] = new WebHookTrigger { Id = "valid", Template = new Dictionary<string, Type> { ["param1"] = typeof(int), ["param2"] = typeof(string) } },
+                ["valid"] = new WebHookTrigger { Id = "valid", Template = schema },
             };
 
             var triggers = new Mock<IWebHookTriggerProvider>();
-            triggers.Setup(s => s.GetAvailableTriggersAsync(It.IsAny<CancellationToken>())).ReturnsAsync(triggersById);
+            triggers.Setup(s => s.GetAvailableTriggers()).Returns(triggersById);
             var logger = new Mock<ILogger<DefaultWebHookValidator>>();
             var client = HttpClientMocker.ReturnQueryParam("echo");
             var service = new DefaultWebHookValidator(triggers.Object, logger.Object, client);
@@ -121,7 +153,7 @@ namespace Harpoon.Tests
                 {
                     foreach (var key in filter.Parameters.Keys)
                     {
-                        Assert.Contains(key, triggersById[filter.TriggerId].Template.Keys);
+                        Assert.Contains(key, triggersById[filter.TriggerId].Template.Properties.Keys);
                     }
                 }
             }

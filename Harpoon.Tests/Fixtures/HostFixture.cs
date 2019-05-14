@@ -51,7 +51,7 @@ namespace Harpoon.Tests.Fixtures
                 });
 
                 var triggerProvider = new Mock<IWebHookTriggerProvider>();
-                triggerProvider.Setup(p => p.GetAvailableTriggersAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new Dictionary<string, WebHookTrigger> { ["noun.verb"] = new WebHookTrigger { Id = "noun.verb" } });
+                triggerProvider.Setup(s => s.GetAvailableTriggers()).Returns(new Dictionary<string, WebHookTrigger> { ["noun.verb"] = new WebHookTrigger { Id = "noun.verb" } });
                 services.AddSingleton(triggerProvider.Object);
 
                 services.AddAuthentication(o =>

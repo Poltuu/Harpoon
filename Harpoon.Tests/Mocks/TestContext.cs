@@ -5,6 +5,23 @@ using System.Linq;
 
 namespace Harpoon.Tests.Mocks
 {
+    public class InMemoryContext : TestContext
+    {
+        public InMemoryContext()
+        {
+        }
+
+        public InMemoryContext(DbContextOptions options) : base(options)
+        {
+        }
+
+        protected override Guid DbName => Guid.NewGuid();//not used
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseInMemoryDatabase(Guid.NewGuid().ToString());
+        }
+    }
     public class TestContext1 : TestContext
     {
         public TestContext1()

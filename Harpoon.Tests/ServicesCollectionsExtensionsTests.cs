@@ -9,8 +9,6 @@ using Microsoft.Extensions.Hosting;
 using Moq;
 using System;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Harpoon.Tests
@@ -19,7 +17,7 @@ namespace Harpoon.Tests
     {
         class TestWebHookTriggerProvider : IWebHookTriggerProvider
         {
-            public Task<IReadOnlyDictionary<string, WebHookTrigger>> GetAvailableTriggersAsync(CancellationToken cancellationToken = default)
+            public IReadOnlyDictionary<string, WebHookTrigger> GetAvailableTriggers()
             {
                 throw new NotImplementedException();
             }

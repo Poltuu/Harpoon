@@ -27,9 +27,9 @@ namespace Harpoon.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<WebHookTrigger>>> GetAsync()
+        public ActionResult<IEnumerable<WebHookTrigger>> Get()
         {
-            return Ok((await _webHookTriggerProvider.GetAvailableTriggersAsync(HttpContext.RequestAborted)).Values);
+            return Ok(_webHookTriggerProvider.GetAvailableTriggers().Values);
         }
     }
 }

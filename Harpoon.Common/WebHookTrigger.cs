@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.OpenApi.Models;
 
 namespace Harpoon
 {
@@ -21,14 +20,14 @@ namespace Harpoon
         /// <summary>
         /// Gets or sets the template for payloads for this trigger
         /// </summary>
-        public Dictionary<string, Type> Template { get; set; }
+        public OpenApiSchema Template { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebHookTrigger"/> class.
         /// </summary>
         public WebHookTrigger()
         {
-            Template = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase);
+            Template = new OpenApiSchema { Type = "object" };
         }
     }
 }
