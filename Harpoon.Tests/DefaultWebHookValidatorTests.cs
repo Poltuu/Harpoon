@@ -5,6 +5,7 @@ using Moq;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -35,7 +36,7 @@ namespace Harpoon.Tests
                 ["valid"] = new WebHookTrigger { Id = "valid", Template = new Dictionary<string, Type> { ["param1"] = typeof(int), ["param2"] = typeof(string) } },
             };
             var triggers = new Mock<IWebHookTriggerProvider>();
-            triggers.Setup(s => s.GetAvailableTriggersAsync()).ReturnsAsync(triggersById);
+            triggers.Setup(s => s.GetAvailableTriggersAsync(It.IsAny<CancellationToken>())).ReturnsAsync(triggersById);
             var logger = new Mock<ILogger<DefaultWebHookValidator>>();
             var client = HttpClientMocker.Static(System.Net.HttpStatusCode.NotFound, "fail");
             var service = new DefaultWebHookValidator(triggers.Object, logger.Object, client);
@@ -102,7 +103,7 @@ namespace Harpoon.Tests
             };
 
             var triggers = new Mock<IWebHookTriggerProvider>();
-            triggers.Setup(s => s.GetAvailableTriggersAsync()).ReturnsAsync(triggersById);
+            triggers.Setup(s => s.GetAvailableTriggersAsync(It.IsAny<CancellationToken>())).ReturnsAsync(triggersById);
             var logger = new Mock<ILogger<DefaultWebHookValidator>>();
             var client = HttpClientMocker.ReturnQueryParam("echo");
             var service = new DefaultWebHookValidator(triggers.Object, logger.Object, client);

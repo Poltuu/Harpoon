@@ -17,12 +17,16 @@ namespace Harpoon.Controllers
     [ApiExplorerSettings(GroupName = "WebHooks")]
     public class WebHooksController : ControllerBase
     {
+        /// <summary>
+        /// Gets the name of the GetByIdAsyncActio
+        /// </summary>
         public const string GetByIdAsyncActionName = "WebHooksController_GetByIdAsync";
 
         private readonly IWebHookRegistrationStore _webHookRegistrationStore;
         private readonly ILogger<WebHooksController> _logger;
         private readonly IWebHookValidator _webHookValidator;
 
+        /// <summary>Initializes a new instance of the <see cref="WebHooksController"/> class.</summary>
         public WebHooksController(IWebHookRegistrationStore webHookRegistrationStore, ILogger<WebHooksController> logger, IWebHookValidator webHookValidator)
         {
             _webHookRegistrationStore = webHookRegistrationStore ?? throw new ArgumentNullException(nameof(webHookRegistrationStore));
@@ -36,7 +40,7 @@ namespace Harpoon.Controllers
         [HttpGet]
         public async Task<ActionResult<IReadOnlyList<IWebHook>>> GetAsync()
         {
-            return Ok(await _webHookRegistrationStore.GetWebHooksAsync(User));
+            return Ok(await _webHookRegistrationStore.GetWebHooksAsync(User, HttpContext.RequestAborted));
         }
 
         /// <summary>
@@ -46,7 +50,7 @@ namespace Harpoon.Controllers
         [ProducesResponseType(404)]
         public async Task<ActionResult<IWebHook>> GetByIdAsync(Guid id)
         {
-            var webHook = await _webHookRegistrationStore.GetWebHookAsync(User, id);
+            var webHook = await _webHookRegistrationStore.GetWebHookAsync(User, id, HttpContext.RequestAborted);
             if (webHook == null)
             {
                 return NotFound();
@@ -69,7 +73,7 @@ namespace Harpoon.Controllers
 
             try
             {
-                await _webHookValidator.ValidateAsync(webHook);
+                await _webHookValidator.ValidateAsync(webHook, HttpContext.RequestAborted);
             }
             catch (ArgumentException ex)
             {
@@ -84,7 +88,7 @@ namespace Harpoon.Controllers
 
             try
             {
-                var result = await _webHookRegistrationStore.InsertWebHookAsync(User, webHook);
+                var result = await _webHookRegistrationStore.InsertWebHookAsync(User, webHook, HttpContext.RequestAborted);
                 if (result == WebHookRegistrationStoreResult.Success)
                 {
                     return CreatedAtRoute(GetByIdAsyncActionName, new { id = webHook.Id }, webHook);
@@ -118,7 +122,7 @@ namespace Harpoon.Controllers
 
             try
             {
-                await _webHookValidator.ValidateAsync(webHook);
+                await _webHookValidator.ValidateAsync(webHook, HttpContext.RequestAborted);
             }
             catch (ArgumentException ex)
             {
@@ -133,7 +137,7 @@ namespace Harpoon.Controllers
 
             try
             {
-                var result = await _webHookRegistrationStore.UpdateWebHookAsync(User, webHook);
+                var result = await _webHookRegistrationStore.UpdateWebHookAsync(User, webHook, HttpContext.RequestAborted);
                 return GetActionFromResult(result);
             }
             catch (Exception ex)
@@ -152,7 +156,7 @@ namespace Harpoon.Controllers
         {
             try
             {
-                var result = await _webHookRegistrationStore.DeleteWebHookAsync(User, id);
+                var result = await _webHookRegistrationStore.DeleteWebHookAsync(User, id, HttpContext.RequestAborted);
                 return GetActionFromResult(result);
             }
             catch (Exception ex)
@@ -170,7 +174,7 @@ namespace Harpoon.Controllers
         {
             try
             {
-                await _webHookRegistrationStore.DeleteWebHooksAsync(User);
+                await _webHookRegistrationStore.DeleteWebHooksAsync(User, HttpContext.RequestAborted);
                 return Ok();
             }
             catch (Exception ex)

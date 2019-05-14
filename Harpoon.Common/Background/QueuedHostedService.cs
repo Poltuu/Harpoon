@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Harpoon.Background
 {
-    public class QueuedHostedService<TWorkItem> : BackgroundService
+    internal class QueuedHostedService<TWorkItem> : BackgroundService
     {
         private readonly IServiceProvider _services;
         private readonly ILogger<QueuedHostedService<TWorkItem>> _logger;

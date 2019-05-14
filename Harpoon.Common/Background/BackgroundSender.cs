@@ -1,11 +1,10 @@
-﻿using Harpoon.Background;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Harpoon.Sender
+namespace Harpoon.Background
 {
-    public class BackgroundSender : IWebHookSender
+    internal class BackgroundSender : IWebHookSender
     {
         private readonly BackgroundQueue<IWebHookWorkItem> _webHooksQueue;
 
@@ -14,7 +13,7 @@ namespace Harpoon.Sender
             _webHooksQueue = webHooksQueue ?? throw new ArgumentNullException(nameof(webHooksQueue));
         }
 
-        public Task SendAsync(IWebHookWorkItem webHookWorkItem, CancellationToken token)
+        public Task SendAsync(IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken = default)
         {
             if (webHookWorkItem == null)
             {

@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Harpoon.Tests.Fixtures
@@ -50,7 +51,7 @@ namespace Harpoon.Tests.Fixtures
                 });
 
                 var triggerProvider = new Mock<IWebHookTriggerProvider>();
-                triggerProvider.Setup(p => p.GetAvailableTriggersAsync()).ReturnsAsync(new Dictionary<string, WebHookTrigger> { ["noun.verb"] = new WebHookTrigger { Id = "noun.verb" } });
+                triggerProvider.Setup(p => p.GetAvailableTriggersAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new Dictionary<string, WebHookTrigger> { ["noun.verb"] = new WebHookTrigger { Id = "noun.verb" } });
                 services.AddSingleton(triggerProvider.Object);
 
                 services.AddAuthentication(o =>

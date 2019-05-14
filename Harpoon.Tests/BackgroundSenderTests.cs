@@ -1,6 +1,5 @@
 ﻿using Harpoon.Background;
 using Harpoon.Registrations.EFStorage;
-using Harpoon.Sender;
 using Harpoon.Tests.Fixtures;
 using Microsoft.Extensions.DependencyInjection;
 using System;

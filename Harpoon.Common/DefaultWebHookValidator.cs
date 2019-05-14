@@ -5,19 +5,38 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 
 namespace Harpoon
 {
+    /// <summary>
+    /// Default <see cref="IWebHookValidator"/> implementation
+    /// </summary>
     public class DefaultWebHookValidator : IWebHookValidator
     {
         private static readonly HashSet<string> ValidSchemes = new HashSet<string> { Uri.UriSchemeHttp.ToString(), Uri.UriSchemeHttps.ToString() };
 
+        /// <summary>
+        /// Gets the <see cref="IWebHookTriggerProvider"/> 
+        /// </summary>
         protected IWebHookTriggerProvider WebHookTriggerProvider { get; private set; }
+        /// <summary>
+        /// Gets the <see cref="ILogger{DefaultWebHookValidator}"/> 
+        /// </summary>
         protected ILogger<DefaultWebHookValidator> Logger { get; private set; }
+        /// <summary>
+        /// Gets the <see cref="HttpClient"/> 
+        /// </summary>
         protected HttpClient HttpClient { get; private set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefaultWebHookValidator"/> class.
+        /// </summary>
+        /// <param name="webHookTriggerProvider"></param>
+        /// <param name="logger"></param>
+        /// <param name="httpClient"></param>
         public DefaultWebHookValidator(IWebHookTriggerProvider webHookTriggerProvider, ILogger<DefaultWebHookValidator> logger, HttpClient httpClient)
         {
             WebHookTriggerProvider = webHookTriggerProvider ?? throw new ArgumentNullException(nameof(webHookTriggerProvider));
@@ -25,20 +44,27 @@ namespace Harpoon
             HttpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         }
 
-        public virtual async Task ValidateAsync(IWebHook webHook)
+        /// <inheritdoc />
+        public virtual async Task ValidateAsync(IWebHook webHook, CancellationToken cancellationToken = default)
         {
             if (webHook == null)
             {
                 throw new ArgumentNullException(nameof(webHook));
             }
 
-            await VerifyIdAsync(webHook);
-            await VerifySecretAsync(webHook);
-            await VerifyFiltersAsync(webHook);
-            await VerifyCallbackAsync(webHook);
+            await VerifyIdAsync(webHook, cancellationToken);
+            await VerifySecretAsync(webHook, cancellationToken);
+            await VerifyFiltersAsync(webHook, cancellationToken);
+            await VerifyCallbackAsync(webHook, cancellationToken);
         }
 
-        protected virtual Task VerifyIdAsync(IWebHook webHook)
+        /// <summary>
+        /// Id validation
+        /// </summary>
+        /// <param name="webHook"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        protected virtual Task VerifyIdAsync(IWebHook webHook, CancellationToken cancellationToken)
         {
             if (webHook.Id == default)
             {
@@ -47,7 +73,14 @@ namespace Harpoon
             return Task.CompletedTask;
         }
 
-        protected virtual Task VerifySecretAsync(IWebHook webHook)
+        /// <summary>
+        /// Secret validation
+        /// </summary>
+        /// <param name="webHook"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException">Secret is not a 64 characters string</exception>
+        protected virtual Task VerifySecretAsync(IWebHook webHook, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(webHook.Secret))
             {
@@ -79,14 +112,21 @@ namespace Harpoon
             return result.ToString();
         }
 
-        protected virtual async Task VerifyFiltersAsync(IWebHook webHook)
+        /// <summary>
+        /// Filters validation
+        /// </summary>
+        /// <param name="webHook"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException">No filter, or incorrect filters</exception>
+        protected virtual async Task VerifyFiltersAsync(IWebHook webHook, CancellationToken cancellationToken)
         {
             if (webHook.Filters == null || webHook.Filters.Count == 0)
             {
                 throw new ArgumentException("WebHooks need to target at least one trigger. Wildcard is not allowed.");
             }
 
-            var triggers = await WebHookTriggerProvider.GetAvailableTriggersAsync();
+            var triggers = await WebHookTriggerProvider.GetAvailableTriggersAsync(cancellationToken);
             var errors = new List<string>();
             foreach (var filter in webHook.Filters)
             {
@@ -111,7 +151,15 @@ namespace Harpoon
             }
         }
 
-        protected virtual async Task VerifyCallbackAsync(IWebHook webHook)
+        /// <summary>
+        /// Callback validation. If noecho is used, the given url should not be called.
+        /// The url is tested by sending a GET request containing a echo query parameter that should be echoed.
+        /// </summary>
+        /// <param name="webHook"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException">Callback is invalid, not an http(s) url, of echo procedure failed</exception>
+        protected virtual async Task VerifyCallbackAsync(IWebHook webHook, CancellationToken cancellationToken)
         {
             if (webHook.Callback == null)
             {

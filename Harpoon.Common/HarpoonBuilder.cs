@@ -2,7 +2,7 @@
 
 namespace Harpoon
 {
-    public class HarpoonBuilder : IHarpoonBuilder
+    class HarpoonBuilder : IHarpoonBuilder
     {
         public IServiceCollection Services { get; set; }
 

@@ -4,10 +4,13 @@ using System.Text;
 
 namespace Harpoon.Sender
 {
+    /// <inheritdoc />
     public class DefaultSignatureService : ISignatureService
     {
-        protected static readonly char[] HexLookup = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+        private static readonly char[] _hexLookup = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
+        /// <inheritdoc />
+        /// <exception cref="ArgumentException">The provider secret is not a 64 characters string</exception>
         public string GetSignature(string secret, string content)
         {
             if (secret?.Length != 64)
@@ -24,7 +27,7 @@ namespace Harpoon.Sender
             }
         }
 
-        protected string ToHex(byte[] data)
+        private string ToHex(byte[] data)
         {
             if (data == null)
             {
@@ -37,8 +40,8 @@ namespace Harpoon.Sender
             for (var input = 0; input < data.Length; input++)
             {
                 d = data[input];
-                content[output++] = HexLookup[d / 0x10];
-                content[output++] = HexLookup[d % 0x10];
+                content[output++] = _hexLookup[d / 0x10];
+                content[output++] = _hexLookup[d % 0x10];
             }
             return new string(content);
         }

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Harpoon.Background
 {
-    public class BackgroundQueue<T>
+    internal class BackgroundQueue<T>
     {
         private readonly ConcurrentQueue<T> _workItems = new ConcurrentQueue<T>();
         private readonly SemaphoreSlim _signal = new SemaphoreSlim(0);

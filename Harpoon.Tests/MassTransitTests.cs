@@ -1,5 +1,4 @@
-﻿using Harpoon.Background;
-using Harpoon.Registrations.EFStorage;
+﻿using Harpoon.Registrations.EFStorage;
 using Harpoon.Sender;
 using Harpoon.Tests.Mocks;
 using MassTransit;
@@ -111,7 +110,7 @@ namespace Harpoon.Tests
             var services = new ServiceCollection();
 
             var store = new Mock<IWebHookStore>();
-            store.Setup(s => s.GetApplicableWebHooksAsync(It.IsAny<IWebHookNotification>())).ReturnsAsync(() => {
+            store.Setup(s => s.GetApplicableWebHooksAsync(It.IsAny<IWebHookNotification>(), It.IsAny<CancellationToken>())).ReturnsAsync(() => {
                 return Enumerable.Range(0, expectedWebHooksCount).Select(i => new WebHook { Callback = new Uri("http://www.example.org") }).ToList();
             });
             services.AddSingleton(store.Object);

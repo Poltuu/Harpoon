@@ -13,6 +13,10 @@
     <RepositoryUrl>https://github.com/Poltuu/Harpoon</RepositoryUrl>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <DocumentationFile>C:\Sites\Harpoon\Harpoon.Registrations.EFStorage\Harpoon.Registrations.EFStorage.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.4" />
   </ItemGroup>

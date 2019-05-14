@@ -13,6 +13,7 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Principal;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -32,14 +33,14 @@ namespace Harpoon.Tests
         {
             var services = new ServiceCollection();
             var failedStore = new Mock<IWebHookRegistrationStore>();
-            failedStore.Setup(s => s.InsertWebHookAsync(It.IsAny<IPrincipal>(), It.IsAny<IWebHook>())).ThrowsAsync(new Exception(""));
-            failedStore.Setup(s => s.UpdateWebHookAsync(It.IsAny<IPrincipal>(), It.IsAny<IWebHook>())).ThrowsAsync(new Exception(""));
-            failedStore.Setup(s => s.DeleteWebHookAsync(It.IsAny<IPrincipal>(), It.IsAny<Guid>())).ThrowsAsync(new Exception(""));
-            failedStore.Setup(s => s.DeleteWebHooksAsync(It.IsAny<IPrincipal>())).ThrowsAsync(new Exception(""));
+            failedStore.Setup(s => s.InsertWebHookAsync(It.IsAny<IPrincipal>(), It.IsAny<IWebHook>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception(""));
+            failedStore.Setup(s => s.UpdateWebHookAsync(It.IsAny<IPrincipal>(), It.IsAny<IWebHook>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception(""));
+            failedStore.Setup(s => s.DeleteWebHookAsync(It.IsAny<IPrincipal>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception(""));
+            failedStore.Setup(s => s.DeleteWebHooksAsync(It.IsAny<IPrincipal>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception(""));
             services.AddSingleton(failedStore.Object);
 
             var failedValidator = new Mock<IWebHookValidator>();
-            failedValidator.Setup(s => s.ValidateAsync(It.IsAny<IWebHook>())).ThrowsAsync(new Exception(""));
+            failedValidator.Setup(s => s.ValidateAsync(It.IsAny<IWebHook>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception(""));
             services.AddSingleton(failedValidator.Object);
 
             var failController1 = new WebHooksController(failedStore.Object, new Mock<ILogger<WebHooksController>>().Object, failedValidator.Object);
@@ -53,7 +54,7 @@ namespace Harpoon.Tests
             Assert.Equal(500, ((await failController2.DeleteAsync()) as StatusCodeResult).StatusCode);
 
             var failedStore2 = new Mock<IWebHookRegistrationStore>();
-            failedStore2.Setup(s => s.InsertWebHookAsync(It.IsAny<IPrincipal>(), It.IsAny<IWebHook>())).ReturnsAsync(WebHookRegistrationStoreResult.InternalError);
+            failedStore2.Setup(s => s.InsertWebHookAsync(It.IsAny<IPrincipal>(), It.IsAny<IWebHook>(), It.IsAny<CancellationToken>())).ReturnsAsync(WebHookRegistrationStoreResult.InternalError);
             var failController3 = new WebHooksController(failedStore2.Object, new Mock<ILogger<WebHooksController>>().Object, new Mock<IWebHookValidator>().Object);
             Assert.Equal(500, ((await failController3.PostAsync(new WebHookDTO())) as StatusCodeResult).StatusCode);
         }

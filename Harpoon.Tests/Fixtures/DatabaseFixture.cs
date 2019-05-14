@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Security.Principal;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Harpoon.Tests.Fixtures
@@ -23,7 +24,7 @@ namespace Harpoon.Tests.Fixtures
             services.AddEntityFrameworkSqlServer().AddDbContext<TestContext1>();
 
             var getter = new Mock<IPrincipalIdGetter>();
-            getter.Setup(g => g.GetPrincipalIdAsync(It.IsAny<IPrincipal>())).Returns(Task.FromResult("principal1"));
+            getter.Setup(g => g.GetPrincipalIdAsync(It.IsAny<IPrincipal>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult("principal1"));
             services.AddSingleton(getter.Object);
 
             var protector = new Mock<IDataProtector>();

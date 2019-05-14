@@ -13,6 +13,10 @@
     <PackageTags>webhook</PackageTags>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <DocumentationFile>C:\Sites\Harpoon\Harpoon.Common\Harpoon.Common.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="2.2.0" />

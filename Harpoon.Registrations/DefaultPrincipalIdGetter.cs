@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Security.Claims;
 using System.Security.Principal;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Harpoon.Registrations
 {
+    /// <inheritdoc />
     public class DefaultPrincipalIdGetter : IPrincipalIdGetter
     {
-        public Task<string> GetPrincipalIdAsync(IPrincipal principal)
+        /// <inheritdoc />
+        /// <exception cref="ArgumentException">Current principal id could not be found</exception>
+        public Task<string> GetPrincipalIdAsync(IPrincipal principal, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(GetPrincipalIdForWebHookRegistration(principal));
         }

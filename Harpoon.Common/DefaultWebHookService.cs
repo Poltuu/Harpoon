@@ -1,10 +1,11 @@
 ﻿using Harpoon.Background;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Harpoon
 {
-    public class DefaultWebHookService : IWebHookService
+    internal class DefaultWebHookService : IWebHookService
     {
         private readonly BackgroundQueue<IWebHookNotification> _webHooksQueue;
 
@@ -13,7 +14,7 @@ namespace Harpoon
             _webHooksQueue = webHooksQueue ?? throw new ArgumentNullException(nameof(webHooksQueue));
         }
 
-        public Task NotifyAsync(IWebHookNotification notification)
+        public Task NotifyAsync(IWebHookNotification notification, CancellationToken cancellationToken = default)
         {
             if (notification == null)
             {

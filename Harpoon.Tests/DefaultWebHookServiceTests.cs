@@ -1,5 +1,4 @@
 using Harpoon.Background;
-using Harpoon.Registrations.EFStorage;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -42,7 +41,7 @@ namespace Harpoon.Tests
         public async Task NoWebHookAsync()
         {
             var store = new Mock<IWebHookStore>();
-            store.Setup(s => s.GetApplicableWebHooksAsync(It.IsAny<IWebHookNotification>())).ReturnsAsync(new List<IWebHook>());
+            store.Setup(s => s.GetApplicableWebHooksAsync(It.IsAny<IWebHookNotification>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<IWebHook>());
             var sender = new Mock<IWebHookSender>();
 
             var service = new DefaultNotificationProcessor(store.Object, sender.Object);

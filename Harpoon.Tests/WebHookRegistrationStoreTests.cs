@@ -10,7 +10,6 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -49,7 +48,7 @@ namespace Harpoon.Tests
             var triggers = new[] { "noun.verb", "noun.verb2" };
             var pauses = new[] { true, false };
             var principals = new[] { "principal1", "principal2" };
-            var parameters = new[] 
+            var parameters = new[]
             {
                 null,//Valid
                 new Dictionary<string, object>(),//valid

@@ -28,22 +28,22 @@ namespace Harpoon.Tests
             {
             }
 
-            protected override Task OnFailureAsync(Exception exception, IWebHookWorkItem webHookWorkItem)
+            protected override Task OnFailureAsync(Exception exception, IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken)
             {
                 Failures += 1;
-                return base.OnFailureAsync(exception, webHookWorkItem);
+                return base.OnFailureAsync(exception, webHookWorkItem, cancellationToken);
             }
 
-            protected override Task OnNotFoundAsync(IWebHookWorkItem webHookWorkItem)
+            protected override Task OnNotFoundAsync(IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken)
             {
                 NotFounds += 1;
-                return base.OnNotFoundAsync(webHookWorkItem);
+                return base.OnNotFoundAsync(webHookWorkItem, cancellationToken);
             }
 
-            protected override Task OnSuccessAsync(IWebHookWorkItem webHookWorkItem)
+            protected override Task OnSuccessAsync(IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken)
             {
                 Successes += 1;
-                return base.OnSuccessAsync(webHookWorkItem);
+                return base.OnSuccessAsync(webHookWorkItem, cancellationToken);
             }
         }
 

@@ -4,10 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Principal;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Harpoon.Registrations.EFStorage
 {
+    /// <summary>
+    /// Default <see cref="IWebHookRegistrationStore"/> implementation using EF
+    /// </summary>
+    /// <typeparam name="TContext"></typeparam>
     public class WebHookRegistrationStore<TContext> : IWebHookRegistrationStore
         where TContext : DbContext, IRegistrationsContext
     {
@@ -16,6 +21,7 @@ namespace Harpoon.Registrations.EFStorage
         private readonly ISecretProtector _secretProtector;
         private readonly ILogger<WebHookRegistrationStore<TContext>> _logger;
 
+        /// <summary>Initializes a new instance of the <see cref="WebHookRegistrationStore{TContext}"/> class.</summary>
         public WebHookRegistrationStore(TContext context, IPrincipalIdGetter idGetter, ISecretProtector secretProtector, ILogger<WebHookRegistrationStore<TContext>> logger)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
@@ -24,14 +30,15 @@ namespace Harpoon.Registrations.EFStorage
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<IWebHook> GetWebHookAsync(IPrincipal user, Guid id)
+        /// <inheritdoc />
+        public async Task<IWebHook> GetWebHookAsync(IPrincipal user, Guid id, CancellationToken cancellationToken = default)
         {
-            var key = await _idGetter.GetPrincipalIdAsync(user);
+            var key = await _idGetter.GetPrincipalIdAsync(user, cancellationToken);
             var webHook = await _context.WebHooks
                 .Where(w => w.PrincipalId == key && w.Id == id)
                 .Include(w => w.Filters)
                 .AsNoTracking()
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(cancellationToken);
 
             if (webHook == null)
             {
@@ -43,14 +50,15 @@ namespace Harpoon.Registrations.EFStorage
             return webHook;
         }
 
-        public async Task<IReadOnlyList<IWebHook>> GetWebHooksAsync(IPrincipal user)
+        /// <inheritdoc />
+        public async Task<IReadOnlyList<IWebHook>> GetWebHooksAsync(IPrincipal user, CancellationToken cancellationToken = default)
         {
-            var key = await _idGetter.GetPrincipalIdAsync(user);
+            var key = await _idGetter.GetPrincipalIdAsync(user, cancellationToken);
             var webHooks = await _context.WebHooks
                 .Where(w => w.PrincipalId == key)
                 .Include(w => w.Filters)
                 .AsNoTracking()
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             foreach (var webHook in webHooks)
             {
@@ -71,7 +79,9 @@ namespace Harpoon.Registrations.EFStorage
             webHook.Callback = new Uri(_secretProtector.Unprotect(webHook.ProtectedCallback));
         }
 
-        public async Task<WebHookRegistrationStoreResult> InsertWebHookAsync(IPrincipal user, IWebHook webHook)
+        /// <inheritdoc />
+        /// <exception cref="ArgumentException">Id, callback, secret or filters is <see langword="null" /></exception>
+        public async Task<WebHookRegistrationStoreResult> InsertWebHookAsync(IPrincipal user, IWebHook webHook, CancellationToken cancellationToken = default)
         {
             if (webHook == null)
             {
@@ -98,7 +108,7 @@ namespace Harpoon.Registrations.EFStorage
                 throw new ArgumentException("WebHook filters needs to be set.");
             }
 
-            var key = await _idGetter.GetPrincipalIdAsync(user);
+            var key = await _idGetter.GetPrincipalIdAsync(user, cancellationToken);
             var dbWebHook = new WebHook
             {
                 Id = webHook.Id,
@@ -115,7 +125,7 @@ namespace Harpoon.Registrations.EFStorage
             try
             {
                 _context.Add(dbWebHook);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
                 return WebHookRegistrationStoreResult.Success;
             }
             catch (Exception e)
@@ -125,18 +135,19 @@ namespace Harpoon.Registrations.EFStorage
             }
         }
 
-        public async Task<WebHookRegistrationStoreResult> UpdateWebHookAsync(IPrincipal user, IWebHook webHook)
+        /// <inheritdoc />
+        public async Task<WebHookRegistrationStoreResult> UpdateWebHookAsync(IPrincipal user, IWebHook webHook, CancellationToken cancellationToken = default)
         {
             if (webHook == null)
             {
                 throw new ArgumentNullException(nameof(webHook));
             }
 
-            var key = await _idGetter.GetPrincipalIdAsync(user);
+            var key = await _idGetter.GetPrincipalIdAsync(user, cancellationToken);
             var dbWebHook = await _context.WebHooks
                 .Where(w => w.PrincipalId == key && w.Id == webHook.Id)
                 .Include(w => w.Filters)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(cancellationToken);
 
             if (dbWebHook == null)
             {
@@ -167,7 +178,7 @@ namespace Harpoon.Registrations.EFStorage
 
             try
             {
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
                 return WebHookRegistrationStoreResult.Success;
             }
             catch (Exception e)
@@ -177,10 +188,11 @@ namespace Harpoon.Registrations.EFStorage
             }
         }
 
-        public async Task<WebHookRegistrationStoreResult> DeleteWebHookAsync(IPrincipal user, Guid id)
+        /// <inheritdoc />
+        public async Task<WebHookRegistrationStoreResult> DeleteWebHookAsync(IPrincipal user, Guid id, CancellationToken cancellationToken = default)
         {
-            var key = await _idGetter.GetPrincipalIdAsync(user);
-            var webHook = await _context.WebHooks.Where(w => w.PrincipalId == key && w.Id == id).FirstOrDefaultAsync();
+            var key = await _idGetter.GetPrincipalIdAsync(user, cancellationToken);
+            var webHook = await _context.WebHooks.Where(w => w.PrincipalId == key && w.Id == id).FirstOrDefaultAsync(cancellationToken);
 
             if (webHook == null)
             {
@@ -190,7 +202,7 @@ namespace Harpoon.Registrations.EFStorage
             _context.Remove(webHook);
             try
             {
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
                 return WebHookRegistrationStoreResult.Success;
             }
             catch (Exception e)
@@ -200,10 +212,11 @@ namespace Harpoon.Registrations.EFStorage
             }
         }
 
-        public async Task DeleteWebHooksAsync(IPrincipal user)
+        /// <inheritdoc />
+        public async Task DeleteWebHooksAsync(IPrincipal user, CancellationToken cancellationToken = default)
         {
-            var key = await _idGetter.GetPrincipalIdAsync(user);
-            var webHooks = await _context.WebHooks.Where(r => r.PrincipalId == key).ToListAsync();
+            var key = await _idGetter.GetPrincipalIdAsync(user, cancellationToken);
+            var webHooks = await _context.WebHooks.Where(r => r.PrincipalId == key).ToListAsync(cancellationToken);
 
             if (webHooks == null || webHooks.Count == 0)
             {
@@ -213,7 +226,7 @@ namespace Harpoon.Registrations.EFStorage
             try
             {
                 _context.RemoveRange(webHooks);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
             }
             catch (Exception e)
             {
