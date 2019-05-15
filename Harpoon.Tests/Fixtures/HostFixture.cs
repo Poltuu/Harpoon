@@ -1,4 +1,5 @@
-﻿using Harpoon.Tests.Mocks;
+﻿using Harpoon.Registrations;
+using Harpoon.Tests.Mocks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
@@ -13,7 +14,6 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Harpoon.Tests.Fixtures

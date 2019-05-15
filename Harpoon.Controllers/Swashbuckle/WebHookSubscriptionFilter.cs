@@ -1,10 +1,10 @@
-﻿using Harpoon.OpenApi;
+﻿using Harpoon.Registrations.OpenApi;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
 using System.Linq;
 
-namespace Harpoon.Swashbuckle
+namespace Harpoon.Controllers.Swashbuckle
 {
     /// <summary>
     /// This filter sets operation's callbacks if the givent operation contains the <see cref="WebHookSubscriptionPointAttribute"/>

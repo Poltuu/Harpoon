@@ -1,6 +1,6 @@
 ﻿using Microsoft.OpenApi.Models;
 
-namespace Harpoon
+namespace Harpoon.Registrations
 {
     /// <summary>
     /// Represents an event template that may trigger a webhook

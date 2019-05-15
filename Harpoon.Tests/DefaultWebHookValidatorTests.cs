@@ -1,4 +1,5 @@
-﻿using Harpoon.Registrations.EFStorage;
+﻿using Harpoon.Registrations;
+using Harpoon.Registrations.EFStorage;
 using Harpoon.Tests.Mocks;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
@@ -6,7 +7,6 @@ using Moq;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 

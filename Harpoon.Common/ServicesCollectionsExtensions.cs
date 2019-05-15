@@ -73,32 +73,6 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers services to use the default <see cref="IWebHookValidator"/> implementation. Necessary to use default controllers.
-        /// </summary>
-        /// <param name="harpoon"></param>
-        /// <returns></returns>
-        public static IHarpoonBuilder UseDefaultValidator(this IHarpoonBuilder harpoon) => harpoon.UseDefaultValidator(b => { });
-        /// <summary>
-        /// Registers services to use the default <see cref="IWebHookValidator"/> implementation. Necessary to use default controllers.
-        /// </summary>
-        /// <param name="harpoon"></param>
-        /// <param name="validatorPolicy"></param>
-        /// <returns></returns>
-        public static IHarpoonBuilder UseDefaultValidator(this IHarpoonBuilder harpoon, Action<IHttpClientBuilder> validatorPolicy)
-        {
-            if (validatorPolicy == null)
-            {
-                throw new ArgumentNullException(nameof(validatorPolicy));
-            }
-
-            harpoon.Services.TryAddScoped<IWebHookValidator, DefaultWebHookValidator>();
-
-            var builder = harpoon.Services.AddHttpClient<IWebHookValidator, DefaultWebHookValidator>();
-            validatorPolicy(builder);
-            return harpoon;
-        }
-
-        /// <summary>
         /// Registers every services allowing for a synchronous pipeline to treat webhooks locally.
         /// </summary>
         /// <param name="harpoon"></param>

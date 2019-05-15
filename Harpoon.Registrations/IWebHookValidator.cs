@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace Harpoon
+namespace Harpoon.Registrations
 {
     /// <summary>
     /// Represents a class able to throws an exception if an <see cref="IWebHook"/> is invalid.

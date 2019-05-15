@@ -1,5 +1,6 @@
-﻿using Harpoon.OpenApi;
-using Harpoon.Swashbuckle;
+﻿using Harpoon.Controllers.Swashbuckle;
+using Harpoon.Registrations;
+using Harpoon.Registrations.OpenApi;
 using Microsoft.OpenApi;
 using Microsoft.OpenApi.Extensions;
 using Microsoft.OpenApi.Models;

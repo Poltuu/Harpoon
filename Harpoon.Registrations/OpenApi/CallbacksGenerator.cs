@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Harpoon.OpenApi
+namespace Harpoon.Registrations.OpenApi
 {
     /// <summary>
     /// A class able to generate the OpenApiCallbacks field matching the injected <see cref="IWebHookTriggerProvider"/>

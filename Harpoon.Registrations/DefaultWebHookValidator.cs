@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
@@ -11,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 
-namespace Harpoon
+namespace Harpoon.Registrations
 {
     /// <summary>
     /// Default <see cref="IWebHookValidator"/> implementation

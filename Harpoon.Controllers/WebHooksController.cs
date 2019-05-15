@@ -1,6 +1,6 @@
 ﻿using Harpoon.Controllers.Models;
 using Harpoon.Registrations;
-using Harpoon.Swashbuckle;
+using Harpoon.Controllers.Swashbuckle;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;

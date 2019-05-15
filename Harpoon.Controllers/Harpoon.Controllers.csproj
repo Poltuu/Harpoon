@@ -20,11 +20,11 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.2" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.0.0-rc2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Harpoon.Registrations\Harpoon.Registrations.csproj" />
-    <ProjectReference Include="..\Harpoon.Swashbuckle\Harpoon.Swashbuckle.csproj" />
   </ItemGroup>
 
 </Project>

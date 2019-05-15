@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Harpoon
+namespace Harpoon.Registrations
 {
     /// <summary>
     /// Represents a class able to returns valid <see cref="WebHookTrigger"/> available for registration.
