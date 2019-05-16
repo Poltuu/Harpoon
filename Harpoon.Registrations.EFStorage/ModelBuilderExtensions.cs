@@ -49,7 +49,7 @@ namespace Microsoft.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(modelBuilder));
             }
 
-            modelBuilder.Entity<WebHookFilter>().Property(f => f.TriggerId).IsRequired();
+            modelBuilder.Entity<WebHookFilter>().Property(f => f.Trigger).IsRequired();
             modelBuilder.Entity<WebHookFilter>().Property(f => f.Parameters).HasConversion(new JsonValueConverter<Dictionary<string, object>>());
         }
     }

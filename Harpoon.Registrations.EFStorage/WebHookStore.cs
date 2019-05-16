@@ -56,7 +56,7 @@ namespace Harpoon.Registrations.EFStorage
         /// <returns></returns>
         protected virtual IQueryable<WebHook> FilterQuery(IQueryable<WebHook> query, IWebHookNotification notification)
         {
-            return query.Where(w => w.Filters == null || w.Filters.Count == 0 || w.Filters.Any(f => f.TriggerId == notification.TriggerId));
+            return query.Where(w => w.Filters == null || w.Filters.Count == 0 || w.Filters.Any(f => f.Trigger == notification.TriggerId));
         }
 
         /// <summary>

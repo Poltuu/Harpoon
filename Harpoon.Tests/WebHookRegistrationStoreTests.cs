@@ -110,7 +110,7 @@ namespace Harpoon.Tests
                 {
                     new WebHookFilter
                     {
-                        TriggerId = trigger,
+                        Trigger = trigger,
                         Parameters = param
                     }
                 }
@@ -251,32 +251,32 @@ namespace Harpoon.Tests
             new object[] { false, new Uri("http://www.example.org"), "secret",
                 new List<WebHookFilter>
                 {
-                    new WebHookFilter { TriggerId = "noun.verb", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
+                    new WebHookFilter { Trigger = "noun.verb", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
                 }
             },
             new object[] { true, new Uri("http://www.example.org"), "secret",
                 new List<WebHookFilter>
                 {
-                    new WebHookFilter { TriggerId = "noun.verb", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
+                    new WebHookFilter { Trigger = "noun.verb", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
                 }
             },
             new object[] { false, new Uri("http://www.example2.org"), "secret",
                 new List<WebHookFilter>
                 {
-                    new WebHookFilter { TriggerId = "noun.verb", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
+                    new WebHookFilter { Trigger = "noun.verb", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
                 }
             },
             new object[] { false, new Uri("http://www.example.org"), "secret2",
                 new List<WebHookFilter>
                 {
-                    new WebHookFilter { TriggerId = "noun.verb", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
+                    new WebHookFilter { Trigger = "noun.verb", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
                 }
             },
             new object[] { false, new Uri("http://www.example.org"), "secret",
                 new List<WebHookFilter>
                 {
-                    new WebHookFilter { TriggerId = "noun.verb", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } },
-                    new WebHookFilter { TriggerId = "noun.verb2", Parameters = new Dictionary<string, object>() }
+                    new WebHookFilter { Trigger = "noun.verb", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } },
+                    new WebHookFilter { Trigger = "noun.verb2", Parameters = new Dictionary<string, object>() }
                 }
             },
         };
@@ -294,7 +294,7 @@ namespace Harpoon.Tests
                 Secret = "secret",
                 Filters = new List<WebHookFilter>
                 {
-                    new WebHookFilter { TriggerId = "noun.verb", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
+                    new WebHookFilter { Trigger = "noun.verb", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
                 }
             };
             await store.InsertWebHookAsync(null, webHook);
@@ -331,7 +331,7 @@ namespace Harpoon.Tests
                 Secret = "secret",
                 Filters = new List<WebHookFilter>
                 {
-                    new WebHookFilter { TriggerId = "noun.verb", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
+                    new WebHookFilter { Trigger = "noun.verb", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
                 }
             };
             await store.InsertWebHookAsync(null, webHook);
@@ -361,7 +361,7 @@ namespace Harpoon.Tests
                 Secret = "secret",
                 Filters = new List<WebHookFilter>
                 {
-                    new WebHookFilter { TriggerId = "noun.verb", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
+                    new WebHookFilter { Trigger = "noun.verb", Parameters = new Dictionary<string, object> { ["param1"] = "value1" } }
                 }
             };
             await store.InsertWebHookAsync(null, webHook);

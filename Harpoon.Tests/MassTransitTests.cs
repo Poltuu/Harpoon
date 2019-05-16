@@ -144,7 +144,7 @@ namespace Harpoon.Tests
             var notif = new WebHookNotification { TriggerId = "noun.verb" };
             await provider.GetRequiredService<IWebHookService>().NotifyAsync(notif);
 
-            await Task.Delay(20000);
+            await Task.Delay(10000);
 
             Assert.Equal(expectedWebHooksCount, counter.Counter);
             token.Cancel();

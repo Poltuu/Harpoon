@@ -117,7 +117,7 @@ namespace Harpoon.Registrations.EFStorage
                 ProtectedSecret = _secretProtector.Protect(webHook.Secret),
                 Filters = webHook.Filters.Select(f => new WebHookFilter
                 {
-                    TriggerId = f.TriggerId,
+                    Trigger = f.Trigger,
                     Parameters = f.Parameters == null ? null : new Dictionary<string, object>(f.Parameters)
                 }).ToList()
             };
@@ -171,7 +171,7 @@ namespace Harpoon.Registrations.EFStorage
                 _context.RemoveRange(dbWebHook.Filters);
                 dbWebHook.Filters = webHook.Filters.Select(f => new WebHookFilter
                 {
-                    TriggerId = f.TriggerId,
+                    Trigger = f.Trigger,
                     Parameters = f.Parameters == null ? null : new Dictionary<string, object>(f.Parameters)
                 }).ToList();
             }

@@ -155,17 +155,17 @@ namespace Harpoon.Registrations
             var errors = new List<string>();
             foreach (var filter in webHook.Filters)
             {
-                if (!triggers.ContainsKey(filter.TriggerId))
+                if (!triggers.ContainsKey(filter.Trigger))
                 {
-                    errors.Add($" - Trigger {filter.TriggerId} is not valid.");
+                    errors.Add($" - Trigger {filter.Trigger} is not valid.");
                     continue;
                 }
 
                 if (filter.Parameters != null)
                 {
-                    foreach (var invalidParam in filter.Parameters.Where(kvp => !IsValidParameter(kvp.Key, kvp.Value, triggers[filter.TriggerId].Template)))
+                    foreach (var invalidParam in filter.Parameters.Where(kvp => !IsValidParameter(kvp.Key, kvp.Value, triggers[filter.Trigger].Template)))
                     {
-                        errors.Add($" - {invalidParam} is not a valid parameter to filter the trigger {filter.TriggerId}.");
+                        errors.Add($" - {invalidParam} is not a valid parameter to filter the trigger {filter.Trigger}.");
                     }
                 }
             }

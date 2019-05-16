@@ -6,7 +6,7 @@ namespace Harpoon.Controllers.Models
     public class WebHookFilterDTO : IWebHookFilter
     {
         /// <inheritdoc />
-        public string TriggerId { get; set; }
+        public string Trigger { get; set; }
         /// <inheritdoc />
         public Dictionary<string, object> Parameters { get; set; }
 

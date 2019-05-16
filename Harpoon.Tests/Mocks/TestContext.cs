@@ -19,6 +19,8 @@ namespace Harpoon.Tests.Mocks
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            optionsBuilder.EnableSensitiveDataLogging();
+            optionsBuilder.EnableDetailedErrors();
             optionsBuilder.UseInMemoryDatabase(Guid.NewGuid().ToString());
         }
     }
@@ -70,6 +72,9 @@ namespace Harpoon.Tests.Mocks
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            optionsBuilder.EnableSensitiveDataLogging();
+            optionsBuilder.EnableDetailedErrors();
+
             var connectionString = Environment.GetEnvironmentVariable("Harpoon_Connection_String");
             if (connectionString == null)
             {

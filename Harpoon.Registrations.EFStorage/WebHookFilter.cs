@@ -12,7 +12,7 @@ namespace Harpoon.Registrations.EFStorage
         public Guid Id { get; set; }
 
         /// <inheritdoc />
-        public string TriggerId { get; set; }
+        public string Trigger { get; set; }
 
         /// <inheritdoc />
         public Dictionary<string, object> Parameters { get; set; }

@@ -91,7 +91,7 @@ namespace Harpoon.Tests
                 {
                     new WebHookFilterDTO
                     {
-                        TriggerId = "noun.verb"
+                        Trigger = "noun.verb"
                     }
                 }
             };
@@ -121,7 +121,7 @@ namespace Harpoon.Tests
                 {
                     new WebHookFilterDTO
                     {
-                        TriggerId = "noun.verb"
+                        Trigger = "noun.verb"
                     }
                 }
             };
@@ -163,7 +163,7 @@ namespace Harpoon.Tests
                 {
                     new WebHookFilterDTO
                     {
-                        TriggerId = "noun.verb"
+                        Trigger = "noun.verb"
                     }
                 }
             };

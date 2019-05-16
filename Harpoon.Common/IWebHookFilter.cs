@@ -11,7 +11,7 @@ namespace Harpoon
         /// Gets a unique name for listened event. Depending on the implementation, pattern matching can be used.
         /// For instance, '*.created' could refer to any event similar to the pattern. 
         /// </summary>
-        string TriggerId { get; }
+        string Trigger { get; }
 
         /// <summary>
         /// Gets a collection of filters on the payload.

@@ -35,7 +35,7 @@ namespace Harpoon.Tests
                 {
                     new WebHookFilter
                     {
-                        TriggerId = registered
+                        Trigger = registered
                     }
                 }
             });
