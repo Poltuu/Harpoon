@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Harpoon
+﻿namespace Harpoon
 {
     /// <inheritdoc />
     public class WebHookNotification : IWebHookNotification
@@ -9,7 +7,6 @@ namespace Harpoon
         public string TriggerId { get; set; }
 
         /// <inheritdoc />
-        public Dictionary<string, object> Payload { get; set; }
-        IReadOnlyDictionary<string, object> IWebHookNotification.Payload => Payload;
+        public object Payload { get; set; }
     }
 }

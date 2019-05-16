@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -57,21 +58,21 @@ namespace Harpoon.Tests
                     ["property"] = 2,
                     ["otherProperty"] = "value"
                 },
-                new Dictionary<string, object>
+                new Dictionary<string, object> //not valid
                 {
                     ["property"] = 2,
                     ["otherProperty"] = "value",
-                    ["absentProperty"] = "absent" //not valid
+                    ["absentProperty"] = "absent"
                 },
-                new Dictionary<string, object>
-                {
-                    ["property"] = 20, //not valid
-                    ["otherProperty"] = "value"
-                },
-                new Dictionary<string, object>
+                new Dictionary<string, object> //not valid
                 {
                     ["property"] = 20,
-                    ["otherProperty"] = "wrongValue" //not valid
+                    ["otherProperty"] = "value"
+                },
+                new Dictionary<string, object> //not valid
+                {
+                    ["property"] = 20,
+                    ["otherProperty"] = "wrongValue"
                 },
                 new Dictionary<string, object>//valid
                 {
@@ -110,6 +111,7 @@ namespace Harpoon.Tests
                 {
                     new WebHookFilter
                     {
+                        Id = Guid.NewGuid(),
                         Trigger = trigger,
                         Parameters = param
                     }
@@ -140,13 +142,15 @@ namespace Harpoon.Tests
             };
             var webHooks = await store.GetApplicableWebHooksAsync(payload);
 
-            Assert.Equal(4, webHooks.Count);
             Assert.All(webHooks, t =>
             {
                 Assert.NotEqual(Guid.Empty, t.Id);
                 Assert.False(t.IsPaused);
+                Assert.True(t.Filters != null && t.Filters.Count != 0);
+                Assert.Contains("noun.verb", t.Filters.Select(f => f.Trigger));
             });
             AssertHaveBeenPrepared(webHooks);
+            Assert.Equal(8, webHooks.Count);
         }
 
         private void AssertHaveBeenPrepared(IEnumerable<IWebHook> webHooks)

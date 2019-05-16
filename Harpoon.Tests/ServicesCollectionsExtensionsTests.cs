@@ -91,6 +91,7 @@ namespace Harpoon.Tests
             Assert.NotNull(provider.GetRequiredService<IPrincipalIdGetter>());
             Assert.NotNull(provider.GetRequiredService<IWebHookStore>());
             Assert.NotNull(provider.GetRequiredService<IWebHookRegistrationStore>());
+            Assert.NotNull(provider.GetRequiredService<IWebHookMatcher>());
         }
 
         [Fact]

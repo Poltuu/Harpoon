@@ -1,5 +1,6 @@
 ﻿using Harpoon.Registrations.EFStorage;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using System;
 using System.Linq;
 
@@ -74,6 +75,7 @@ namespace Harpoon.Tests.Mocks
         {
             optionsBuilder.EnableSensitiveDataLogging();
             optionsBuilder.EnableDetailedErrors();
+            optionsBuilder.ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning));
 
             var connectionString = Environment.GetEnvironmentVariable("Harpoon_Connection_String");
             if (connectionString == null)

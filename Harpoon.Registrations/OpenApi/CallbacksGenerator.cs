@@ -27,7 +27,25 @@ namespace Harpoon.Registrations.OpenApi
                 In = ParameterLocation.Header,
                 Name = DefaultWebHookSender.SignatureHeader,
                 Schema = new OpenApiSchema { Type = "string", Format = "HMACSHA256" }
-            }
+            },
+            new OpenApiParameter
+            {
+                In = ParameterLocation.Header,
+                Name = DefaultWebHookSender.TimestampKey,
+                Schema = new OpenApiSchema { Type = "string", Format = "date-time" }
+            },
+            new OpenApiParameter
+            {
+                In = ParameterLocation.Header,
+                Name = DefaultWebHookSender.TriggerKey,
+                Schema = new OpenApiSchema { Type = "string" }
+            },
+            new OpenApiParameter
+            {
+                In = ParameterLocation.Header,
+                Name = DefaultWebHookSender.UniqueIdKey,
+                Schema = new OpenApiSchema { Type = "string", Format = "uuid" }
+            },
         };
 
         private readonly IWebHookTriggerProvider _webHookTriggerProvider;
@@ -55,13 +73,6 @@ namespace Harpoon.Registrations.OpenApi
         /// <returns></returns>
         protected OpenApiCallback Generate(WebHookTrigger trigger)
         {
-            var triggerProperties = new Dictionary<string, OpenApiSchema>(trigger.Template.Properties)
-            {
-                [PseudoCamelCase(DefaultWebHookSender.TimestampKey)] = new OpenApiSchema { Type = "string", Format = "date-time" },
-                [PseudoCamelCase(DefaultWebHookSender.TriggerKey)] = new OpenApiSchema { Type = "string" },
-                [PseudoCamelCase(DefaultWebHookSender.UniqueIdKey)] = new OpenApiSchema { Type = "string", Format = "uuid" }
-            };
-
             var result = new OpenApiCallback();
 
             result.AddPathItem(RuntimeExpression.Build($"{{$request.body#/{PseudoCamelCase(nameof(IWebHook.Callback))}}}"), new OpenApiPathItem
@@ -77,17 +88,7 @@ namespace Harpoon.Registrations.OpenApi
                         RequestBody = new OpenApiRequestBody
                         {
                             Required = true,
-                            Content = new Dictionary<string, OpenApiMediaType>
-                            {
-                                ["application/json"] = new OpenApiMediaType
-                                {
-                                    Schema = new OpenApiSchema
-                                    {
-                                        Type = "object",
-                                        Properties = triggerProperties
-                                    }
-                                }
-                            }
+                            Content = new Dictionary<string, OpenApiMediaType> { ["application/json"] = new OpenApiMediaType { Schema = trigger.Template } }
                         },
                     }
                 }

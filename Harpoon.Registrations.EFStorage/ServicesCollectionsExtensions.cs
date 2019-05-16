@@ -41,8 +41,9 @@ namespace Microsoft.Extensions.DependencyInjection
             where TContext : DbContext, IRegistrationsContext
         {
             harpoon.Services.TryAddScoped<IPrincipalIdGetter, DefaultPrincipalIdGetter>();
-            harpoon.Services.AddScoped<IWebHookStore, WebHookStore<TContext>>();
-            harpoon.Services.AddScoped<IWebHookRegistrationStore, WebHookRegistrationStore<TContext>>();
+            harpoon.Services.TryAddSingleton<IWebHookMatcher, DefaultWebHookMatcher>();
+            harpoon.Services.TryAddScoped<IWebHookStore, WebHookStore<TContext>>();
+            harpoon.Services.TryAddScoped<IWebHookRegistrationStore, WebHookRegistrationStore<TContext>>();
 
             return harpoon;
         }

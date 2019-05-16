@@ -24,9 +24,9 @@ Once again, the treatment of the `IWebHookWorkItem` can be done synchronously (o
 
 Finally, the `IWebHookWorkItem` are sent via the `IQueuedProcessor<IWebHookWorkItem>`. The general retry policy and failures policy should be configured using `Polly` during the dependency injection registration, as the `IHttpClientBuilder` is exposed; there is no default for this.
 
-### How to start a notification process
+## How tos
 
-MyClass.cs
+### How to start a notification process
 
 ```c#
 using Harpoon;
@@ -60,9 +60,8 @@ public class MyClass
 
 ### How to treat everything locally and synchronously (using a mock storage)
 
-Startup.cs
-
 ```c#
+//Startup.cs
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddHarpoon(h => h.UseAllSynchronousDefaults()); //everything is done locally and synchronously
@@ -72,9 +71,8 @@ public void ConfigureServices(IServiceCollection services)
 
 ### How to treat everything locally and in the background using background services (using a mock storage)
 
-Startup.cs
-
 ```c#
+//Startup.cs
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddHarpoon(h => h.UseAllLocalDefaults()); //everything is done locally via background services
@@ -82,13 +80,12 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
-### How to notify another application App2, and let this one treat the notification synchronously, using a messaging service
+### How to notify another application, and let it treat the notifications synchronously, via a messaging service
 
 You need to include via nuget `Harpoon.MassTransit` in App1 and App2 for this to work.
 
-App1.Startup.cs
-
 ```c#
+//App1.Startup.cs
 using Microsoft.Extensions.DependencyInjection;
 
 public void ConfigureServices(IServiceCollection services)
@@ -99,9 +96,8 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
-App2.Startup.cs
-
 ```c#
+//App2.Startup.cs
 using Microsoft.Extensions.DependencyInjection;
 
 public void ConfigureServices(IServiceCollection services)
@@ -129,13 +125,12 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
-### How to treat the notification synchrnously and locally, but let another application App2 actually do the http calls, using a messaging service
+### How to treat the notification synchronously and locally, but let another application actually do the http calls, via a messaging service
 
 You need to include via nuget `Harpoon.MassTransit` in App1 and App2 for this to work.
 
-App1.Startup.cs
-
 ```c#
+//App1.Startup.cs
 using Microsoft.Extensions.DependencyInjection;
 
 public void ConfigureServices(IServiceCollection services)
@@ -153,9 +148,8 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
-App2.Startup.cs
-
 ```c#
+//App2.Startup.cs
 using Microsoft.Extensions.DependencyInjection;
 
 public void ConfigureServices(IServiceCollection services)
@@ -180,9 +174,8 @@ public void ConfigureServices(IServiceCollection services)
 
 You need to include `Harpoon.Registrations.EFStorage` via nuget.
 
-Startup.cs
-
 ```c#
+//Startup.cs
 using Microsoft.Extensions.DependencyInjection;
 
 public void ConfigureServices(IServiceCollection services)
@@ -199,8 +192,6 @@ public void ConfigureServices(IServiceCollection services)
 
 Don't forget to generate a migration if you are using EF Core Migrations.
 
-MyContext.cs
-
 ```c#
 public class TestContext : DbContext, IRegistrationsContext
 {
@@ -211,7 +202,7 @@ public class TestContext : DbContext, IRegistrationsContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.AddHarpoonDefaultMappings(); //optional. this lets you apply default mappings.
+        modelBuilder.AddHarpoonDefaultMappings(); //optional. this lets you apply default mappings and constraints.
     }
 }
 ```
@@ -221,9 +212,8 @@ public class TestContext : DbContext, IRegistrationsContext
 To use default mvc controllers to provide default REST operations on your webhooks, simply add the nuget package `Harpoon.Controllers`.
 You also need to register a `IWebHookValidator` in your DI; you may use `.UseDefaultValidator()` or provide your own.
 
-Startup.cs
-
 ```c#
+//Startup.cs
 using Microsoft.Extensions.DependencyInjection;
 
 public void ConfigureServices(IServiceCollection services)
@@ -232,9 +222,9 @@ public void ConfigureServices(IServiceCollection services)
 
     services.AddHarpoon(h =>
     {
-        h.RegisterWebHooksUsingEfStorage<MyContext>(); //MyContext needs to implement IRegistrationsContext
-        h.UseDefaultDataProtection(p => { }, o => { }); //the default data protection uses System.DataProtection
-        h.UseDefaultValidator(); //the default validator is necessary for Write operations. This is necessary for WebHookRegistrationStore but not for WebHookStore
+        h.RegisterWebHooksUsingEfStorage<MyContext>(); //MyContext needs to implement IRegistrationsContext.
+        h.UseDefaultDataProtection(p => { }, o => { }); //the default data protection uses System.DataProtection.
+        h.UseDefaultValidator(); //the default validator is necessary for Write operations. This is necessary for WebHookRegistrationStore but not for WebHookStore.
     });
 }
 ```
@@ -243,9 +233,8 @@ public void ConfigureServices(IServiceCollection services)
 
 To prefered way to setup you retry policy is to use [Polly](https://github.com/App-vNext/Polly), by adding `Microsoft.Extensions.Http.Polly`. [The general help is here.](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/http-requests?view=aspnetcore-2.1).
 
-Startup.cs
-
 ```c#
+//Startup.cs
 using Microsoft.Extensions.DependencyInjection;
 
 public void ConfigureServices(IServiceCollection services)
@@ -255,11 +244,133 @@ public void ConfigureServices(IServiceCollection services)
     services.AddHarpoon(h =>
     {
         //most methods let you configure via a Action<IHttpClientBuilder>
-        h.UseAllSynchronousDefaults(b => 
+        h.UseAllSynchronousDefaults(b =>
         {
             b.AddTransientHttpErrorPolicy(p => p.WaitAndRetryAsync(6, index => TimeSpan.FromMinutes(index * index * index * 10)))
                 .AddTransientHttpErrorPolicy(p => p.CircuitBreakerAsync(5, TimeSpan.FromSeconds(30)))
         });
     });
+}
+```
+
+### How to use pattern matching for triggers
+
+If you want to allow users to registers webhooks on triggers (which is not on by default) such as `object.*` that would apply to `object.created`, `object.updated` and so forth, you need to do two things:
+
+- Change default webhooks registration validation `IWebHookValidator.ValidateAsync` to allow for such triggers to be considered valid.
+- Modify default ``IWebHookStore`` implementation so that the trigger is understood correctly.
+- Modify default ``IWebHookMatcher`` implementation so that the filters on which the parameters matching is done are correct.
+
+The following example is based on overrides of the default implementations, but other approaches are possible.
+
+```c#
+public static class TriggerHerlper
+{
+    public static IEnumerable<string> GetPotentialTriggers(string trigger)
+    {
+        if (trigger == null)
+        {
+            return Enumerable.Empty<string>();
+        }
+        return GetPotentialTriggers(trigger.Split('.'), 0);
+    }
+
+    private static IEnumerable<string> GetPotentialTriggers(string[] parts, int index)
+    {
+        var options = new[] { "*", parts[index] };
+        if (parts.Length == index + 1)
+        {
+            return options;
+        }
+
+        return GetPotentialTriggers(parts, index + 1).SelectMany(e => options.Select(c => c + "." + e));
+    }
+}
+
+public class MyWebHookStore<TContext> : WebHookStore<TContext>
+    where TContext : DbContext, IRegistrationsContext
+{
+    //...ctr
+
+    protected override IQueryable<WebHook> FilterQuery(IQueryable<WebHook> query, IWebHookNotification notification)
+    {
+        var validTriggers = TriggerHerlper.GetPotentialTriggers(notification.TriggerId).ToArray();
+        return query.Where(w => w.Filters == null || w.Filters.Count == 0 || w.Filters.Any(f => validTriggers.Contains(f.Trigger)));
+    }
+}
+
+public class MyWebHookMatcher: DefaultWebHookMatcher
+{
+    protected virtual bool IsTriggerMatching(string filterTrigger, string notificationTrigger)
+    {
+        return TriggerHerlper.GetPotentialTriggers(notificationTrigger).Any(f => f == filterTrigger);
+    }
+}
+
+public class MyWebHookValidator : DefaultWebHookValidator
+{
+    //...ctr
+
+    //This implementation is basically a copy of the default one
+    protected override Task VerifyFiltersAsync(IWebHook webHook, CancellationToken cancellationToken)
+    {
+        if (webHook.Filters == null || webHook.Filters.Count == 0)
+        {
+            throw new ArgumentException("WebHooks need to target at least one trigger. Wildcard is not allowed.");
+        }
+
+        var validTriggers = WebHookTriggerProvider
+            .GetAvailableTriggers()
+            .SelectMany(kvp => TriggerHerlper.GetPotentialTriggers(kvp.Key).Select(trigger => (trigger, kvp.Value)))
+            .GroupBy(t => t.trigger)
+            .ToDictionary(g => g.Key, g => g.Select(t => t.Value));
+
+        var errors = new List<string>();
+        foreach (var filter in webHook.Filters)
+        {
+            if (!validTriggers.ContainsKey(filter.Trigger))
+            {
+                errors.Add($" - Trigger {filter.Trigger} is not valid.");
+                continue;
+            }
+
+            if (filter.Parameters != null)
+            {
+                foreach (var trigger in validTriggers[filter.Trigger])
+                {
+                    foreach (var invalidParam in filter.Parameters.Where(kvp => !IsValidParameter(kvp.Key, kvp.Value, trigger.Template)))
+                    {
+                        errors.Add($" - {invalidParam} is not a valid parameter to filter the trigger {filter.Trigger}.");
+                    }
+                }
+            }
+        }
+
+        if (errors.Count != 0)
+        {
+            throw new ArgumentException("WebHooks filters are incorrect :" + Environment.NewLine + string.Join(Environment.NewLine, errors));
+        }
+        return Task.CompletedTask;
+    }
+}
+
+//Startup.cs
+using Microsoft.Extensions.DependencyInjection;
+
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddHarpoon(h =>
+    {
+        //h.UseDefaultValidator(); can be used without breaking anything, but is completely unecessary
+
+        // this adds other MyWebHookStore dependencies so can still be used fo convenience
+        h.RegisterWebHooksUsingEfStorage<MyContext>();
+
+        //customize your services as you usually would otherwise
+    });
+
+    services.AddScoped<IWebHookStore, MyWebHookStore<MyContext>>();
+    services.AddScoped<IWebHookValidator, MyWebHookValidator>();
+    services.AddHttpClient<IWebHookValidator, MyWebHookValidator>();
 }
 ```

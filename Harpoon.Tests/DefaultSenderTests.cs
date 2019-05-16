@@ -80,7 +80,7 @@ namespace Harpoon.Tests
 
         [Theory]
         [MemberData(nameof(PayloadData))]
-        public async Task NormalScenarioAsync(Dictionary<string, object> payload)
+        public async Task NormalScenarioAsync(object payload)
         {
             var logger = new Mock<ILogger<DefaultWebHookSender>>();
             var signature = "FIXED_SIGNATURE";
@@ -98,22 +98,18 @@ namespace Harpoon.Tests
                 Assert.Equal(webHook.Callback, m.RequestUri);
 
                 var content = JsonConvert.DeserializeObject<Dictionary<string, string>>(await m.Content.ReadAsStringAsync());
-                Assert.NotNull(content);
-                Assert.Contains(DefaultWebHookSender.TriggerKey, content.Keys);
-                Assert.Equal(notif.TriggerId, content[DefaultWebHookSender.TriggerKey]);
-                Assert.Contains(DefaultWebHookSender.TimestampKey, content.Keys);
-                Assert.Contains(DefaultWebHookSender.UniqueIdKey, content.Keys);
 
                 if (notif.Payload != null)
                 {
-                    foreach (var kvp in notif.Payload)
-                    {
-                        Assert.Contains(kvp.Key, content.Keys);
-                        Assert.Equal(kvp.Value, content[kvp.Key]);
-                    }
+                    Assert.NotNull(content);
                 }
 
-                Assert.Contains(DefaultWebHookSender.SignatureHeader, m.Headers.Select(kvp => kvp.Key));
+                var headers = m.Headers.Select(kvp => kvp.Key).ToHashSet();
+                Assert.Contains(DefaultWebHookSender.TimestampKey, headers);
+                Assert.Contains(DefaultWebHookSender.UniqueIdKey, headers);
+                Assert.Contains(DefaultWebHookSender.TriggerKey, headers);
+                Assert.Equal(notif.TriggerId, m.Headers.GetValues(DefaultWebHookSender.TriggerKey).First());
+                Assert.Contains(DefaultWebHookSender.SignatureHeader, headers);
                 Assert.Equal(signature, m.Headers.GetValues(DefaultWebHookSender.SignatureHeader).First());
             });
 

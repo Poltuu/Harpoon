@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -16,22 +15,21 @@ namespace Harpoon.Sender
     public class DefaultWebHookSender : IWebHookSender, IQueuedProcessor<IWebHookWorkItem>
     {
         /// <summary>
-        /// Payload key used to pass the trigger id.
+        /// Http header key used to pass the trigger id.
         /// </summary>
-        public const string TriggerKey = "Trigger";
+        public const string TriggerKey = "X-WebHook-Trigger";
         /// <summary>
-        /// Payload key used to pass the time stamp.
+        /// Http header key used to pass the time stamp.
         /// </summary>
-        public const string TimestampKey = "Timestamp";
+        public const string TimestampKey = "X-WebHook-Timestamp";
         /// <summary>
-        /// Payload key used to pass a unique id.
+        /// Http header key used to pass a unique id.
         /// </summary>
-        public const string UniqueIdKey = "NotificationId";
-
+        public const string UniqueIdKey = "X-WebHook-NotificationId";
         /// <summary>
-        /// Http header key used to pass current payload signature
+        /// Http header key used to pass the current payload signature
         /// </summary>
-        public const string SignatureHeader = "X-Signature-SHA256";
+        public const string SignatureHeader = "X-WebHook-Signature";
 
         /// <summary>
         /// Gets the <see cref="System.Net.Http.HttpClient"/> used for sending request
@@ -139,52 +137,21 @@ namespace Harpoon.Sender
         /// <returns></returns>
         protected virtual HttpRequestMessage CreateRequest(IWebHookWorkItem webHookWorkItem)
         {
+            var serializedBody = JsonConvert.SerializeObject(webHookWorkItem.Notification.Payload);
+
             var request = new HttpRequestMessage(HttpMethod.Post, webHookWorkItem.WebHook.Callback);
-
-            var serializedBody = JsonConvert.SerializeObject(CreateBody(webHookWorkItem));
+            AddHeaders(webHookWorkItem, request, SignatureService.GetSignature(webHookWorkItem.WebHook.Secret, serializedBody));
             request.Content = new StringContent(serializedBody, Encoding.UTF8, "application/json");
-
-            SignRequest(webHookWorkItem.WebHook, request, serializedBody);
 
             return request;
         }
 
-        /// <summary>
-        /// Generates the request body
-        /// </summary>
-        /// <param name="webHookWorkItem"></param>
-        /// <returns></returns>
-        protected virtual IReadOnlyDictionary<string, object> CreateBody(IWebHookWorkItem webHookWorkItem)
+        private void AddHeaders(IWebHookWorkItem webHookWorkItem, HttpRequestMessage request, string secret)
         {
-            if (webHookWorkItem.Notification.Payload == null || webHookWorkItem.Notification.Payload.Count == 0)
-            {
-                return new Dictionary<string, object>
-                {
-                    [TriggerKey] = webHookWorkItem.Notification.TriggerId,
-                    [TimestampKey] = webHookWorkItem.Timestamp,
-                    [UniqueIdKey] = webHookWorkItem.Id
-                };
-            }
-
-            //keys may be overwritten
-            return new Dictionary<string, object>(webHookWorkItem.Notification.Payload)
-            {
-                [TriggerKey] = webHookWorkItem.Notification.TriggerId,
-                [TimestampKey] = webHookWorkItem.Timestamp,
-                [UniqueIdKey] = webHookWorkItem.Id
-            };
-        }
-
-        /// <summary>
-        /// Apply signature to the HttpRequestMessage
-        /// </summary>
-        /// <param name="webHook"></param>
-        /// <param name="request"></param>
-        /// <param name="serializedBody"></param>
-        protected virtual void SignRequest(IWebHook webHook, HttpRequestMessage request, string serializedBody)
-        {
-            var signature = SignatureService.GetSignature(webHook.Secret, serializedBody);
-            request.Headers.Add(SignatureHeader, signature);
+            request.Headers.Add(SignatureHeader, secret);
+            request.Headers.Add(TriggerKey, webHookWorkItem.Notification.TriggerId);
+            request.Headers.Add(TimestampKey, webHookWorkItem.Timestamp.ToUniversalTime().ToString("r"));
+            request.Headers.Add(UniqueIdKey, webHookWorkItem.Id.ToString());
         }
     }
 }
