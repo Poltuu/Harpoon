@@ -24,7 +24,184 @@ Once again, the treatment of the `IWebHookWorkItem` can be done synchronously (o
 
 Finally, the `IWebHookWorkItem` are sent via the `IQueuedProcessor<IWebHookWorkItem>`. The general retry policy and failures policy should be configured using `Polly` during the dependency injection registration, as the `IHttpClientBuilder` is exposed; there is no default for this.
 
-## How tos
+## Q/A
+
+### What are the default validation requirements
+
+The ``DefaultWebHookValidator`` expects the following things:
+
+- `Id` must be a non default Guid. If not, a new `guid` is assigned.
+- `Secret` must be a 64 characters long string. If empty, a new string is assigned.
+- `Filters` must be valid, which means:
+  - the `WebHook` must contain at least one filter
+  - the ``Trigger`` must match one of the available trigger, obtained by the `IWebHookTriggerProvider`
+  - if parameters are used, they must match the `OpenApiSchema WebHookTrigger.Template`. Type must match, and keys must exist.
+- the `callback` url must be a valid http(s) url. If the url contains the `noecho` parameter, the url is not tested.
+If not, the validator will send a `GET` request to the callback with an ``echo`` query parameter, and expect to see the given `echo` returned in the body.
+
+### What's the default behavior if a delivery fails
+
+The default behavior is to do nothing. If you wish to change it, you may:
+
+- create our own `IWebHookSender`, potentially by inheriting from `DefaultWebHookSender` or `EFWebHookSender`. Those classes expose the following methods to helpe deal with errors
+
+```c#
+protected virtual Task OnSuccessAsync(IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken);
+protected virtual Task OnNotFoundAsync(IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken);
+protected virtual Task OnFailureAsync(Exception exception, IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken)
+```
+
+- use the `EFWebHookSender`, that automatically pauses webhooks in case of 404 and 410.Please notice that the given `webHookWorkItem` is NOT attached to the current `DbContext`.
+- during services configuration, use the exposed `IHttpClientBuilder` to apply a retry/failures policy. You may use the following extensions method on `IHarpoonBuilder`:
+
+```c#
+h.UseDefaultWebHookWorkItemProcessor(Action<IHttpClientBuilder> senderPolicy); //when using the default processor
+h.UseDefaultEFWebHookWorkItemProcessor(Action<IHttpClientBuilder> senderPolicy); //when using the default ef processor
+h.UseDefaultValidator(Action<IHttpClientBuilder> validatorPolicy); //during the validation process
+
+h.UseAllSynchronousDefaults(Action<IHttpClientBuilder> senderPolicy); //when using synchronous all defaults
+h.UseAllLocalDefaults(Action<IHttpClientBuilder> senderPolicy); //when using background service all defaults
+h.UseAllMassTransitDefaults(Action<IHttpClientBuilder> senderPolicy); //when using masstransit all defaults
+```
+
+### How data protection works on expired keys
+
+The default `ISecretProtector` will use expired keys if the current key is not the one used to protect the database content. If you widh to change this behavior, you need to implement your own `ISecretProtector`, or to change your key expiration policy.
+
+### What's the default way the webhook reference the current user in the database
+
+To reference which user created them, the `DefaultPrincipalIdGetter` will try to find a string from the `IPrincipal` the following way:
+
+- if the principal is a ``ClaimsPrincipal`` with a claim of type `ClaimTypes.Name`, return it
+- if the principal is a ``ClaimsPrincipal`` with a claim of type `ClaimTypes.NameIdentifier`, return it
+- if the principal has a named identity, return it
+- throw if nothing was found
+
+### How are webhooks signed, and how to check the signature
+
+The default `ISignatureService` calculates an `HMACSHA256` over the JSON send, using the shared secret. To verify the secret validty, the consumer may use the following snippet (c#)
+
+```c#
+//code from DefaultSignatureService.cs
+public bool VerifySignature(string expectedSignature, string sharedSecret, string jsonContent)
+{
+    var secretBytes = Encoding.UTF8.GetBytes(sharedSecret);
+    var data = Encoding.UTF8.GetBytes(jsonContent ?? "");
+    using (var hasher = new HMACSHA256(secretBytes))
+    {
+        return ToHex(hasher.ComputeHash(data)) == expectedSignature;
+    }
+}
+private string ToHex(byte[] data)
+{
+    if (data == null)
+    {
+        return string.Empty;
+    }
+
+    var content = new char[data.Length * 2];
+    var output = 0;
+    byte d;
+    for (var input = 0; input < data.Length; input++)
+    {
+        d = data[input];
+        content[output++] = _hexLookup[d / 0x10];
+        content[output++] = _hexLookup[d % 0x10];
+    }
+    return new string(content);
+}
+```
+
+### How are webhooks registrations matched to an incoming notification
+
+WebHooks registrations are matched to incoming notifications via two mechanisms:
+
+- matching of `TriggerId`
+- matching of `Payload`
+
+By default, `Notification.TriggerId` needs to match `WebHook.Trigger` exactly. It is possible to use pattern matching (see below) to let the user match a wider range of events.
+
+WebHooks need also to not be paused.
+
+The user may also filter which webhooks he is interested in, by indicating in the `Parameters` property of one of the `WebHookFilter` of the `WebHook`.
+``Parameters`` is simply a `Dictionary<string, object>`.
+By default, it is possible to filter on nested properties using a dot i.e. `["property1.sub.value"] = 2`.
+The property matching is case insensitive by default.
+
+The following example show you different `WebHook` and if they match or not the given notification.
+
+```c#
+var notification = new WebHookNotification
+{
+    TriggerId = "something_happened",
+    Payload = new Payload
+    {
+        Id = 234,
+        Property = "value",
+        Sub = new SubPayload
+        {
+            Name = "my name"
+        },
+        Sequence = new List<int> { 1, 2, 3 }
+    }
+}
+
+new WebHookFilter //does not match because of triggerId
+{
+    TriggerId = "something_else_happened",
+    Parameters = new Dictionary<string, object>()
+};
+new WebHookFilter //matches because no parameters
+{
+    TriggerId = "something_happened",
+    Parameters = new Dictionary<string, object>()
+};
+new WebHookFilter //does not match because of parameters
+{
+    TriggerId = "something_happened",
+    Parameters = new Dictionary<string, object>
+    {
+        ["id"] = 444
+    }
+};
+new WebHookFilter //does not match because of not all parameters match
+{
+    TriggerId = "something_happened",
+    Parameters = new Dictionary<string, object>
+    {
+        ["id"] = 234,
+        ["Property"] = "specific_value",
+    }
+};
+new WebHookFilter //matches
+{
+    TriggerId = "something_happened",
+    Parameters = new Dictionary<string, object>
+    {
+        ["id"] = 234,
+        ["sub.name"] = "my name",
+    }
+};
+new WebHookFilter //matches as sequence contains 2
+{
+    TriggerId = "something_happened",
+    Parameters = new Dictionary<string, object>
+    {
+        ["sequence"] = 2
+    }
+};
+new WebHookFilter //does not match as sequence is different from [2, 3]
+{
+    TriggerId = "something_happened",
+    Parameters = new Dictionary<string, object>
+    {
+        ["sequence"] = [2, 3]
+    }
+};
+
+```
+
+## Tutorials
 
 ### How to start a notification process
 
