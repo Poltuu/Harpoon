@@ -29,14 +29,6 @@ Finally, the `IWebHookWorkItem` are sent via the `IQueuedProcessor<IWebHookWorkI
 
 ## General Q/A
 
-### How to describe you available triggers
-
-The class `WebHookTrigger` represents your available events for consumer to subscribe to. It contains the following properties:
-
-- `string Id`: a unique string, typically in the form of `noun.verb`
-- `string Description`: a short description for your interface
-- `OpenApiSchema Template`: you must describe the schema of your data using a `OpenApiSchema`. The documentation regarding your webhooks can later on be auto-generated, using the ``[WebHookSubscriptionFilter]`` on your subscription endpoint of your API. This is the default if you use `Harpoon.Controllers`.
-
 ### What are the default validation requirements for webhooks
 
 The ``DefaultWebHookValidator`` expects the following things:
@@ -560,5 +552,40 @@ public void ConfigureServices(IServiceCollection services)
     services.AddScoped<IWebHookStore, MyWebHookStore<MyContext>>();
     services.AddScoped<IWebHookValidator, MyWebHookValidator>();
     services.AddHttpClient<IWebHookValidator, MyWebHookValidator>();
+}
+```
+
+### How to describe you available triggers
+
+The class `WebHookTrigger` represents your available events for consumer to subscribe to. It contains the following properties:
+
+- `string Id`: a unique string, typically in the form of `noun.verb`
+- `string Description`: a short description for your interface
+- `OpenApiSchema Template`: you must describe the schema of your data using a `OpenApiSchema`.
+The documentation regarding your webhooks can later on be auto-generated, using the ``[WebHookSubscriptionFilter]`` on your subscription endpoint of your API. This is the default if you use `Harpoon.Controllers`.
+
+The following code exposes the default way to benefit from the auto generated Open Api documentation via swagger.
+
+```c#
+//Startup.cs
+
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddHarpoon(h => { /* your configuration */ });
+
+    services.AddSwaggerGen(c =>
+    {
+        // configuration of your own apis
+        c.AddHarpoonDocumentation();
+    });
+}
+
+public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+{
+    app.UseSwaggerUI(c =>
+    {
+        //your configuration...
+        c.AddHarpoonEndpoint();
+    });
 }
 ```
