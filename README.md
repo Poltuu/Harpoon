@@ -347,7 +347,7 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
-### Ho to use Ef for webhooks storage
+### How to use Ef for webhooks storage
 
 You need to include `Harpoon.Registrations.EFStorage` via nuget.
 
@@ -408,7 +408,7 @@ public void ConfigureServices(IServiceCollection services)
 
 ### How to setup your retry policy on your sender
 
-To prefered way to setup you retry policy is to use [Polly](https://github.com/App-vNext/Polly), by adding `Microsoft.Extensions.Http.Polly`. [The general help is here.](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/http-requests?view=aspnetcore-2.1).
+To prefered way to setup you retry policy is to use [Polly](https://github.com/App-vNext/Polly), by adding `Microsoft.Extensions.Http.Polly`. [The general help is here.](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/http-requests?view=aspnetcore-2.1)
 
 ```c#
 //Startup.cs
