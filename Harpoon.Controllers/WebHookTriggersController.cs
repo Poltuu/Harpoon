@@ -21,7 +21,7 @@ namespace Harpoon.Controllers
         }
 
         /// <summary>
-        /// Returns available <see cref="WebHookTrigger"/> for <see cref="IWebHook"/> registration.
+        /// Returns available WebHookTriggers for WebHook registration.
         /// </summary>
         /// <returns></returns>
         [HttpGet]

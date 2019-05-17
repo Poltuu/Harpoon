@@ -1,6 +1,6 @@
 ﻿using Harpoon.Background;
+using Harpoon.Controllers.Swashbuckle;
 using Harpoon.Registrations;
-using Harpoon.Registrations.OpenApi;
 using Harpoon.Sender;
 using Harpoon.Tests.Mocks;
 using Microsoft.AspNetCore.DataProtection;
@@ -112,11 +112,9 @@ namespace Harpoon.Tests
         public void AddHarpoonDocumentation()
         {
             var options = new SwaggerGenOptions();
-            var services = new ServiceCollection();
-            options.AddHarpoonDocumentation<TestWebHookTriggerProvider>(services);
+            options.AddHarpoonDocumentation();
 
-            var provider = services.BuildServiceProvider();
-            Assert.NotNull(provider.GetRequiredService<CallbacksGenerator>());
+            //do not know what to test here.
         }
     }
 }

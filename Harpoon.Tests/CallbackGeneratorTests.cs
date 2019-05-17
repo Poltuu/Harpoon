@@ -1,6 +1,5 @@
 ﻿using Harpoon.Controllers.Swashbuckle;
 using Harpoon.Registrations;
-using Harpoon.Registrations.OpenApi;
 using Microsoft.OpenApi;
 using Microsoft.OpenApi.Extensions;
 using Microsoft.OpenApi.Models;
@@ -30,7 +29,7 @@ namespace Harpoon.Tests
                 {
                     Description = "blabla",
                     Id = "my.trigger",
-                    Template = new OpenApiSchema
+                    Schema = new OpenApiSchema
                     {
                         Type = "object",
                         Properties = new Dictionary<string, OpenApiSchema> { ["prop1"] = new OpenApiSchema { Type = "string" } }
@@ -40,7 +39,7 @@ namespace Harpoon.Tests
                 {
                     Description = "blabla2",
                     Id = "my.trigger.2",
-                    Template = new OpenApiSchema
+                    Schema = new OpenApiSchema
                     {
                         Type = "object",
                         Properties = new Dictionary<string, OpenApiSchema> { ["prop2"] = new OpenApiSchema { Type = "integer" } }
@@ -48,7 +47,7 @@ namespace Harpoon.Tests
                 }
             });
 
-            var filter = new WebHookSubscriptionFilter(new CallbacksGenerator(provider.Object));
+            var filter = new WebHookSubscriptionFilter(provider.Object);
             var context = new OperationFilterContext(null, null, null, typeof(CallbackGeneratorTests).GetMethod(nameof(WebHookSubscriptionFilterTests)));
             var operation = new OpenApiOperation();
             filter.Apply(operation, context);
@@ -66,7 +65,7 @@ namespace Harpoon.Tests
                 {
                     Description = "blabla",
                     Id = "my.trigger",
-                    Template = new OpenApiSchema
+                    Schema = new OpenApiSchema
                     {
                         Type = "object",
                         Properties = new Dictionary<string, OpenApiSchema> { ["prop1"] = new OpenApiSchema { Type = "string" } }
@@ -76,7 +75,7 @@ namespace Harpoon.Tests
                 {
                     Description = "blabla2",
                     Id = "my.trigger.2",
-                    Template = new OpenApiSchema
+                    Schema = new OpenApiSchema
                     {
                         Type = "object",
                         Properties = new Dictionary<string, OpenApiSchema> { ["prop2"] = new OpenApiSchema { Type = "integer" } }
@@ -84,13 +83,10 @@ namespace Harpoon.Tests
                 }
             });
 
-            var generator = new CallbacksGenerator(provider.Object);
-            var result = generator.GenerateCallbacks();
-
-            var operation = new OpenApiOperation
-            {
-                Callbacks = result
-            };
+            var filter = new WebHookSubscriptionFilter(provider.Object);
+            var context = new OperationFilterContext(null, new SchemaGenerator(new SchemaGeneratorOptions(), null), new SchemaRepository(), typeof(CallbackGeneratorTests).GetMethod(nameof(WebHookSubscriptionFilterTests)));
+            var operation = new OpenApiOperation();
+            filter.Apply(operation, context);
 
             var json = operation.SerializeAsJson(OpenApiSpecVersion.OpenApi3_0);
             var yaml = operation.SerializeAsYaml(OpenApiSpecVersion.OpenApi3_0);

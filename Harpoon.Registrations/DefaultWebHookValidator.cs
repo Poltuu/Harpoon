@@ -161,9 +161,10 @@ namespace Harpoon.Registrations
                     continue;
                 }
 
-                if (filter.Parameters != null)
+                var trigger = triggers[filter.Trigger];
+                if (filter.Parameters != null && trigger.Schema != null)
                 {
-                    foreach (var invalidParam in filter.Parameters.Where(kvp => !IsValidParameter(kvp.Key, kvp.Value, triggers[filter.Trigger].Template)))
+                    foreach (var invalidParam in filter.Parameters.Where(kvp => !IsValidParameter(kvp.Key, kvp.Value, trigger.Schema)))
                     {
                         errors.Add($" - {invalidParam} is not a valid parameter to filter the trigger {filter.Trigger}.");
                     }

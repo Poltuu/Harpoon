@@ -18,7 +18,7 @@ namespace Harpoon.Controllers
     public class WebHooksController : ControllerBase
     {
         /// <summary>
-        /// Gets the name of the GetByIdAsyncActio
+        /// Gets the name of the GetByIdAsyncAction
         /// </summary>
         public const string GetByIdAsyncActionName = "WebHooksController_GetByIdAsync";
 
@@ -35,7 +35,7 @@ namespace Harpoon.Controllers
         }
 
         /// <summary>
-        /// Gets all webHooks belonging to the current user.
+        /// Gets all WebHooks belonging to the current user.
         /// </summary>
         [HttpGet]
         public async Task<ActionResult<IReadOnlyList<IWebHook>>> GetAsync()
@@ -44,7 +44,7 @@ namespace Harpoon.Controllers
         }
 
         /// <summary>
-        /// Gets the webHook belonging to the current user with the given <paramref name="id"/>.
+        /// Gets the WebHook belonging to the current user with the given <paramref name="id"/>.
         /// </summary>
         [HttpGet("{id}", Name = GetByIdAsyncActionName)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -61,7 +61,7 @@ namespace Harpoon.Controllers
         }
 
         /// <summary>
-        /// Registers a new webHook for the current User
+        /// Registers a new WebHook for the current user
         /// </summary>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -107,7 +107,7 @@ namespace Harpoon.Controllers
         }
 
         /// <summary>
-        /// Updates an existing webHook.
+        /// Updates the WebHook with the given <paramref name="id"/>.
         /// </summary>
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -153,7 +153,7 @@ namespace Harpoon.Controllers
         }
 
         /// <summary>
-        /// Deletes an existing webhook.
+        /// Deletes the WebHook with the given <paramref name="id"/>.
         /// </summary>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -173,7 +173,7 @@ namespace Harpoon.Controllers
         }
 
         /// <summary>
-        /// Deletes all webhooks for current user.
+        /// Deletes all WebHooks of the current user.
         /// </summary>
         [HttpDelete()]
         [ProducesResponseType(StatusCodes.Status200OK)]
