@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Harpoon.Controllers
@@ -38,9 +39,9 @@ namespace Harpoon.Controllers
         /// Gets all WebHooks belonging to the current user.
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<IReadOnlyList<WebHook>>> GetAsync()
+        public async Task<ActionResult<IEnumerable<WebHook>>> GetAsync()
         {
-            return Ok(await _webHookRegistrationStore.GetWebHooksAsync(User, HttpContext.RequestAborted));
+            return Ok((await _webHookRegistrationStore.GetWebHooksAsync(User, HttpContext.RequestAborted)).Select(w => new WebHook(w)));
         }
 
         /// <summary>
@@ -57,7 +58,7 @@ namespace Harpoon.Controllers
             {
                 return NotFound();
             }
-            return Ok(webHook);
+            return Ok(new WebHook(webHook));
         }
 
         /// <summary>
