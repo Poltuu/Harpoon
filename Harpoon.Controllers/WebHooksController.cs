@@ -1,7 +1,8 @@
 ﻿using Harpoon.Controllers.Models;
-using Harpoon.Registrations;
 using Harpoon.Controllers.Swashbuckle;
+using Harpoon.Registrations;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -13,9 +14,7 @@ namespace Harpoon.Controllers
     /// <summary>
     /// REST interface to manage WebHooks
     /// </summary>
-    [Authorize]
-    [Route("api/webhooks")]
-    [ApiExplorerSettings(GroupName = "WebHooks")]
+    [Authorize, ApiController, Route("api/webhooks"), ApiExplorerSettings(GroupName = OpenApi.GroupName), Produces("application/json")]
     public class WebHooksController : ControllerBase
     {
         /// <summary>
@@ -48,7 +47,9 @@ namespace Harpoon.Controllers
         /// Gets the webHook belonging to the current user with the given <paramref name="id"/>.
         /// </summary>
         [HttpGet("{id}", Name = GetByIdAsyncActionName)]
-        [ProducesResponseType(404)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesDefaultResponseType]
         public async Task<ActionResult<IWebHook>> GetByIdAsync(Guid id)
         {
             var webHook = await _webHookRegistrationStore.GetWebHookAsync(User, id, HttpContext.RequestAborted);
@@ -63,8 +64,9 @@ namespace Harpoon.Controllers
         /// Registers a new webHook for the current User
         /// </summary>
         [HttpPost]
-        [ProducesResponseType(201)]
-        [ProducesResponseType(400)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [WebHookSubscriptionPoint]
         public async Task<ActionResult> PostAsync([FromBody]WebHookDTO webHook)
         {
@@ -108,8 +110,9 @@ namespace Harpoon.Controllers
         /// Updates an existing webHook.
         /// </summary>
         [HttpPut("{id}")]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> PutAsync(Guid id, [FromBody]WebHookDTO webHook)
         {
             if (webHook == null)
@@ -152,9 +155,10 @@ namespace Harpoon.Controllers
         /// <summary>
         /// Deletes an existing webhook.
         /// </summary>
-        [Route("{id}")]
-        [ProducesResponseType(404)]
-        public async Task<IActionResult> DeleteAsync(Guid id)
+        [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> DeleteByIdAsync(Guid id)
         {
             try
             {
@@ -171,7 +175,9 @@ namespace Harpoon.Controllers
         /// <summary>
         /// Deletes all webhooks for current user.
         /// </summary>
-        [Route("")]
+        [HttpDelete()]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteAsync()
         {
             try

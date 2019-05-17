@@ -1,4 +1,5 @@
 ﻿using Harpoon.Background;
+using Harpoon.Controllers.Swashbuckle;
 using Harpoon.Registrations;
 using Harpoon.Sender;
 using Harpoon.Tests.Mocks;
@@ -7,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Moq;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
 using System.Collections.Generic;
 using Xunit;
@@ -104,6 +106,17 @@ namespace Harpoon.Tests
             var provider = services.BuildServiceProvider();
             Assert.NotNull(provider.GetRequiredService<IQueuedProcessor<IWebHookWorkItem>>());
             Assert.NotNull(provider.GetRequiredService<ISignatureService>());
+        }
+
+        [Fact]
+        public void AddHarpoonDocumentation()
+        {
+            var options = new SwaggerGenOptions();
+            var services = new ServiceCollection();
+            options.AddHarpoonDocumentation<TestWebHookTriggerProvider>(services);
+
+            var provider = services.BuildServiceProvider();
+            Assert.NotNull(provider.GetRequiredService<WebHookSubscriptionFilter>());
         }
     }
 }

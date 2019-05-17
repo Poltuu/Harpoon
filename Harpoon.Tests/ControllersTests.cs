@@ -50,7 +50,7 @@ namespace Harpoon.Tests
             var failController2 = new WebHooksController(failedStore.Object, new Mock<ILogger<WebHooksController>>().Object, new Mock<IWebHookValidator>().Object);
             Assert.Equal(500, ((await failController2.PostAsync(new WebHookDTO())) as StatusCodeResult).StatusCode);
             Assert.Equal(500, ((await failController2.PutAsync(new Guid(), new WebHookDTO())) as StatusCodeResult).StatusCode);
-            Assert.Equal(500, ((await failController2.DeleteAsync(new Guid())) as StatusCodeResult).StatusCode);
+            Assert.Equal(500, ((await failController2.DeleteByIdAsync(new Guid())) as StatusCodeResult).StatusCode);
             Assert.Equal(500, ((await failController2.DeleteAsync()) as StatusCodeResult).StatusCode);
 
             var failedStore2 = new Mock<IWebHookRegistrationStore>();

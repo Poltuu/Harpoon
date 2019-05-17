@@ -1,6 +1,7 @@
 ﻿using Harpoon.Registrations.EFStorage;
 using System;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 
 namespace Microsoft.EntityFrameworkCore
 {
@@ -49,6 +50,7 @@ namespace Microsoft.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(modelBuilder));
             }
 
+            modelBuilder.Entity<WebHookFilter>().ToTable("WebHookFilters");
             modelBuilder.Entity<WebHookFilter>().Property(f => f.Trigger).IsRequired();
             modelBuilder.Entity<WebHookFilter>().Property(f => f.Parameters).HasConversion(new JsonValueConverter<Dictionary<string, object>>());
         }
