@@ -1,6 +1,6 @@
 ﻿using Harpoon.Background;
-using Harpoon.Controllers.Swashbuckle;
 using Harpoon.Registrations;
+using Harpoon.Registrations.OpenApi;
 using Harpoon.Sender;
 using Harpoon.Tests.Mocks;
 using Microsoft.AspNetCore.DataProtection;
@@ -116,7 +116,7 @@ namespace Harpoon.Tests
             options.AddHarpoonDocumentation<TestWebHookTriggerProvider>(services);
 
             var provider = services.BuildServiceProvider();
-            Assert.NotNull(provider.GetRequiredService<WebHookSubscriptionFilter>());
+            Assert.NotNull(provider.GetRequiredService<CallbacksGenerator>());
         }
     }
 }
