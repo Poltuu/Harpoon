@@ -6,6 +6,9 @@
 
 Harpoon provides support for sending your own WebHooks. The general philosophy is to let you design each step your way, while providing strong default solutions. The modularity lets you split the process into n microservices if you deem necessary.
 
+Webhooks processing and sending is located in the following nugets `Harpoon.Common` and `Harpoon.MassTransit`.
+Webhooks registrations and exposure is therefore separated in differents components, namely `Harpoon.Registrations`, `Harpoon.Registrations.EFStorage` and `Harpoon.Controllers`
+
 ## General architecture and classes
 
 Harpoon strongly separates each necessary component to register and retrieve webhooks, to start a notification process, or to actually send the webhooks.
@@ -24,9 +27,17 @@ Once again, the treatment of the `IWebHookWorkItem` can be done synchronously (o
 
 Finally, the `IWebHookWorkItem` are sent via the `IQueuedProcessor<IWebHookWorkItem>`. The general retry policy and failures policy should be configured using `Polly` during the dependency injection registration, as the `IHttpClientBuilder` is exposed; there is no default for this.
 
-## Q/A
+## General Q/A
 
-### What are the default validation requirements
+### How to describe you available triggers
+
+The class `WebHookTrigger` represents your available events for consumer to subscribe to. It contains the following properties:
+
+- `string Id`: a unique string, typically in the form of `noun.verb`
+- `string Description`: a short description for your interface
+- `OpenApiSchema Template`: you must describe the schema of your data using a `OpenApiSchema`. The documentation regarding your webhooks can later on be auto-generated, using the ``[WebHookSubscriptionFilter]`` on your subscription endpoint of your API. This is the default if you use `Harpoon.Controllers`.
+
+### What are the default validation requirements for webhooks
 
 The ``DefaultWebHookValidator`` expects the following things:
 
@@ -38,31 +49,6 @@ The ``DefaultWebHookValidator`` expects the following things:
   - if parameters are used, they must match the `OpenApiSchema WebHookTrigger.Template`. Type must match, and keys must exist.
 - the `callback` url must be a valid http(s) url. If the url contains the `noecho` parameter, the url is not tested.
 If not, the validator will send a `GET` request to the callback with an ``echo`` query parameter, and expect to see the given `echo` returned in the body.
-
-### What's the default behavior if a delivery fails
-
-The default behavior is to do nothing. If you wish to change it, you may:
-
-- create our own `IWebHookSender`, potentially by inheriting from `DefaultWebHookSender` or `EFWebHookSender`. Those classes expose the following methods to helpe deal with errors
-
-```c#
-protected virtual Task OnSuccessAsync(IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken);
-protected virtual Task OnNotFoundAsync(IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken);
-protected virtual Task OnFailureAsync(Exception exception, IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken)
-```
-
-- use the `EFWebHookSender`, that automatically pauses webhooks in case of 404 and 410.Please notice that the given `webHookWorkItem` is NOT attached to the current `DbContext`.
-- during services configuration, use the exposed `IHttpClientBuilder` to apply a retry/failures policy. You may use the following extensions method on `IHarpoonBuilder`:
-
-```c#
-h.UseDefaultWebHookWorkItemProcessor(Action<IHttpClientBuilder> senderPolicy); //when using the default processor
-h.UseDefaultEFWebHookWorkItemProcessor(Action<IHttpClientBuilder> senderPolicy); //when using the default ef processor
-h.UseDefaultValidator(Action<IHttpClientBuilder> validatorPolicy); //during the validation process
-
-h.UseAllSynchronousDefaults(Action<IHttpClientBuilder> senderPolicy); //when using synchronous all defaults
-h.UseAllLocalDefaults(Action<IHttpClientBuilder> senderPolicy); //when using background service all defaults
-h.UseAllMassTransitDefaults(Action<IHttpClientBuilder> senderPolicy); //when using masstransit all defaults
-```
 
 ### How data protection works on expired keys
 
@@ -76,41 +62,6 @@ To reference which user created them, the `DefaultPrincipalIdGetter` will try to
 - if the principal is a ``ClaimsPrincipal`` with a claim of type `ClaimTypes.NameIdentifier`, return it
 - if the principal has a named identity, return it
 - throw if nothing was found
-
-### How are webhooks signed, and how to check the signature
-
-The default `ISignatureService` calculates an `HMACSHA256` over the JSON send, using the shared secret. To verify the secret validty, the consumer may use the following snippet (c#)
-
-```c#
-//code from DefaultSignatureService.cs
-public bool VerifySignature(string expectedSignature, string sharedSecret, string jsonContent)
-{
-    var secretBytes = Encoding.UTF8.GetBytes(sharedSecret);
-    var data = Encoding.UTF8.GetBytes(jsonContent ?? "");
-    using (var hasher = new HMACSHA256(secretBytes))
-    {
-        return ToHex(hasher.ComputeHash(data)) == expectedSignature;
-    }
-}
-private string ToHex(byte[] data)
-{
-    if (data == null)
-    {
-        return string.Empty;
-    }
-
-    var content = new char[data.Length * 2];
-    var output = 0;
-    byte d;
-    for (var input = 0; input < data.Length; input++)
-    {
-        d = data[input];
-        content[output++] = _hexLookup[d / 0x10];
-        content[output++] = _hexLookup[d % 0x10];
-    }
-    return new string(content);
-}
-```
 
 ### How are webhooks registrations matched to an incoming notification
 
@@ -199,6 +150,66 @@ new WebHookFilter //does not match as sequence is different from [2, 3]
     }
 };
 
+```
+
+### How are webhooks signed, and how to check the signature
+
+The default `ISignatureService` calculates an `HMACSHA256` over the JSON send, using the shared secret. To verify the secret validty, the consumer may use the following snippet (c#)
+
+```c#
+//code from DefaultSignatureService.cs
+public bool VerifySignature(string expectedSignature, string sharedSecret, string jsonContent)
+{
+    var secretBytes = Encoding.UTF8.GetBytes(sharedSecret);
+    var data = Encoding.UTF8.GetBytes(jsonContent ?? "");
+    using (var hasher = new HMACSHA256(secretBytes))
+    {
+        return ToHex(hasher.ComputeHash(data)) == expectedSignature;
+    }
+}
+private string ToHex(byte[] data)
+{
+    if (data == null)
+    {
+        return string.Empty;
+    }
+
+    var content = new char[data.Length * 2];
+    var output = 0;
+    byte d;
+    for (var input = 0; input < data.Length; input++)
+    {
+        d = data[input];
+        content[output++] = _hexLookup[d / 0x10];
+        content[output++] = _hexLookup[d % 0x10];
+    }
+    return new string(content);
+}
+```
+
+### What's the default behavior if a delivery fails
+
+The default behavior is to do nothing. If you wish to change it, you may:
+
+- create our own `IWebHookSender`, potentially by inheriting from `DefaultWebHookSender` or `EFWebHookSender`. Those classes expose the following methods to helpe deal with errors
+
+```c#
+protected virtual Task OnSuccessAsync(IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken);
+protected virtual Task OnNotFoundAsync(IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken);
+protected virtual Task OnFailureAsync(Exception exception, IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken)
+```
+
+- use the `EFWebHookSender`, that automatically pauses webhooks in case of 404 and 410.Please notice that the given `webHookWorkItem` is NOT attached to the current `DbContext`.
+- during services configuration, use the exposed `IHttpClientBuilder` to apply a retry/failures policy. You may use the following extensions method on `IHarpoonBuilder`:
+
+```c#
+h.UseDefaultWebHookWorkItemProcessor(Action<IHttpClientBuilder> senderPolicy); //when using the default processor
+h.UseDefaultEFWebHookWorkItemProcessor(Action<IHttpClientBuilder> senderPolicy); //when using the default ef processor
+h.UseDefaultValidator(Action<IHttpClientBuilder> validatorPolicy); //during the validation process
+
+h.UseAllSynchronousDefaults(Action<IHttpClientBuilder> senderPolicy); //when using synchronous all defaults
+h.UseAllLocalDefaults(Action<IHttpClientBuilder> senderPolicy); //when using background service all defaults
+h.UseAllMassTransitDefaults(Action<IHttpClientBuilder> senderPolicy); //when using masstransit all defaults
 ```
 
 ## Tutorials
