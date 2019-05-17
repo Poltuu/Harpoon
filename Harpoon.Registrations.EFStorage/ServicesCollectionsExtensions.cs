@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IHarpoonBuilder RegisterWebHooksUsingEfStorage<TContext, TWebHookTriggerProvider>(this IHarpoonBuilder harpoon)
             where TContext : DbContext, IRegistrationsContext
             where TWebHookTriggerProvider : class, IWebHookTriggerProvider
-            => harpoon.RegisterWebHooksUsingEfStorage<TContext>(b => { });
+            => harpoon.RegisterWebHooksUsingEfStorage<TContext, TWebHookTriggerProvider>(b => { });
 
         /// <summary>
         /// Registers <see cref="WebHookStore{TContext}"/> as <see cref="IWebHookStore"/> and <see cref="WebHookRegistrationStore{TContext}"/> as <see cref="IWebHookRegistrationStore"/>.

@@ -561,7 +561,8 @@ The class `WebHookTrigger` represents your available events for consumer to subs
 
 - `string Id`: a unique string, typically in the form of `noun.verb`
 - `string Description`: a short description for your interface
-- `OpenApiSchema Template`: you must describe the schema of your data using a `OpenApiSchema`.
+- `Type PayloadType`: the type of the payload. This is necessary to auto-generate the documentation
+- `OpenApiSchema Schema`: you must describe the schema of your data using a `OpenApiSchema`, as it is used for validation of webhooks registrations.
 The documentation regarding your webhooks can later on be auto-generated, using the ``[WebHookSubscriptionFilter]`` on your subscription endpoint of your API. This is the default if you use `Harpoon.Controllers`.
 
 The following code exposes the default way to benefit from the auto generated Open Api documentation via swagger.
@@ -571,11 +572,17 @@ The following code exposes the default way to benefit from the auto generated Op
 
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddHarpoon(h => { /* your configuration */ });
+    services.AddHarpoon(h =>
+    {
+         // your configuration here
+        //...
+         h.AddControllers<MyWebHookTriggerProvider>();
+    });
 
     services.AddSwaggerGen(c =>
     {
         // configuration of your own apis
+        //...
         c.AddHarpoonDocumentation();
     });
 }
