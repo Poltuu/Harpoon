@@ -38,7 +38,7 @@ namespace Harpoon.Controllers
         /// Gets all WebHooks belonging to the current user.
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<IReadOnlyList<IWebHook>>> GetAsync()
+        public async Task<ActionResult<IReadOnlyList<WebHook>>> GetAsync()
         {
             return Ok(await _webHookRegistrationStore.GetWebHooksAsync(User, HttpContext.RequestAborted));
         }
@@ -50,7 +50,7 @@ namespace Harpoon.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesDefaultResponseType]
-        public async Task<ActionResult<IWebHook>> GetByIdAsync(Guid id)
+        public async Task<ActionResult<WebHook>> GetByIdAsync(Guid id)
         {
             var webHook = await _webHookRegistrationStore.GetWebHookAsync(User, id, HttpContext.RequestAborted);
             if (webHook == null)
@@ -68,7 +68,7 @@ namespace Harpoon.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [WebHookSubscriptionPoint]
-        public async Task<ActionResult> PostAsync([FromBody]WebHookDTO webHook)
+        public async Task<ActionResult> PostAsync([FromBody]WebHook webHook)
         {
             if (webHook == null)
             {
@@ -113,7 +113,7 @@ namespace Harpoon.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> PutAsync(Guid id, [FromBody]WebHookDTO webHook)
+        public async Task<IActionResult> PutAsync(Guid id, [FromBody]WebHook webHook)
         {
             if (webHook == null)
             {

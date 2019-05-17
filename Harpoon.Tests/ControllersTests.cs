@@ -44,19 +44,19 @@ namespace Harpoon.Tests
             services.AddSingleton(failedValidator.Object);
 
             var failController1 = new WebHooksController(failedStore.Object, new Mock<ILogger<WebHooksController>>().Object, failedValidator.Object);
-            Assert.Equal(500, ((await failController1.PostAsync(new WebHookDTO())) as StatusCodeResult).StatusCode);
-            Assert.Equal(500, ((await failController1.PutAsync(new Guid(), new WebHookDTO())) as StatusCodeResult).StatusCode);
+            Assert.Equal(500, ((await failController1.PostAsync(new WebHook())) as StatusCodeResult).StatusCode);
+            Assert.Equal(500, ((await failController1.PutAsync(new Guid(), new WebHook())) as StatusCodeResult).StatusCode);
 
             var failController2 = new WebHooksController(failedStore.Object, new Mock<ILogger<WebHooksController>>().Object, new Mock<IWebHookValidator>().Object);
-            Assert.Equal(500, ((await failController2.PostAsync(new WebHookDTO())) as StatusCodeResult).StatusCode);
-            Assert.Equal(500, ((await failController2.PutAsync(new Guid(), new WebHookDTO())) as StatusCodeResult).StatusCode);
+            Assert.Equal(500, ((await failController2.PostAsync(new WebHook())) as StatusCodeResult).StatusCode);
+            Assert.Equal(500, ((await failController2.PutAsync(new Guid(), new WebHook())) as StatusCodeResult).StatusCode);
             Assert.Equal(500, ((await failController2.DeleteByIdAsync(new Guid())) as StatusCodeResult).StatusCode);
             Assert.Equal(500, ((await failController2.DeleteAsync()) as StatusCodeResult).StatusCode);
 
             var failedStore2 = new Mock<IWebHookRegistrationStore>();
             failedStore2.Setup(s => s.InsertWebHookAsync(It.IsAny<IPrincipal>(), It.IsAny<IWebHook>(), It.IsAny<CancellationToken>())).ReturnsAsync(WebHookRegistrationStoreResult.InternalError);
             var failController3 = new WebHooksController(failedStore2.Object, new Mock<ILogger<WebHooksController>>().Object, new Mock<IWebHookValidator>().Object);
-            Assert.Equal(500, ((await failController3.PostAsync(new WebHookDTO())) as StatusCodeResult).StatusCode);
+            Assert.Equal(500, ((await failController3.PostAsync(new WebHook())) as StatusCodeResult).StatusCode);
         }
 
         [Fact]
@@ -83,13 +83,13 @@ namespace Harpoon.Tests
             Assert.Equal(HttpStatusCode.BadRequest, badCreationResponse.StatusCode);
 
             //invalid as no url
-            var newWebHook = new WebHookDTO
+            var newWebHook = new WebHook
             {
                 Id = Guid.NewGuid(),
                 Secret = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-_",
-                Filters = new List<WebHookFilterDTO>
+                Filters = new List<WebHookFilter>
                 {
-                    new WebHookFilterDTO
+                    new WebHookFilter
                     {
                         Trigger = "noun.verb"
                     }
@@ -112,14 +112,14 @@ namespace Harpoon.Tests
         public async Task PutTestsAsync()
         {
             var id = Guid.NewGuid();
-            var newWebHook = new WebHookDTO
+            var newWebHook = new WebHook
             {
                 Id = id,
                 Callback = new Uri("http://www.example2.org?noecho="),
                 Secret = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-_",
-                Filters = new List<WebHookFilterDTO>
+                Filters = new List<WebHookFilter>
                 {
-                    new WebHookFilterDTO
+                    new WebHookFilter
                     {
                         Trigger = "noun.verb"
                     }
@@ -154,14 +154,14 @@ namespace Harpoon.Tests
         public async Task DeleteTestsAsync()
         {
             var id = Guid.NewGuid();
-            var newWebHook = new WebHookDTO
+            var newWebHook = new WebHook
             {
                 Id = id,
                 Callback = new Uri("http://www.example2.org?noecho="),
                 Secret = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-_",
-                Filters = new List<WebHookFilterDTO>
+                Filters = new List<WebHookFilter>
                 {
-                    new WebHookFilterDTO
+                    new WebHookFilter
                     {
                         Trigger = "noun.verb"
                     }
