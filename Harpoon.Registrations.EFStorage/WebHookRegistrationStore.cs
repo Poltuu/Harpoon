@@ -118,7 +118,7 @@ namespace Harpoon.Registrations.EFStorage
                 Filters = webHook.Filters.Select(f => new WebHookFilter
                 {
                     Trigger = f.Trigger,
-                    Parameters = f.Parameters == null ? null : new Dictionary<string, object>(f.Parameters)
+                    Parameters = f.Parameters?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
                 }).ToList()
             };
 
@@ -172,7 +172,7 @@ namespace Harpoon.Registrations.EFStorage
                 dbWebHook.Filters = webHook.Filters.Select(f => new WebHookFilter
                 {
                     Trigger = f.Trigger,
-                    Parameters = f.Parameters == null ? null : new Dictionary<string, object>(f.Parameters)
+                    Parameters = f.Parameters?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
                 }).ToList();
             }
 

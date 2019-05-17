@@ -54,7 +54,9 @@ namespace Harpoon.Registrations
         /// <param name="payload"></param>
         /// <returns></returns>
         protected virtual bool IsPayloadMatchingParameter(string key, object value, object payload)
-            => IsMatchingParameter(new Queue<string>((key ?? "").Split(".")), value, payload);
+        {
+            return IsMatchingParameter(new Queue<string>((key ?? "").Split('.')), value, payload);
+        }
 
         private bool IsMatchingParameter(Queue<string> properties, object value, object payload)
         {
