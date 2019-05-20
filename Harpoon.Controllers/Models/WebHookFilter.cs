@@ -28,7 +28,7 @@ namespace Harpoon.Controllers.Models
 
             Id = filter.Id;
             Trigger = filter.Trigger;
-            Parameters = filter.Parameters.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            Parameters = filter.Parameters?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
         }
     }
 }

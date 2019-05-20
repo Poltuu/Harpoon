@@ -36,7 +36,7 @@ namespace Harpoon.Controllers.Models
             Secret = webHook.Secret;
             IsPaused = webHook.IsPaused;
 
-            Filters = webHook.Filters.Select(f => new WebHookFilter(f)).ToList();
+            Filters = webHook.Filters?.Select(f => new WebHookFilter(f)).ToList();
         }
     }
 }

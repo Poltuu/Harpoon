@@ -100,7 +100,18 @@ namespace Harpoon.Controllers.Swashbuckle
                             Required = true,
                             Content = new Dictionary<string, OpenApiMediaType>
                             {
-                                ["application/json"] = new OpenApiMediaType { Schema = schema }
+                                ["application/json"] = new OpenApiMediaType
+                                {
+                                    Schema = new OpenApiSchema
+                                    {
+                                        Type = "object",
+                                        Properties = new Dictionary<string, OpenApiSchema>
+                                        {
+                                            [PseudoCamelCase(nameof(Payload.NotificationId))] = new OpenApiSchema { Type = "string", Format = "uuid", Description = $"Must match {DefaultWebHookSender.UniqueIdKey} header value" },
+                                            [PseudoCamelCase(nameof(Payload.Content))] = trigger.Schema
+                                        }
+                                    }
+                                }
                             }
                         },
                     }

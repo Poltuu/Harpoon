@@ -4,10 +4,12 @@
 
 [![logo](https://github.com/Poltuu/Harpoon/blob/master/icon.png?raw=true)](logo)
 
+DISCLAIMER : this library is still experimental, and should not be considered production-ready until version 1.0.0.
+
 Harpoon provides support for sending your own WebHooks. The general philosophy is to let you design each step your way, while providing strong default solutions. The modularity lets you split the process into n microservices if you deem necessary.
 
-Webhooks processing and sending is located in the following nugets `Harpoon.Common` and `Harpoon.MassTransit`.
-Webhooks registrations and exposure is therefore separated in differents components, namely `Harpoon.Registrations`, `Harpoon.Registrations.EFStorage` and `Harpoon.Controllers`
+Webhooks processing and sending is located in the nugets `Harpoon.Common` and `Harpoon.MassTransit`.
+Webhooks registrations and exposure is located in the nugets `Harpoon.Registrations`, `Harpoon.Registrations.EFStorage` and `Harpoon.Controllers`
 
 ## General architecture and classes
 
@@ -17,15 +19,15 @@ Harpoon strongly separates each necessary component to register and retrieve web
 
 To start a notification procees, you need to call the `NotifyAsync` method on the `IWebHookService` with the appropriate `IWebHookNotification`.
 
-`IWebHookNotification` simply exposes a `TriggerId` and a payload (`IReadOnlyDictionary<string, object>`).
+`IWebHookNotification` exposes a id for the event `string TriggerId` and a payload (`object Payload`).
 
-Depending on your configuration, the `IWebHookNotification` can be passed synchronously (on the current thread), via a `QueuedHostedService` (defers the local treatment of the notification the a background service) or via a messaging service (lets you potentially treat the notification on another application) to the next handler, `IQueuedProcessor<IWebHookNotification>`.
+Depending on your configuration, the `IWebHookNotification` can be passed synchronously (on the current thread), via a `QueuedHostedService` (defers the local treatment of the notification the a background service) or via a messaging service if you use `Harpoon.MassTransit` (lets you potentially treat the notification on another application) to the next handler, `IQueuedProcessor<IWebHookNotification>`.
 
-`IQueuedProcessor<IWebHookNotification>` asks the `IWebHookStore` to find the matching registrations, and passes the generated `IWebHookWorkItem` along to the registered `IWebHookSender`. To use EF Core to register your webhooks, use the package `Harpoon.Registrations.EFStorage` (see details below). `IWebHookWorkItem` contains the notification and a matching registration. One `IWebHookNotification` may therefore generate a lot of `IWebHookWorkItem`.
+`IQueuedProcessor<IWebHookNotification>` lets `IWebHookStore` find the matching registrations, and passes the generated `IWebHookWorkItem` along to the registered `IWebHookSender`. To use EF Core to register your webhooks, use `Harpoon.Registrations.EFStorage` (see details below). `IWebHookWorkItem` contains the notification and a matching registration. One `IWebHookNotification` may therefore generate a lot of `IWebHookWorkItem`.
 
-Once again, the treatment of the `IWebHookWorkItem` can be done synchronously (on the current thread), via a `QueuedHostedService` (to defer the local treatment) or via a messaging service to the next handler `IQueuedProcessor<IWebHookWorkItem>` (to potentially treat the IWebHookWorkItem on another application).
+Once again, the treatment of the `IWebHookWorkItem` can be done synchronously (on the current thread), via a `QueuedHostedService` (to defer the local treatment) or via a messaging service (using `Harpoon.MassTransit`) to the next handler `IQueuedProcessor<IWebHookWorkItem>` (to potentially treat the IWebHookWorkItem on another application).
 
-Finally, the `IWebHookWorkItem` are sent via the `IQueuedProcessor<IWebHookWorkItem>`. The general retry policy and failures policy should be configured using `Polly` during the dependency injection registration, as the `IHttpClientBuilder` is exposed; there is no default for this.
+Finally, the `IWebHookWorkItem` are sent via the `IQueuedProcessor<IWebHookWorkItem>`. The general retry policy and failures policy should be configured using `Polly` during the dependency injection registration, as the `IHttpClientBuilder` is exposed; the default in cas of problem is to do nothing. Those behaviors can also be overriden directly.
 
 ## General Q/A
 
@@ -33,31 +35,31 @@ Finally, the `IWebHookWorkItem` are sent via the `IQueuedProcessor<IWebHookWorkI
 
 The ``DefaultWebHookValidator`` expects the following things:
 
-- `Id` must be a non default Guid. If not, a new `guid` is assigned.
+- `Id` must be a non default ``Guid``. If not, a new `Guid` is assigned.
 - `Secret` must be a 64 characters long string. If empty, a new string is assigned.
 - `Filters` must be valid, which means:
   - the `WebHook` must contain at least one filter
-  - the ``Trigger`` must match one of the available trigger, obtained by the `IWebHookTriggerProvider`
-  - if parameters are used, they must match the `OpenApiSchema WebHookTrigger.Template`. Type must match, and keys must exist.
+  - the ``Trigger`` must match one of the available trigger, obtained by the `IWebHookTriggerProvider`. (see below to allow pattern matching)
+  - if parameters are used, they must match the `OpenApiSchema WebHookTrigger.Template`, which means than keys must exist and that types must match.
 - the `callback` url must be a valid http(s) url. If the url contains the `noecho` parameter, the url is not tested.
 If not, the validator will send a `GET` request to the callback with an ``echo`` query parameter, and expect to see the given `echo` returned in the body.
 
 ### How data protection works on expired keys
 
-The default `ISecretProtector` will use expired keys if the current key is not the one used to protect the database content. If you widh to change this behavior, you need to implement your own `ISecretProtector`, or to change your key expiration policy.
+The default `ISecretProtector` will use expired keys if the current key is not the one used to protect the database content. If you want to change this behavior, you need to implement your own `ISecretProtector`, or to change your key expiration policy.
 
 ### What's the default way the webhook reference the current user in the database
 
-To reference which user created them, the `DefaultPrincipalIdGetter` will try to find a string from the `IPrincipal` the following way:
+To reference which user created them, the `DefaultPrincipalIdGetter` will try to find a unique string from the `IPrincipal` the following way:
 
 - if the principal is a ``ClaimsPrincipal`` with a claim of type `ClaimTypes.Name`, return it
 - if the principal is a ``ClaimsPrincipal`` with a claim of type `ClaimTypes.NameIdentifier`, return it
 - if the principal has a named identity, return it
-- throw if nothing was found
+- throws if nothing was found
 
 ### How are webhooks registrations matched to an incoming notification
 
-WebHooks registrations are matched to incoming notifications via two mechanisms:
+WebHooks registrations are matched to incoming notifications via then union of two mechanisms:
 
 - matching of `TriggerId`
 - matching of `Payload`
@@ -71,13 +73,13 @@ The user may also filter which webhooks he is interested in, by indicating in th
 By default, it is possible to filter on nested properties using a dot i.e. `["property1.sub.value"] = 2`.
 The property matching is case insensitive by default.
 
-The following example show you different `WebHook` and if they match or not the given notification.
+The following example shows different `WebHook` and if they match or not the given notification.
 
 ```c#
 var notification = new WebHookNotification
 {
     TriggerId = "something_happened",
-    Payload = new Payload
+    Payload = new MyPayload
     {
         Id = 234,
         Property = "value",
@@ -146,17 +148,17 @@ new WebHookFilter //does not match as sequence is different from [2, 3]
 
 ### How are webhooks signed, and how to check the signature
 
-The default `ISignatureService` calculates an `HMACSHA256` over the JSON send, using the shared secret. To verify the secret validty, the consumer may use the following snippet (c#)
+The default `ISignatureService` calculates an `HMACSHA256` over the JSON send, using the shared secret. To verify the secret validity, the consumer may use the following c# snippet
 
 ```c#
 //code from DefaultSignatureService.cs
-public bool VerifySignature(string expectedSignature, string sharedSecret, string jsonContent)
+public bool VerifySignature(string foundSignature, string sharedSecret, string jsonContent)
 {
     var secretBytes = Encoding.UTF8.GetBytes(sharedSecret);
     var data = Encoding.UTF8.GetBytes(jsonContent ?? "");
     using (var hasher = new HMACSHA256(secretBytes))
     {
-        return ToHex(hasher.ComputeHash(data)) == expectedSignature;
+        return ToHex(hasher.ComputeHash(data)) == foundSignature;
     }
 }
 private string ToHex(byte[] data)
@@ -183,7 +185,7 @@ private string ToHex(byte[] data)
 
 The default behavior is to do nothing. If you wish to change it, you may:
 
-- create our own `IWebHookSender`, potentially by inheriting from `DefaultWebHookSender` or `EFWebHookSender`. Those classes expose the following methods to helpe deal with errors
+- Create our own `IWebHookSender`, potentially by inheriting from `DefaultWebHookSender` or `EFWebHookSender`. Those classes expose the following methods to help you deal with errors
 
 ```c#
 protected virtual Task OnSuccessAsync(IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken);
@@ -191,8 +193,8 @@ protected virtual Task OnNotFoundAsync(IWebHookWorkItem webHookWorkItem, Cancell
 protected virtual Task OnFailureAsync(Exception exception, IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken)
 ```
 
-- use the `EFWebHookSender`, that automatically pauses webhooks in case of 404 and 410.Please notice that the given `webHookWorkItem` is NOT attached to the current `DbContext`.
-- during services configuration, use the exposed `IHttpClientBuilder` to apply a retry/failures policy. You may use the following extensions method on `IHarpoonBuilder`:
+- Use the `EFWebHookSender`, that automatically pauses webhooks in case of 404 and 410. Please notice that the given `WebHookWorkItem` is NOT attached to the current `DbContext`.
+- During services configuration, use the exposed `IHttpClientBuilder` to apply a retry/failures policy. You may use the following extensions method on `IHarpoonBuilder`:
 
 ```c#
 h.UseDefaultWebHookWorkItemProcessor(Action<IHttpClientBuilder> senderPolicy); //when using the default processor
@@ -221,14 +223,14 @@ public class MyClass
 
     public async Task MyMethodAsync(/* */)
     {
-         //this will be serialized and send to the consumers
         var notification = new WebHookNotification
         {
             TriggerId = "SomObject.Created",
-            Payload = new Dictionary<string, object>
+            //this will be serialized and send to the consumers
+            Payload = new MyPayload
             {
-                ["someValue"] = 23,
-                ["someOtherValue"] = "value"
+                SomeValue = 23,
+                SomeOtherValue = "value"
             }
         };
 
@@ -262,7 +264,7 @@ public void ConfigureServices(IServiceCollection services)
 
 ### How to notify another application, and let it treat the notifications synchronously, via a messaging service
 
-You need to include via nuget `Harpoon.MassTransit` in App1 and App2 for this to work.
+You need to include the nuget `Harpoon.MassTransit` in App1 and App2 for this to work.
 
 ```c#
 //App1.Startup.cs
@@ -364,7 +366,8 @@ public void ConfigureServices(IServiceCollection services)
 
     services.AddHarpoon(h =>
     {
-        h.RegisterWebHooksUsingEfStorage<MyContext>(); // MyContext needs to implement IRegistrationsContext
+        // MyContext needs to implement IRegistrationsContext, MyWebHookTriggerProvider to implement IWebHookTriggerProvider
+        h.RegisterWebHooksUsingEfStorage<MyContext, MyWebHookTriggerProvider>();
         h.UseDefaultDataProtection(p => { }, o => { }); // the default data protection uses System.DataProtection
     });
 }
@@ -389,7 +392,7 @@ public class TestContext : DbContext, IRegistrationsContext
 
 ### How to use default REST controllers
 
-To use default mvc controllers to provide default REST operations on your webhooks, simply add the nuget package `Harpoon.Controllers`.
+To use the default mvc controllers to provide REST operations on your webhooks, add the nuget package `Harpoon.Controllers`. The controlelrs should be automatically added to your application.
 You also need to register a `IWebHookValidator` in your DI; you may use `.UseDefaultValidator()` or provide your own.
 
 ```c#
@@ -435,7 +438,7 @@ public void ConfigureServices(IServiceCollection services)
 
 ### How to use pattern matching for triggers
 
-If you want to allow users to registers webhooks on triggers (which is not on by default) such as `object.*` that would apply to `object.created`, `object.updated` and so forth, you need to do two things:
+If you want to allow users to registers webhooks on triggers (which is not on by default) such as `object.*` that would apply to `object.created`, `object.updated` and so forth, you need to:
 
 - Change default webhooks registration validation `IWebHookValidator.ValidateAsync` to allow for such triggers to be considered valid.
 - Modify default ``IWebHookStore`` implementation so that the trigger is understood correctly.
@@ -561,9 +564,22 @@ The class `WebHookTrigger` represents your available events for consumer to subs
 
 - `string Id`: a unique string, typically in the form of `noun.verb`
 - `string Description`: a short description for your interface
-- `Type PayloadType`: the type of the payload. This is necessary to auto-generate the documentation
+- `Type PayloadType`: the type of the payload. This is necessary for the documentation auto-generation, but not for the registration validation.
 - `OpenApiSchema Schema`: you must describe the schema of your data using a `OpenApiSchema`, as it is used for validation of webhooks registrations.
 The documentation regarding your webhooks can later on be auto-generated, using the ``[WebHookSubscriptionFilter]`` on your subscription endpoint of your API. This is the default if you use `Harpoon.Controllers`.
+
+If you want to generate the `OpenApiSchema Schema` from the `Type PayloadType`, you may want to add a reference to `Schashbuckle.AspNetCore.SwaggerGen`, in which case you may do the following:
+
+```c#
+using Swashbuckle.AspNetCore.SwaggerGen;
+
+///...
+
+var repository = new SchemaRepository(); //should be cached for all your triggers
+var generator = new SchemaGenerator(new SchemaGeneratorOptions(), null); //can be cached for all your triggers
+var schema = generator.GenerateSchema(trigger.PayloadType, repository)
+
+```
 
 The following code exposes the default way to benefit from the auto generated Open Api documentation via swagger.
 

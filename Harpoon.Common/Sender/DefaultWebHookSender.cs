@@ -137,7 +137,8 @@ namespace Harpoon.Sender
         /// <returns></returns>
         protected virtual HttpRequestMessage CreateRequest(IWebHookWorkItem webHookWorkItem)
         {
-            var serializedBody = JsonConvert.SerializeObject(webHookWorkItem.Notification.Payload);
+            var content = new Payload { NotificationId = webHookWorkItem.Id, Content = webHookWorkItem.Notification.Payload };
+            var serializedBody = JsonConvert.SerializeObject(content);
 
             var request = new HttpRequestMessage(HttpMethod.Post, webHookWorkItem.WebHook.Callback);
             AddHeaders(webHookWorkItem, request, SignatureService.GetSignature(webHookWorkItem.WebHook.Secret, serializedBody));

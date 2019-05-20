@@ -74,7 +74,7 @@ namespace Harpoon.Tests
         public static IEnumerable<object[]> PayloadData => new List<object[]>
         {
             new object[] { null },
-            new object[] { new Dictionary<string,object>() },
+            new object[] { new Dictionary<string, object>() },
             new object[] { new Dictionary<string, object> { ["param1"] = "value1" } },
         };
 
@@ -97,18 +97,22 @@ namespace Harpoon.Tests
                 Assert.Equal(HttpMethod.Post, m.Method);
                 Assert.Equal(webHook.Callback, m.RequestUri);
 
-                var content = JsonConvert.DeserializeObject<Dictionary<string, string>>(await m.Content.ReadAsStringAsync());
+                var content = JsonConvert.DeserializeObject<Payload>(await m.Content.ReadAsStringAsync());
 
                 if (notif.Payload != null)
                 {
-                    Assert.NotNull(content);
+                    Assert.NotEqual(default, content.NotificationId);
+                    Assert.NotNull(content.Content);
                 }
 
                 var headers = m.Headers.Select(kvp => kvp.Key).ToHashSet();
                 Assert.Contains(DefaultWebHookSender.TimestampKey, headers);
                 Assert.Contains(DefaultWebHookSender.UniqueIdKey, headers);
+                Assert.Equal(content.NotificationId.ToString(), m.Headers.GetValues(DefaultWebHookSender.UniqueIdKey).First());
+
                 Assert.Contains(DefaultWebHookSender.TriggerKey, headers);
                 Assert.Equal(notif.TriggerId, m.Headers.GetValues(DefaultWebHookSender.TriggerKey).First());
+
                 Assert.Contains(DefaultWebHookSender.SignatureHeader, headers);
                 Assert.Equal(signature, m.Headers.GetValues(DefaultWebHookSender.SignatureHeader).First());
             });
