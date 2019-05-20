@@ -25,20 +25,18 @@ namespace Harpoon.Tests
             var provider = new Mock<IWebHookTriggerProvider>();
             provider.Setup(p => p.GetAvailableTriggers()).Returns(new Dictionary<string, WebHookTrigger>
             {
-                ["my.trigger"] = new WebHookTrigger
+                ["my.trigger"] = new WebHookTrigger("my.trigger")
                 {
                     Description = "blabla",
-                    Id = "my.trigger",
                     Schema = new OpenApiSchema
                     {
                         Type = "object",
                         Properties = new Dictionary<string, OpenApiSchema> { ["prop1"] = new OpenApiSchema { Type = "string" } }
                     }
                 },
-                ["my.trigger.2"] = new WebHookTrigger
+                ["my.trigger.2"] = new WebHookTrigger("my.trigger.2")
                 {
                     Description = "blabla2",
-                    Id = "my.trigger.2",
                     Schema = new OpenApiSchema
                     {
                         Type = "object",
@@ -61,20 +59,18 @@ namespace Harpoon.Tests
             var provider = new Mock<IWebHookTriggerProvider>();
             provider.Setup(p => p.GetAvailableTriggers()).Returns(new Dictionary<string, WebHookTrigger>
             {
-                ["my.trigger"] = new WebHookTrigger
+                ["my.trigger"] = new WebHookTrigger("my.trigger")
                 {
                     Description = "blabla",
-                    Id = "my.trigger",
                     Schema = new OpenApiSchema
                     {
                         Type = "object",
                         Properties = new Dictionary<string, OpenApiSchema> { ["prop1"] = new OpenApiSchema { Type = "string" } }
                     }
                 },
-                ["my.trigger.2"] = new WebHookTrigger
+                ["my.trigger.2"] = new WebHookTrigger("my.trigger.2")
                 {
                     Description = "blabla2",
-                    Id = "my.trigger.2",
                     Schema = new OpenApiSchema
                     {
                         Type = "object",

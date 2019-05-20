@@ -74,13 +74,12 @@ namespace Harpoon.Tests
         public static IEnumerable<object[]> PayloadData => new List<object[]>
         {
             new object[] { null },
-            new object[] { new Dictionary<string, object>() },
-            new object[] { new Dictionary<string, object> { ["param1"] = "value1" } },
+            new object[] { new Payloadable { NotificationId = Guid.NewGuid()} },
         };
 
         [Theory]
         [MemberData(nameof(PayloadData))]
-        public async Task NormalScenarioAsync(object payload)
+        public async Task NormalScenarioAsync(IPayloadable payload)
         {
             var logger = new Mock<ILogger<DefaultWebHookSender>>();
             var signature = "FIXED_SIGNATURE";
@@ -97,18 +96,17 @@ namespace Harpoon.Tests
                 Assert.Equal(HttpMethod.Post, m.Method);
                 Assert.Equal(webHook.Callback, m.RequestUri);
 
-                var content = JsonConvert.DeserializeObject<Payload>(await m.Content.ReadAsStringAsync());
-
-                if (notif.Payload != null)
-                {
-                    Assert.NotEqual(default, content.NotificationId);
-                    Assert.NotNull(content.Content);
-                }
+                var content = JsonConvert.DeserializeObject<Payloadable>(await m.Content.ReadAsStringAsync());
 
                 var headers = m.Headers.Select(kvp => kvp.Key).ToHashSet();
                 Assert.Contains(DefaultWebHookSender.TimestampKey, headers);
                 Assert.Contains(DefaultWebHookSender.UniqueIdKey, headers);
-                Assert.Equal(content.NotificationId.ToString(), m.Headers.GetValues(DefaultWebHookSender.UniqueIdKey).First());
+
+                if (notif.Payload != null)
+                {
+                    Assert.NotEqual(default, content.NotificationId);
+                    Assert.Equal(content.NotificationId.ToString(), m.Headers.GetValues(DefaultWebHookSender.UniqueIdKey).First());
+                }
 
                 Assert.Contains(DefaultWebHookSender.TriggerKey, headers);
                 Assert.Equal(notif.TriggerId, m.Headers.GetValues(DefaultWebHookSender.TriggerKey).First());

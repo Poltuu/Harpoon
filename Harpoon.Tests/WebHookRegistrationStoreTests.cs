@@ -122,6 +122,14 @@ namespace Harpoon.Tests
             return result;
         }
 
+        private class Payload : IPayloadable
+        {
+            public int Property { get; set; }
+            public string OtherProperty { get; set; }
+            public string ThirdProperty { get; set; }
+            public Guid NotificationId { get; set; }
+        }
+
         [Fact]
         public async Task GetAllTests()
         {
@@ -133,11 +141,11 @@ namespace Harpoon.Tests
             var payload = new WebHookNotification
             {
                 TriggerId = "noun.verb",
-                Payload = new Dictionary<string, object>
+                Payload = new Payload
                 {
-                    ["property"] = 2,
-                    ["otherProperty"] = "value",
-                    ["thirdProperty"] = "nope"
+                    Property = 2,
+                    OtherProperty = "value",
+                    ThirdProperty = "nope"
                 }
             };
             var webHooks = await store.GetApplicableWebHooksAsync(payload);

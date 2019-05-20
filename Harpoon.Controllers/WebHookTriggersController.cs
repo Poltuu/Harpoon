@@ -9,7 +9,7 @@ namespace Harpoon.Controllers
     /// <summary>
     /// <see cref="WebHookTriggersController"/> allows the caller to get the list of triggers available for <see cref="IWebHook"/> registration.
     /// </summary>
-    [Authorize, ApiController, Route("api/webhooks/triggers"), ApiExplorerSettings(GroupName = OpenApi.GroupName), Produces("application/json")]
+    [Authorize, ApiController, Route("api/webhooktriggers"), ApiExplorerSettings(GroupName = OpenApi.GroupName), Produces("application/json")]
     public class WebHookTriggersController : ControllerBase
     {
         private readonly IWebHookTriggerProvider _webHookTriggerProvider;

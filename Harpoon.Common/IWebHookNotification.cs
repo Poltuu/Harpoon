@@ -13,9 +13,8 @@
 
         /// <summary>
         /// Gets an serializable object representing the payload to be sent to the registered webhooks
-        /// This is serialized into the send payload, surrounded by a wrapper class containing the unique id of the webhook
-        /// This allows the consumer to verify that the webhook was not send several times.
+        /// This is serialized as-is using the default json serialization settings
         /// </summary>
-        object Payload { get; }
+        IPayloadable Payload { get; }
     }
 }

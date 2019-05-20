@@ -48,7 +48,7 @@ namespace Harpoon.Tests
             };
             var triggersById = new Dictionary<string, WebHookTrigger>
             {
-                ["valid"] = new WebHookTrigger { Id = "valid", Schema = schema },
+                ["valid"] = new WebHookTrigger("valid") { Schema = schema },
             };
             var triggers = new Mock<IWebHookTriggerProvider>();
             triggers.Setup(s => s.GetAvailableTriggers()).Returns(triggersById);
@@ -131,7 +131,7 @@ namespace Harpoon.Tests
             };
             var triggersById = new Dictionary<string, WebHookTrigger>
             {
-                ["valid"] = new WebHookTrigger { Id = "valid", Schema = schema },
+                ["valid"] = new WebHookTrigger("valid") { Schema = schema },
             };
 
             var triggers = new Mock<IWebHookTriggerProvider>();

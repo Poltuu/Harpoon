@@ -21,7 +21,7 @@ namespace Harpoon
         {
             Notification = notification ?? throw new ArgumentNullException(nameof(notification));
             WebHook = webHook ?? throw new ArgumentNullException(nameof(webHook));
-            Id = Guid.NewGuid();
+            Id = notification.Payload?.NotificationId ?? Guid.NewGuid();
             Timestamp = DateTime.UtcNow;
         }
     }

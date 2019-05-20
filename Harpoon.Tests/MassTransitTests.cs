@@ -58,7 +58,7 @@ namespace Harpoon.Tests
             await service.NotifyAsync(new WebHookNotification
             {
                 TriggerId = "trigger",
-                Payload = new Dictionary<string, object>()
+                Payload = new Payloadable()
             });
 
             await Task.Delay(10000);
