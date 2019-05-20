@@ -268,7 +268,7 @@ namespace Harpoon.Registrations
             catch (Exception e)
             {
                 var message = $"WebHook {webHook.Id} callback verification failed: {e.Message}.{Environment.NewLine}To cancel callback verification, add `noecho` as a query parameter.";
-                Logger.LogError(message, e);
+                Logger.LogError(e, message);
                 throw new ArgumentException(message);
             }
         }

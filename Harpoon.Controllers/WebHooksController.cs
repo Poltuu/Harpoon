@@ -82,12 +82,12 @@ namespace Harpoon.Controllers
             }
             catch (ArgumentException ex)
             {
-                _logger.LogInformation("New webhook validation failed: " + ex.Message);
+                _logger.LogInformation($"New webhook validation failed: {ex.Message}");
                 return BadRequest(ex);
             }
             catch (Exception ex)
             {
-                _logger.LogError("New webhook validation unexpected failure: " + ex.Message);
+                _logger.LogError($"New webhook validation unexpected failure: {ex.Message}");
                 return StatusCode(500);
             }
 
@@ -102,7 +102,7 @@ namespace Harpoon.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError("Registration insertion unexpected failure: " + ex.Message);
+                _logger.LogError($"Registration insertion unexpected failure: {ex.Message}");
                 return StatusCode(500);
             }
         }
@@ -132,12 +132,12 @@ namespace Harpoon.Controllers
             }
             catch (ArgumentException ex)
             {
-                _logger.LogInformation($"Webhook {id} update validation failed: " + ex.Message);
+                _logger.LogInformation($"Webhook {id} update validation failed: {ex.Message}");
                 return BadRequest(ex);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Webhook {id} update validation unexpected failure: " + ex.Message);
+                _logger.LogError($"Webhook {id} update validation unexpected failure: {ex.Message}");
                 return StatusCode(500);
             }
 
@@ -148,7 +148,7 @@ namespace Harpoon.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Webhook {id} modification unexpected failure: " + ex.Message);
+                _logger.LogError($"Webhook {id} modification unexpected failure: {ex.Message}");
                 return StatusCode(500);
             }
         }
@@ -168,7 +168,7 @@ namespace Harpoon.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Webhook {id} deletion unexpected failure: " + ex.Message);
+                _logger.LogError($"Webhook {id} deletion unexpected failure: {ex.Message}");
                 return StatusCode(500);
             }
         }
@@ -188,7 +188,7 @@ namespace Harpoon.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Webhooks deletion unexpected failure: " + ex.Message);
+                _logger.LogError($"Webhooks deletion unexpected failure: {ex.Message}");
                 return StatusCode(500);
             }
         }

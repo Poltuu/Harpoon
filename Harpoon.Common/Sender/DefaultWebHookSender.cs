@@ -91,7 +91,7 @@ namespace Harpoon.Sender
             }
             catch (Exception e)
             {
-                Logger.LogError($"WebHook {webHookWorkItem.WebHook.Id} failed: {e.Message}.", e);
+                Logger.LogError(e, $"WebHook {webHookWorkItem.WebHook.Id} failed: {e.Message}.");
                 await OnFailureAsync(e, webHookWorkItem, cancellationToken);
             }
         }
