@@ -69,7 +69,7 @@ namespace Harpoon.Tests
         [Fact]
         public async Task GetAllTriggersTestsAsync()
         {
-            var response = await _fixture.Client.GetAsync("/api/webhooks/triggers");
+            var response = await _fixture.Client.GetAsync("/api/webhooktriggers");
             Assert.True(response.IsSuccessStatusCode);
         }
 
