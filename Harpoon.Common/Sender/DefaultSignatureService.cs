@@ -23,27 +23,8 @@ namespace Harpoon.Sender
 
             using (var hasher = new HMACSHA256(secretBytes))
             {
-                return ToHex(hasher.ComputeHash(data));
+                return Convert.ToBase64String(hasher.ComputeHash(data));
             }
-        }
-
-        private string ToHex(byte[] data)
-        {
-            if (data == null)
-            {
-                return string.Empty;
-            }
-
-            var content = new char[data.Length * 2];
-            var output = 0;
-            byte d;
-            for (var input = 0; input < data.Length; input++)
-            {
-                d = data[input];
-                content[output++] = _hexLookup[d / 0x10];
-                content[output++] = _hexLookup[d % 0x10];
-            }
-            return new string(content);
         }
     }
 }
