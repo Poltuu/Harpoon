@@ -48,7 +48,7 @@ namespace Harpoon.Tests
             Assert.NotNull(operation.Callbacks);
             Assert.NotEqual(0, operation.Callbacks.Count);
             Assert.Contains("trigger", operation.Callbacks.Keys);
-            Assert.Contains("request.body#/callback", operation.Callbacks["trigger"].PathItems.Keys.Select(k => k.Expression));
+            Assert.Contains("{$request.body#/callback}", operation.Callbacks["trigger"].PathItems.Keys.Select(k => k.Expression));
             Assert.Contains(OperationType.Post, operation.Callbacks["trigger"].PathItems.First().Value.Operations.Keys);
 
             var op = operation.Callbacks["trigger"].PathItems.First().Value.Operations[OperationType.Post];
