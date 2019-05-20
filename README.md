@@ -188,9 +188,9 @@ The default behavior is to do nothing. If you wish to change it, you may:
 - Create our own `IWebHookSender`, potentially by inheriting from `DefaultWebHookSender` or `EFWebHookSender`. Those classes expose the following methods to help you deal with errors
 
 ```c#
-protected virtual Task OnSuccessAsync(IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken);
-protected virtual Task OnNotFoundAsync(IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken);
-protected virtual Task OnFailureAsync(Exception exception, IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken)
+protected virtual Task OnSuccessAsync(HttpResponseMessage response, IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken);
+protected virtual Task OnNotFoundAsync(HttpResponseMessage response, IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken);
+protected virtual Task OnFailureAsync(HttpResponseMessage response, Exception exception, IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken)
 ```
 
 - Use the `EFWebHookSender`, that automatically pauses webhooks in case of 404 and 410. Please notice that the given `WebHookWorkItem` is NOT attached to the current `DbContext`.
@@ -225,7 +225,7 @@ public class MyClass
     {
         var notification = new WebHookNotification
         {
-            TriggerId = "SomObject.Created",
+            TriggerId = "SomeObject.Created",
             //this will be serialized and send to the consumers
             Payload = new MyPayload
             {

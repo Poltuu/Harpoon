@@ -31,7 +31,7 @@ namespace Harpoon.Sender.EF
         }
 
         /// <inheritdoc />
-        protected override async Task OnNotFoundAsync(IWebHookWorkItem workItem, CancellationToken cancellationToken)
+        protected override async Task OnNotFoundAsync(HttpResponseMessage response, IWebHookWorkItem workItem, CancellationToken cancellationToken)
         {
             var dbWebHook = await _context.WebHooks.FirstOrDefaultAsync(w => w.Id == workItem.WebHook.Id, cancellationToken);
             if (dbWebHook == null)
