@@ -7,8 +7,6 @@ namespace Harpoon.Sender
     /// <inheritdoc />
     public class DefaultSignatureService : ISignatureService
     {
-        private static readonly char[] _hexLookup = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
-
         /// <inheritdoc />
         /// <exception cref="ArgumentException">The provider secret is not a 64 characters string</exception>
         public string GetSignature(string secret, string content)
