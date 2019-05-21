@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Harpoon.Registrations.EFStorage
 {
@@ -13,16 +12,5 @@ namespace Harpoon.Registrations.EFStorage
 
         /// <inheritdoc />
         public string Trigger { get; set; }
-
-        /// <inheritdoc />
-        public Dictionary<string, object> Parameters { get; set; }
-
-        IReadOnlyDictionary<string, object> IWebHookFilter.Parameters => Parameters;
-
-        /// <summary>Initializes a new instance of the <see cref="WebHookFilter"/> class.</summary>
-        public WebHookFilter()
-        {
-            Parameters = new Dictionary<string, object>();
-        }
     }
 }

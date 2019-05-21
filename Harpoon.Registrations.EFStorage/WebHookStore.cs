@@ -16,14 +16,12 @@ namespace Harpoon.Registrations.EFStorage
     {
         private readonly TContext _context;
         private readonly ISecretProtector _secretProtector;
-        private readonly IWebHookMatcher _webHookMatcher;
 
         /// <summary>Initializes a new instance of the <see cref="WebHookStore{TContext}"/> class.</summary>
-        public WebHookStore(TContext context, ISecretProtector secretProtector, IWebHookMatcher webHookMatcher)
+        public WebHookStore(TContext context, ISecretProtector secretProtector)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _secretProtector = secretProtector ?? throw new ArgumentNullException(nameof(secretProtector));
-            _webHookMatcher = webHookMatcher ?? throw new ArgumentNullException(nameof(webHookMatcher));
         }
 
         /// <inheritdoc />
@@ -39,14 +37,12 @@ namespace Harpoon.Registrations.EFStorage
                 .Include(w => w.Filters), notification)
                 .ToListAsync(cancellationToken);
 
-            var result = new List<IWebHook>();
-            foreach (var webHook in webHooks.Where(w => _webHookMatcher.Matches(w, notification)))
+            foreach (var webHook in webHooks)
             {
                 webHook.Secret = _secretProtector.Unprotect(webHook.ProtectedSecret);
                 webHook.Callback = new Uri(_secretProtector.Unprotect(webHook.ProtectedCallback));
-                result.Add(webHook);
             }
-            return result;
+            return webHooks;
         }
 
         /// <summary>

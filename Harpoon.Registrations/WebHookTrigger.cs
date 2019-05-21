@@ -1,5 +1,4 @@
-﻿using Microsoft.OpenApi.Models;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 
 namespace Harpoon.Registrations
@@ -42,17 +41,11 @@ namespace Harpoon.Registrations
         public Type PayloadType { get; set; }
 
         /// <summary>
-        /// Gets the template for payloads for this trigger.
-        /// </summary>
-        public OpenApiSchema Schema { get; set; }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="WebHookTrigger"/> class.
         /// </summary>
         public WebHookTrigger(string id)
         {
             Id = id ?? throw new ArgumentNullException(nameof(id));
-            Schema = new OpenApiSchema { Type = "object" };
         }
     }
 }

@@ -33,7 +33,6 @@ namespace Harpoon.Tests.Fixtures
             protector.Setup(s => s.CreateProtector(It.IsAny<string>())).Returns(protector.Object);
             services.AddSingleton<IDataProtectionProvider>(protector.Object);
             services.AddSingleton<ISecretProtector, DefaultSecretProtector>();
-            services.AddSingleton<IWebHookMatcher, DefaultWebHookMatcher>();
 
             services.AddSingleton(new Mock<ILogger<WebHookRegistrationStore<TestContext1>>>().Object);
             services.AddSingleton<WebHookRegistrationStore<TestContext1>>();

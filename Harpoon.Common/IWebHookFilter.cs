@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Harpoon
 {
@@ -14,15 +13,10 @@ namespace Harpoon
         Guid Id { get; set; }
 
         /// <summary>
-        /// Gets a unique name for listened event. Depending on the implementation, pattern matching can be used.
+        /// Gets a unique name for a listened event.
+        /// Depending on the implementation, pattern matching can be used.
         /// For instance, '*.created' could refer to any event similar to the pattern. 
         /// </summary>
         string Trigger { get; }
-
-        /// <summary>
-        /// Gets a collection of filters on the payload.
-        /// This offers a second layer of filter
-        /// </summary>
-        IReadOnlyDictionary<string, object> Parameters { get; }
     }
 }

@@ -1,8 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
@@ -17,30 +15,6 @@ namespace Harpoon.Registrations
     /// </summary>
     public class DefaultWebHookValidator : IWebHookValidator
     {
-        private static readonly Dictionary<(string, bool), HashSet<Type>> _validTypes = new Dictionary<(string, bool), HashSet<Type>>
-        {
-            [("number", false)] = new HashSet<Type>
-                {
-                    typeof(float), typeof(double), typeof(decimal), typeof(ulong), typeof(long), typeof(uint), typeof(int), typeof(ushort), typeof(short), typeof(sbyte), typeof(byte)
-                },
-            [("number", true)] = new HashSet<Type>
-                {
-                    typeof(float), typeof(double), typeof(decimal), typeof(ulong), typeof(long), typeof(uint), typeof(int), typeof(ushort), typeof(short), typeof(sbyte), typeof(byte),
-                    typeof(float?), typeof(double?), typeof(decimal?), typeof(ulong?), typeof(long?), typeof(uint?), typeof(int?), typeof(ushort?), typeof(short?), typeof(sbyte?), typeof(byte?)
-                },
-            [("integer", false)] = new HashSet<Type>
-                {
-                    typeof(ulong), typeof(long), typeof(uint), typeof(int), typeof(ushort), typeof(short), typeof(sbyte), typeof(byte)
-                },
-            [("integer", true)] = new HashSet<Type>
-                {
-                    typeof(ulong), typeof(long), typeof(uint), typeof(int), typeof(ushort), typeof(short), typeof(sbyte), typeof(byte),
-                    typeof(ulong?), typeof(long?), typeof(uint?), typeof(int?), typeof(ushort?), typeof(short?), typeof(sbyte?), typeof(byte?)
-                },
-            [("boolean", false)] = new HashSet<Type> { typeof(bool) },
-            [("boolean", true)] = new HashSet<Type> { typeof(bool), typeof(bool?) }
-        };
-
         private static readonly HashSet<string> ValidSchemes = new HashSet<string> { Uri.UriSchemeHttp.ToString(), Uri.UriSchemeHttps.ToString() };
 
         /// <summary>
@@ -160,69 +134,14 @@ namespace Harpoon.Registrations
                     errors.Add($" - Trigger {filter.Trigger} is not valid.");
                     continue;
                 }
-
-                var trigger = triggers[filter.Trigger];
-                if (filter.Parameters != null && trigger.Schema != null)
-                {
-                    foreach (var invalidParam in filter.Parameters.Where(kvp => !IsValidParameter(kvp.Key, kvp.Value, trigger.Schema)))
-                    {
-                        errors.Add($" - {invalidParam} is not a valid parameter to filter the trigger {filter.Trigger}.");
-                    }
-                }
             }
 
             if (errors.Count != 0)
             {
                 throw new ArgumentException("WebHooks filters are incorrect :" + Environment.NewLine + string.Join(Environment.NewLine, errors));
             }
+
             return Task.CompletedTask;
-        }
-
-        private bool IsValidParameter(string key, object value, OpenApiSchema schema)
-        {
-            if (string.IsNullOrEmpty(key) || schema?.Properties == null)
-            {
-                return false;
-            }
-
-            var parts = key.Split('.');
-            OpenApiSchema currentSchema = schema;
-            foreach (var part in parts)
-            {
-                if (!schema.Properties.ContainsKey(part))
-                {
-                    return false;
-                }
-
-                currentSchema = schema.Properties[part];
-                if (currentSchema.Type == "array")
-                {
-                    currentSchema = currentSchema.Items;
-                }
-
-                if (currentSchema == null)
-                {
-                    return false;
-                }
-            }
-
-            if (value == null)
-            {
-                return currentSchema.Nullable;
-            }
-
-            switch (currentSchema.Type)
-            {
-                case "string": return true;
-                case "number":
-                case "integer":
-                case "boolean ":
-                    return _validTypes[(currentSchema.Type, currentSchema.Nullable)].Contains(value.GetType());
-                case "array": return false;
-                case "object": return false;
-                default:
-                    throw new ArgumentException("Given OpenApiSchema Type does not match specification. Type is restricted to: string, number, integer, boolean, array and object.");
-            }
         }
 
         /// <summary>

@@ -40,7 +40,6 @@ The ``DefaultWebHookValidator`` expects the following things:
 - `Filters` must be valid, which means:
   - the `WebHook` must contain at least one filter
   - the ``Trigger`` must match one of the available trigger, obtained by the `IWebHookTriggerProvider`. (see below to allow pattern matching)
-  - if parameters are used, they must match the `OpenApiSchema WebHookTrigger.Template`, which means than keys must exist and that types must match.
 - the `callback` url must be a valid http(s) url. If the url contains the `noecho` parameter, the url is not tested.
 If not, the validator will send a `GET` request to the callback with an ``echo`` query parameter, and expect to see the given `echo` returned in the body.
 
@@ -59,19 +58,11 @@ To reference which user created them, the `DefaultPrincipalIdGetter` will try to
 
 ### How are webhooks registrations matched to an incoming notification
 
-WebHooks registrations are matched to incoming notifications via then union of two mechanisms:
-
-- matching of `TriggerId`
-- matching of `Payload`
+WebHooks registrations are matched to incoming notifications via the matching of `TriggerId`.
 
 By default, `Notification.TriggerId` needs to match `WebHook.Trigger` exactly. It is possible to use pattern matching (see below) to let the user match a wider range of events.
 
 WebHooks need also to not be paused.
-
-The user may also filter which webhooks he is interested in, by indicating in the `Parameters` property of one of the `WebHookFilter` of the `WebHook`.
-``Parameters`` is simply a `Dictionary<string, object>`.
-By default, it is possible to filter on nested properties using a dot i.e. `["property1.sub.value"] = 2`.
-The property matching is case insensitive by default.
 
 The following example shows different `WebHook` and if they match or not the given notification.
 
@@ -83,65 +74,18 @@ var notification = new WebHookNotification
     {
         Id = 234,
         Property = "value",
-        Sub = new SubPayload
-        {
-            Name = "my name"
-        },
+        Sub = new SubPayload { Name = "my name" },
         Sequence = new List<int> { 1, 2, 3 }
     }
-}
+};
 
 new WebHookFilter //does not match because of triggerId
 {
-    TriggerId = "something_else_happened",
-    Parameters = new Dictionary<string, object>()
+    TriggerId = "something_else_happened"
 };
-new WebHookFilter //matches because no parameters
+new WebHookFilter //matches because of triggerId
 {
-    TriggerId = "something_happened",
-    Parameters = new Dictionary<string, object>()
-};
-new WebHookFilter //does not match because of parameters
-{
-    TriggerId = "something_happened",
-    Parameters = new Dictionary<string, object>
-    {
-        ["id"] = 444
-    }
-};
-new WebHookFilter //does not match because of not all parameters match
-{
-    TriggerId = "something_happened",
-    Parameters = new Dictionary<string, object>
-    {
-        ["id"] = 234,
-        ["Property"] = "specific_value",
-    }
-};
-new WebHookFilter //matches
-{
-    TriggerId = "something_happened",
-    Parameters = new Dictionary<string, object>
-    {
-        ["id"] = 234,
-        ["sub.name"] = "my name",
-    }
-};
-new WebHookFilter //matches as sequence contains 2
-{
-    TriggerId = "something_happened",
-    Parameters = new Dictionary<string, object>
-    {
-        ["sequence"] = 2
-    }
-};
-new WebHookFilter //does not match as sequence is different from [2, 3]
-{
-    TriggerId = "something_happened",
-    Parameters = new Dictionary<string, object>
-    {
-        ["sequence"] = [2, 3]
-    }
+    TriggerId = "something_happened"
 };
 
 ```
@@ -442,7 +386,6 @@ If you want to allow users to registers webhooks on triggers (which is not on by
 
 - Change default webhooks registration validation `IWebHookValidator.ValidateAsync` to allow for such triggers to be considered valid.
 - Modify default ``IWebHookStore`` implementation so that the trigger is understood correctly.
-- Modify default ``IWebHookMatcher`` implementation so that the filters on which the parameters matching is done are correct.
 
 The following example is based on overrides of the default implementations, but other approaches are possible.
 
@@ -482,14 +425,6 @@ public class MyWebHookStore<TContext> : WebHookStore<TContext>
     }
 }
 
-public class MyWebHookMatcher: DefaultWebHookMatcher
-{
-    protected virtual bool IsTriggerMatching(string filterTrigger, string notificationTrigger)
-    {
-        return TriggerHerlper.GetPotentialTriggers(notificationTrigger).Any(f => f == filterTrigger);
-    }
-}
-
 public class MyWebHookValidator : DefaultWebHookValidator
 {
     //...ctr
@@ -515,17 +450,6 @@ public class MyWebHookValidator : DefaultWebHookValidator
             {
                 errors.Add($" - Trigger {filter.Trigger} is not valid.");
                 continue;
-            }
-
-            if (filter.Parameters != null)
-            {
-                foreach (var trigger in validTriggers[filter.Trigger])
-                {
-                    foreach (var invalidParam in filter.Parameters.Where(kvp => !IsValidParameter(kvp.Key, kvp.Value, trigger.Template)))
-                    {
-                        errors.Add($" - {invalidParam} is not a valid parameter to filter the trigger {filter.Trigger}.");
-                    }
-                }
             }
         }
 
@@ -564,22 +488,8 @@ The class `WebHookTrigger` represents your available events for consumer to subs
 
 - `string Id`: a unique string, typically in the form of `noun.verb`
 - `string Description`: a short description for your interface
-- `Type PayloadType`: the type of the payload. This is necessary for the documentation auto-generation, but not for the registration validation.
-- `OpenApiSchema Schema`: you must describe the schema of your data using a `OpenApiSchema`, as it is used for validation of webhooks registrations.
+- `Type PayloadType`: the type of the payload. This is necessary for the documentation auto-generation.
 The documentation regarding your webhooks can later on be auto-generated, using the ``[WebHookSubscriptionFilter]`` on your subscription endpoint of your API. This is the default if you use `Harpoon.Controllers`.
-
-If you want to generate the `OpenApiSchema Schema` from the `Type PayloadType`, you may want to add a reference to `Schashbuckle.AspNetCore.SwaggerGen`, in which case you may do the following:
-
-```c#
-using Swashbuckle.AspNetCore.SwaggerGen;
-
-///...
-
-var repository = new SchemaRepository(); //should be cached for all your triggers
-var generator = new SchemaGenerator(new SchemaGeneratorOptions(), null); //can be cached for all your triggers
-var schema = generator.GenerateSchema(trigger.PayloadType, repository)
-
-```
 
 The following code exposes the default way to benefit from the auto generated Open Api documentation via swagger.
 

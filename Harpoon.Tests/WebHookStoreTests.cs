@@ -1,5 +1,4 @@
-﻿using Harpoon.Registrations;
-using Harpoon.Registrations.EFStorage;
+﻿using Harpoon.Registrations.EFStorage;
 using Harpoon.Tests.Mocks;
 using Moq;
 using System;
@@ -14,11 +13,10 @@ namespace Harpoon.Tests
         [Fact]
         public async Task ArgNull()
         {
-            Assert.Throws<ArgumentNullException>(() => new WebHookStore<InMemoryContext>(null, new Mock<ISecretProtector>().Object, new Mock<IWebHookMatcher>().Object));
-            Assert.Throws<ArgumentNullException>(() => new WebHookStore<InMemoryContext>(new InMemoryContext(), null, new Mock<IWebHookMatcher>().Object));
-            Assert.Throws<ArgumentNullException>(() => new WebHookStore<InMemoryContext>(new InMemoryContext(), new Mock<ISecretProtector>().Object, null));
+            Assert.Throws<ArgumentNullException>(() => new WebHookStore<InMemoryContext>(null, new Mock<ISecretProtector>().Object));
+            Assert.Throws<ArgumentNullException>(() => new WebHookStore<InMemoryContext>(new InMemoryContext(), null));
 
-            var store = new WebHookStore<InMemoryContext>(new InMemoryContext(), new Mock<ISecretProtector>().Object, new Mock<IWebHookMatcher>().Object);
+            var store = new WebHookStore<InMemoryContext>(new InMemoryContext(), new Mock<ISecretProtector>().Object);
 
             await Assert.ThrowsAsync<ArgumentNullException>(() => store.GetApplicableWebHooksAsync(null));
         }
@@ -45,10 +43,7 @@ namespace Harpoon.Tests
             var protector = new Mock<ISecretProtector>();
             protector.Setup(p => p.Unprotect(It.IsAny<string>())).Returns(secret);
 
-            var matcher = new Mock<IWebHookMatcher>();
-            matcher.Setup(m => m.Matches(It.IsAny<IWebHook>(), It.IsAny<IWebHookNotification>())).Returns(true);
-
-            var store = new WebHookStore<InMemoryContext>(context, protector.Object, matcher.Object);
+            var store = new WebHookStore<InMemoryContext>(context, protector.Object);
 
             var result = await store.GetApplicableWebHooksAsync(notification);
             Assert.Equal(1, result.Count);

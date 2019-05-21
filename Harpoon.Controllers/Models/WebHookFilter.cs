@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Harpoon.Controllers.Models
 {
@@ -11,10 +9,6 @@ namespace Harpoon.Controllers.Models
         public Guid Id { get; set; }
         /// <inheritdoc />
         public string Trigger { get; set; }
-        /// <inheritdoc />
-        public Dictionary<string, object> Parameters { get; set; }
-
-        IReadOnlyDictionary<string, object> IWebHookFilter.Parameters => Parameters;
 
         /// <summary>Initializes a new instance of the <see cref="WebHookFilter"/> class.</summary>
         public WebHookFilter() { }
@@ -28,7 +22,6 @@ namespace Harpoon.Controllers.Models
 
             Id = filter.Id;
             Trigger = filter.Trigger;
-            Parameters = filter.Parameters?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
         }
     }
 }
