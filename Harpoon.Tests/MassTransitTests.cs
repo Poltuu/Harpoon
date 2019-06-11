@@ -9,6 +9,8 @@ using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -58,7 +60,10 @@ namespace Harpoon.Tests
             await service.NotifyAsync(new WebHookNotification
             {
                 TriggerId = "trigger",
-                Payload = new Payloadable()
+                Payload = new Dictionary<string, object>
+                {
+                    ["key"] = "value"
+                }
             });
 
             await Task.Delay(10000);
@@ -105,8 +110,22 @@ namespace Harpoon.Tests
         [Fact]
         public async Task FullIntegrationMassTransitTests()
         {
+            var guid = Guid.NewGuid();
+            var expectedContent = $@"{{""notificationId"":""{guid}"",""property"":23}}";
+
+            var counter = 0;
             var expectedWebHooksCount = 10;
-            var counter = new HttpClientMocker.CounterHandler();
+
+            var handler = new HttpClientMocker.CallbackHandler
+            {
+                Callback = async m =>
+                {
+                    var content = await m.Content.ReadAsStringAsync();
+                    Assert.Contains(expectedContent, content);
+                    Interlocked.Increment(ref counter);
+                    return new HttpResponseMessage(HttpStatusCode.OK);
+                },
+            };
             var services = new ServiceCollection();
 
             var store = new Mock<IWebHookStore>();
@@ -119,7 +138,7 @@ namespace Harpoon.Tests
             protector.Setup(p => p.GetSignature(It.IsAny<string>(), It.IsAny<string>())).Returns("secret");
             services.AddSingleton(protector.Object);
 
-            services.AddHarpoon(c => c.UseAllMassTransitDefaults(a => a.AddHttpMessageHandler(() => counter)));
+            services.AddHarpoon(c => c.UseAllMassTransitDefaults(a => a.AddHttpMessageHandler(() => handler)));
             services.AddMassTransit(p => Bus.Factory.CreateUsingRabbitMq(cfg =>
             {
                 var host = cfg.Host(new Uri("rabbitmq://localhost:5672"), hostConfigurator =>
@@ -141,12 +160,20 @@ namespace Harpoon.Tests
                 await host.StartAsync(token.Token);
             }
 
-            var notif = new WebHookNotification { TriggerId = "noun.verb" };
+            var notif = new WebHookNotification
+            {
+                TriggerId = "noun.verb",
+                Payload = new Dictionary<string, object>
+                {
+                    ["NotificationId"] = guid,
+                    ["Property"] = 23
+                }
+            };
             await provider.GetRequiredService<IWebHookService>().NotifyAsync(notif);
 
             await Task.Delay(10000);
 
-            Assert.Equal(expectedWebHooksCount, counter.Counter);
+            Assert.Equal(expectedWebHooksCount, counter);
             token.Cancel();
         }
     }

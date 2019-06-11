@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -86,7 +87,7 @@ namespace Harpoon.Tests
             return result;
         }
 
-        private class Payload : IPayloadable
+        private class Payload : Dictionary<string, object>
         {
             public int Property { get; set; }
             public string OtherProperty { get; set; }

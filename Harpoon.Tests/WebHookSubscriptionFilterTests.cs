@@ -11,7 +11,7 @@ namespace Harpoon.Tests
 {
     public class WebHookSubscriptionFilterTests
     {
-        class MyPayload : IPayloadable
+        class MyPayload
         {
             public Guid NotificationId { get; set; }
         }

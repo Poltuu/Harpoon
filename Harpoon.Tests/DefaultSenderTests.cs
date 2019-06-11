@@ -74,12 +74,17 @@ namespace Harpoon.Tests
         public static IEnumerable<object[]> PayloadData => new List<object[]>
         {
             new object[] { null },
-            new object[] { new Payloadable { NotificationId = Guid.NewGuid()} },
+            new object[] { new Dictionary<string, object>
+                {
+                    ["NotificationId"] = Guid.NewGuid(),
+                    ["Property"] = 23
+                }
+            },
         };
 
         [Theory]
         [MemberData(nameof(PayloadData))]
-        public async Task NormalScenarioAsync(IPayloadable payload)
+        public async Task NormalScenarioAsync(Dictionary<string, object> payload)
         {
             var logger = new Mock<ILogger<DefaultWebHookSender>>();
             var signature = "FIXED_SIGNATURE";
@@ -96,7 +101,7 @@ namespace Harpoon.Tests
                 Assert.Equal(HttpMethod.Post, m.Method);
                 Assert.Equal(webHook.Callback, m.RequestUri);
 
-                var content = JsonConvert.DeserializeObject<Payloadable>(await m.Content.ReadAsStringAsync());
+                var content = JsonConvert.DeserializeObject<Dictionary<string, object>>(await m.Content.ReadAsStringAsync());
 
                 var headers = m.Headers.Select(kvp => kvp.Key).ToHashSet();
                 Assert.Contains(DefaultWebHookSender.TimestampKey, headers);
@@ -104,8 +109,9 @@ namespace Harpoon.Tests
 
                 if (notif.Payload != null)
                 {
-                    Assert.NotEqual(default, content.NotificationId);
-                    Assert.Equal(content.NotificationId.ToString(), m.Headers.GetValues(DefaultWebHookSender.UniqueIdKey).First());
+                    Assert.NotEqual(default, content["notificationId"]);
+                    Assert.Equal(m.Headers.GetValues(DefaultWebHookSender.UniqueIdKey).First(), content["notificationId"].ToString());
+                    Assert.Equal("23", content["property"].ToString());
                 }
 
                 Assert.Contains(DefaultWebHookSender.TriggerKey, headers);

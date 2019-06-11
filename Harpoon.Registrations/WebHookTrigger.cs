@@ -7,7 +7,6 @@ namespace Harpoon.Registrations
     /// Represents an strongly-typed event template that may trigger a webhook
     /// </summary>
     public class WebHookTrigger<TPayload> : WebHookTrigger
-        where TPayload : IPayloadable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="WebHookTrigger{TPayload}"/> class.

@@ -1,4 +1,6 @@
-﻿namespace Harpoon
+﻿using System.Collections.Generic;
+
+namespace Harpoon
 {
     /// <summary>
     /// Represents the content of an event that triggered
@@ -15,6 +17,6 @@
         /// Gets an serializable object representing the payload to be sent to the registered webhooks
         /// This is serialized as-is using the default json serialization settings
         /// </summary>
-        IPayloadable Payload { get; }
+        IReadOnlyDictionary<string, object> Payload { get; }
     }
 }
