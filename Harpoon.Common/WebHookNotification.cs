@@ -9,8 +9,6 @@ namespace Harpoon
         public string TriggerId { get; set; }
 
         /// <inheritdoc />
-        public Dictionary<string, object> Payload { get; set; }
-
-        IReadOnlyDictionary<string, object> IWebHookNotification.Payload => Payload;
+        public IReadOnlyDictionary<string, object> Payload { get; set; }
     }
 }
