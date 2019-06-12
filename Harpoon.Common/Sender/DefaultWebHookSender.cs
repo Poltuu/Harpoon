@@ -110,9 +110,7 @@ namespace Harpoon.Sender
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         protected virtual Task OnSuccessAsync(HttpResponseMessage response, IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
-        }
+            => Task.CompletedTask;
 
         /// <summary>
         /// Callback on request 404 or 410 (Gone)
@@ -122,9 +120,7 @@ namespace Harpoon.Sender
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         protected virtual Task OnNotFoundAsync(HttpResponseMessage response, IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
-        }
+            => Task.CompletedTask;
 
         /// <summary>
         /// Callback on request failure.
@@ -135,9 +131,7 @@ namespace Harpoon.Sender
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         protected virtual Task OnFailureAsync(HttpResponseMessage response, Exception exception, IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
-        }
+            => Task.CompletedTask;
 
         /// <summary>
         /// Generates the request to be send

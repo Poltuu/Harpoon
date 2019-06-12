@@ -17,9 +17,7 @@ namespace Harpoon.MassTransit
         }
 
         /// <inheritdoc />
-        public async Task Consume(ConsumeContext<TMessage> context)
-        {
-            await _processor.ProcessAsync(context.Message, context.CancellationToken);
-        }
+        public Task Consume(ConsumeContext<TMessage> context)
+            => _processor.ProcessAsync(context.Message, context.CancellationToken);
     }
 }

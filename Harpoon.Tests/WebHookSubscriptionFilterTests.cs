@@ -19,22 +19,17 @@ namespace Harpoon.Tests
         class TestWebHookTriggerProvider : IWebHookTriggerProvider
         {
             public IReadOnlyDictionary<string, WebHookTrigger> GetAvailableTriggers()
-            {
-                return new Dictionary<string, WebHookTrigger>
+                => new Dictionary<string, WebHookTrigger>
                 {
                     ["trigger"] = new WebHookTrigger<MyPayload>("trigger")
                     {
                         Description = "decription"
                     }
                 };
-            }
         }
 
         [Fact]
-        public void ArgNull()
-        {
-            Assert.Throws<ArgumentNullException>(() => new WebHookSubscriptionFilter(null));
-        }
+        public void ArgNull() => Assert.Throws<ArgumentNullException>(() => new WebHookSubscriptionFilter(null));
 
         [Fact]
         public void ApplyTests()

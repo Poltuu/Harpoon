@@ -9,6 +9,6 @@ namespace Harpoon
         public string TriggerId { get; set; }
 
         /// <inheritdoc />
-        public IReadOnlyDictionary<string, object> Payload { get; set; }
+        public object Payload { get; set; }
     }
 }

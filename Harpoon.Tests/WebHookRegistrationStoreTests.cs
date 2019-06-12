@@ -127,14 +127,12 @@ namespace Harpoon.Tests
         }
 
         private void AssertHaveBeenPrepared(IEnumerable<IWebHook> webHooks)
-        {
-            Assert.All(webHooks, t =>
+            => Assert.All(webHooks, t =>
             {
                 Assert.NotNull(t.Filters);
                 Assert.Equal("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-_", t.Secret);
                 Assert.Equal(new Uri("http://www.example.org"), t.Callback);
             });
-        }
 
 
         [Fact]

@@ -26,8 +26,6 @@ namespace Harpoon.Controllers
         /// <returns></returns>
         [HttpGet]
         public ActionResult<IEnumerable<WebHookTrigger>> Get()
-        {
-            return Ok(_webHookTriggerProvider.GetAvailableTriggers().Values);
-        }
+            => Ok(_webHookTriggerProvider.GetAvailableTriggers().Values);
     }
 }

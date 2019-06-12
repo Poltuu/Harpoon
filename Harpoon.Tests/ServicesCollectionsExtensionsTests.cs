@@ -19,9 +19,7 @@ namespace Harpoon.Tests
         class TestWebHookTriggerProvider : IWebHookTriggerProvider
         {
             public IReadOnlyDictionary<string, WebHookTrigger> GetAvailableTriggers()
-            {
-                throw new NotImplementedException();
-            }
+                => throw new NotImplementedException();
         }
 
         [Fact]

@@ -22,19 +22,7 @@ namespace Harpoon
             Notification = notification ?? throw new ArgumentNullException(nameof(notification));
             WebHook = webHook ?? throw new ArgumentNullException(nameof(webHook));
             Timestamp = DateTime.UtcNow;
-
             Id = Guid.NewGuid();
-            if (notification.Payload != null && notification.Payload.TryGetValue("NotificationId", out var value))
-            {
-                if (value is Guid id)
-                {
-                    Id = id;
-                }
-                else if (value is string text && Guid.TryParse(text, out var realId))
-                {
-                    Id = realId;
-                }
-            }
         }
     }
 }

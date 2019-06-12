@@ -107,6 +107,12 @@ namespace Harpoon.Tests
             token.Cancel();
         }
 
+        class MyPayload
+        {
+            public Guid NotificationId { get; set; }
+            public int Property { get; set; }
+        }
+
         [Fact]
         public async Task FullIntegrationMassTransitTests()
         {
@@ -129,9 +135,8 @@ namespace Harpoon.Tests
             var services = new ServiceCollection();
 
             var store = new Mock<IWebHookStore>();
-            store.Setup(s => s.GetApplicableWebHooksAsync(It.IsAny<IWebHookNotification>(), It.IsAny<CancellationToken>())).ReturnsAsync(() => {
-                return Enumerable.Range(0, expectedWebHooksCount).Select(i => new WebHook { Callback = new Uri("http://www.example.org") }).ToList();
-            });
+            store.Setup(s => s.GetApplicableWebHooksAsync(It.IsAny<IWebHookNotification>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(() => Enumerable.Range(0, expectedWebHooksCount).Select(i => new WebHook { Callback = new Uri("http://www.example.org") }).ToList());
             services.AddSingleton(store.Object);
 
             var protector = new Mock<ISignatureService>();
@@ -163,10 +168,10 @@ namespace Harpoon.Tests
             var notif = new WebHookNotification
             {
                 TriggerId = "noun.verb",
-                Payload = new Dictionary<string, object>
+                Payload = new MyPayload
                 {
-                    ["NotificationId"] = guid,
-                    ["Property"] = 23
+                    NotificationId = guid,
+                    Property = 23
                 }
             };
             await provider.GetRequiredService<IWebHookService>().NotifyAsync(notif);

@@ -40,9 +40,7 @@ namespace Harpoon.Controllers
         /// </summary>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<WebHook>>> GetAsync()
-        {
-            return Ok((await _webHookRegistrationStore.GetWebHooksAsync(User, HttpContext.RequestAborted)).Select(w => new WebHook(w)));
-        }
+            => Ok((await _webHookRegistrationStore.GetWebHooksAsync(User, HttpContext.RequestAborted)).Select(w => new WebHook(w)));
 
         /// <summary>
         /// Gets the WebHook belonging to the current user with the given <paramref name="id"/>.

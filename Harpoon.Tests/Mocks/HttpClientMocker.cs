@@ -15,9 +15,7 @@ namespace Harpoon.Tests.Mocks
             public string Content { get; set; }
 
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-            {
-                return Task.FromResult(new HttpResponseMessage { StatusCode = Status, Content = new StringContent(Content) });
-            }
+                => Task.FromResult(new HttpResponseMessage { StatusCode = Status, Content = new StringContent(Content) });
         }
 
         public class QueryHandler : DelegatingHandler
@@ -36,9 +34,7 @@ namespace Harpoon.Tests.Mocks
             public Exception Exception { get; set; }
 
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-            {
-                return Task.FromException<HttpResponseMessage>(Exception);
-            }
+                => Task.FromException<HttpResponseMessage>(Exception);
         }
 
         public class CallbackHandler : DelegatingHandler
@@ -46,9 +42,7 @@ namespace Harpoon.Tests.Mocks
             public Func<HttpRequestMessage, Task<HttpResponseMessage>> Callback { get; set; }
 
             protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-            {
-                return (await Callback(request)) ?? new HttpResponseMessage(HttpStatusCode.OK);
-            }
+                => (await Callback(request)) ?? new HttpResponseMessage(HttpStatusCode.OK);
         }
 
         public class CounterHandler : DelegatingHandler
@@ -64,38 +58,24 @@ namespace Harpoon.Tests.Mocks
         }
 
         public static HttpClient Callback(Func<HttpRequestMessage, Task<HttpResponseMessage>> callback)
-        {
-            return new HttpClient(new CallbackHandler { Callback = callback });
-        }
+            => new HttpClient(new CallbackHandler { Callback = callback });
 
         public static HttpClient Callback(Func<HttpRequestMessage, HttpResponseMessage> callback)
-        {
-            return new HttpClient(new CallbackHandler { Callback = m => Task.FromResult(callback(m)) });
-        }
+            => new HttpClient(new CallbackHandler { Callback = m => Task.FromResult(callback(m)) });
 
         public static HttpClient Callback(Func<HttpRequestMessage, Task> callback)
-        {
-            return new HttpClient(new CallbackHandler { Callback = async m => { await callback(m); return null; } });
-        }
+            => new HttpClient(new CallbackHandler { Callback = async m => { await callback(m); return null; } });
 
         public static HttpClient Callback(Action<HttpRequestMessage> callback)
-        {
-            return new HttpClient(new CallbackHandler { Callback = m => { callback(m); return Task.FromResult<HttpResponseMessage>(null); } });
-        }
+            => new HttpClient(new CallbackHandler { Callback = m => { callback(m); return Task.FromResult<HttpResponseMessage>(null); } });
 
         public static HttpClient Static(HttpStatusCode status, string content)
-        {
-            return new HttpClient(new MoqHandler { Status = status, Content = content });
-        }
+            => new HttpClient(new MoqHandler { Status = status, Content = content });
 
         public static HttpClient ReturnQueryParam(string queryParameter)
-        {
-            return new HttpClient(new QueryHandler { Parameter = queryParameter });
-        }
+            => new HttpClient(new QueryHandler { Parameter = queryParameter });
 
         public static HttpClient AlwaysFail(Exception exception)
-        {
-            return new HttpClient(new Failer { Exception = exception });
-        }
+            => new HttpClient(new Failer { Exception = exception });
     }
 }

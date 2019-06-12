@@ -17,6 +17,6 @@ namespace Harpoon
         /// Gets an serializable object representing the payload to be sent to the registered webhooks
         /// This is serialized as-is using the default json serialization settings
         /// </summary>
-        IReadOnlyDictionary<string, object> Payload { get; }
+        object Payload { get; }
     }
 }

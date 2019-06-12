@@ -27,13 +27,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="senderPolicy"></param>
         /// <returns></returns>
         public static IServiceCollection UseAllMassTransitDefaults(this IHarpoonBuilder harpoon, Action<IHttpClientBuilder> senderPolicy)
-        {
-            return harpoon.SendNotificationsUsingMassTransit()
-                   .UseDefaultNotificationProcessor()
-                   .SendWebHookWorkItemsUsingMassTransit()
-                   .UseDefaultWebHookWorkItemProcessor(senderPolicy)
-                   .Services;
-        }
+            => harpoon.SendNotificationsUsingMassTransit()
+                .UseDefaultNotificationProcessor()
+                .SendWebHookWorkItemsUsingMassTransit()
+                .UseDefaultWebHookWorkItemProcessor(senderPolicy)
+                .Services;
 
         /// <summary>
         /// Registers every services allowing for a pipeline to treat webhooks via a messaging service.
@@ -42,10 +40,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="x"></param>
         /// <returns></returns>
         public static IServiceCollectionConfigurator UseAllMassTransitDefaults(this IServiceCollectionConfigurator x)
-        {
-            return x.ReceiveNotificationsUsingMassTransit()
+            => x.ReceiveNotificationsUsingMassTransit()
                 .ReceiveWebHookWorkItemsUsingMassTransit();
-        }
 
         /// <summary>
         /// Registers <see cref="PublisherService"/> as the default <see cref="IWebHookService"/>, allowing for a treatment of <see cref="IWebHookNotification"/> via messaging service
@@ -78,9 +74,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="queueName"></param>
         /// <param name="configure"></param>
         public static void ConfigureNotificationsConsumer(this IBusFactoryConfigurator cfg, IServiceProvider p, string queueName, Action<IConsumerConfigurator<Consumer<IWebHookNotification>>> configure = null)
-        {
-            cfg.ReceiveEndpoint(queueName, e => e.ConfigureConsumer(p, configure));
-        }
+            => cfg.ReceiveEndpoint(queueName, e => e.ConfigureConsumer(p, configure));
 
         /// <summary>
         /// Registers <see cref="PublisherService"/> as the default <see cref="IWebHookSender"/>, allowing for a treatment of <see cref="IWebHookWorkItem"/> via messaging service
@@ -113,8 +107,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="queueName"></param>
         /// <param name="configure"></param>
         public static void ConfigureWebHookWorkItemsConsumer(this IBusFactoryConfigurator cfg, IServiceProvider p, string queueName, Action<IConsumerConfigurator<Consumer<IWebHookWorkItem>>> configure = null)
-        {
-            cfg.ReceiveEndpoint(queueName, e => e.ConfigureConsumer(p, configure));
-        }
+            => cfg.ReceiveEndpoint(queueName, e => e.ConfigureConsumer(p, configure));
     }
 }

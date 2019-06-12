@@ -71,20 +71,29 @@ namespace Harpoon.Tests
             await Assert.ThrowsAsync<ArgumentNullException>(() => service.SendAsync(null, CancellationToken.None));
         }
 
+        public class MyPayload
+        {
+            public Guid NotificationId { get; set; }
+            public int Property { get; set; }
+        }
         public static IEnumerable<object[]> PayloadData => new List<object[]>
         {
             new object[] { null },
             new object[] { new Dictionary<string, object>
-                {
-                    ["NotificationId"] = Guid.NewGuid(),
-                    ["Property"] = 23
-                }
-            },
+            {
+                ["NotificationId"] = Guid.NewGuid(),
+                ["Property"] = 23
+            } },
+            new object[] { new MyPayload
+            {
+                NotificationId = Guid.NewGuid(),
+                Property = 23
+            } },
         };
 
         [Theory]
         [MemberData(nameof(PayloadData))]
-        public async Task NormalScenarioAsync(Dictionary<string, object> payload)
+        public async Task NormalScenarioAsync(object payload)
         {
             var logger = new Mock<ILogger<DefaultWebHookSender>>();
             var signature = "FIXED_SIGNATURE";
@@ -110,7 +119,6 @@ namespace Harpoon.Tests
                 if (notif.Payload != null)
                 {
                     Assert.NotEqual(default, content["notificationId"]);
-                    Assert.Equal(m.Headers.GetValues(DefaultWebHookSender.UniqueIdKey).First(), content["notificationId"].ToString());
                     Assert.Equal("23", content["property"].ToString());
                 }
 
