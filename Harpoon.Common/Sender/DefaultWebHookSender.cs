@@ -81,23 +81,23 @@ namespace Harpoon.Sender
 
                 if (response.IsSuccessStatusCode)
                 {
-                    Logger.LogInformation($"WebHook {webHookWorkItem.WebHook.Id} send. Status: {response.StatusCode}.");
+                    Logger.LogInformation($"WebHook {webHookWorkItem.WebHook.Id} send. Status: {response.StatusCode}. [{webHookWorkItem.WebHook.Callback}]");
                     await OnSuccessAsync(response, webHookWorkItem, cancellationToken);
                 }
                 else if (response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.Gone)
                 {
-                    Logger.LogInformation($"WebHook {webHookWorkItem.WebHook.Id} send. Status: {response.StatusCode}.");
+                    Logger.LogInformation($"WebHook {webHookWorkItem.WebHook.Id} send. Status: {response.StatusCode}. [{webHookWorkItem.WebHook.Callback}]");
                     await OnNotFoundAsync(response, webHookWorkItem, cancellationToken);
                 }
                 else
                 {
-                    Logger.LogError($"WebHook {webHookWorkItem.WebHook.Id} failed. Status: {response.StatusCode}");
+                    Logger.LogError($"WebHook {webHookWorkItem.WebHook.Id} failed. Status: {response.StatusCode}. [{webHookWorkItem.WebHook.Callback}]");
                     await OnFailureAsync(response, null, webHookWorkItem, cancellationToken);
                 }
             }
             catch (Exception e)
             {
-                Logger.LogError(e, $"WebHook {webHookWorkItem.WebHook.Id} failed: {e.Message}.");
+                Logger.LogError(e, $"WebHook {webHookWorkItem.WebHook.Id} failed: {e.Message}. [{webHookWorkItem.WebHook.Callback}]");
                 await OnFailureAsync(null, e, webHookWorkItem, cancellationToken);
             }
         }

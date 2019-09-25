@@ -39,11 +39,11 @@ namespace Harpoon.Background
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Queued Hosted Service of {typeof(TWorkItem).Name}error.");
+                    _logger.LogError(ex, $"Queued Hosted Service of {typeof(TWorkItem).Name} error.");
                 }
             }
 
-            _logger.LogInformation($"Queued Hosted Service of {typeof(TWorkItem).Name}is stopping.");
+            _logger.LogInformation($"Queued Hosted Service of {typeof(TWorkItem).Name} is stopping.");
         }
     }
 }

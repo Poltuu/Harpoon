@@ -42,7 +42,7 @@ namespace Harpoon.Sender.EF
             dbWebHook.IsPaused = true;
             await _context.SaveChangesAsync(cancellationToken);
 
-            Logger.LogInformation($"WebHook {workItem.WebHook.Id} was paused.");
+            Logger.LogInformation($"WebHook {workItem.WebHook.Id} was paused. [{workItem.WebHook.Callback}]");
         }
     }
 }

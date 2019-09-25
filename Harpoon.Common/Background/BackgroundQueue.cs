@@ -12,7 +12,7 @@ namespace Harpoon.Background
 
         public void QueueWebHook(T workItem)
         {
-            if (workItem == default)
+            if (workItem == null)
             {
                 throw new ArgumentException(nameof(workItem));
             }
