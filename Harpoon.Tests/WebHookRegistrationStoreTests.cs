@@ -180,7 +180,7 @@ namespace Harpoon.Tests
             var webHook = new WebHook
             {
                 Id = id,
-                Callback = callback.ToString(),
+                Callback = callback?.ToString(),
                 Secret = secret,
                 Filters = filters
             };
