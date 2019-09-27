@@ -13,10 +13,6 @@ namespace Harpoon.Registrations.EFStorage
 
         /// <inheritdoc />
         public Uri Callback { get; set; }
-        /// <summary>
-        /// Gets or sets protected callback
-        /// </summary>
-        public string ProtectedCallback { get; set; }
 
         /// <inheritdoc />
         public string Secret { get; set; }

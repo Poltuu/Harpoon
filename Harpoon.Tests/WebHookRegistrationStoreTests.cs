@@ -71,7 +71,7 @@ namespace Harpoon.Tests
                 Id = id,
                 PrincipalId = principal,
                 IsPaused = isPaused,
-                ProtectedCallback = "aHR0cDovL3d3dy5leGFtcGxlLm9yZw",
+                Callback = new Uri("http://www.example.org"),
                 ProtectedSecret = "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXpBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWjEyMzQ1Njc4OTAtXw",
                 Filters = new List<WebHookFilter>
                 {

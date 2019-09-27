@@ -52,7 +52,6 @@ namespace Harpoon.Tests
             Assert.False(webhook.IsPaused);
 
             Assert.Equal(secret, webhook.Secret);
-            Assert.Equal(new Uri(secret), webhook.Callback);
         }
     }
 }

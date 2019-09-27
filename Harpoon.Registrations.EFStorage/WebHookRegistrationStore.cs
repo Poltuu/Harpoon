@@ -76,7 +76,6 @@ namespace Harpoon.Registrations.EFStorage
             }
 
             webHook.Secret = _secretProtector.Unprotect(webHook.ProtectedSecret);
-            webHook.Callback = new Uri(_secretProtector.Unprotect(webHook.ProtectedCallback));
         }
 
         /// <inheritdoc />
@@ -113,7 +112,7 @@ namespace Harpoon.Registrations.EFStorage
             {
                 Id = webHook.Id,
                 PrincipalId = key,
-                ProtectedCallback = _secretProtector.Protect(webHook.Callback.ToString()),
+                Callback = webHook.Callback,
                 ProtectedSecret = _secretProtector.Protect(webHook.Secret),
                 Filters = webHook.Filters.Select(f => new WebHookFilter { Trigger = f.Trigger }).ToList()
             };
@@ -154,7 +153,7 @@ namespace Harpoon.Registrations.EFStorage
 
             if (webHook.Callback != null)
             {
-                dbWebHook.ProtectedCallback = _secretProtector.Protect(webHook.Callback.ToString());
+                dbWebHook.Callback = webHook.Callback;
             }
 
             if (!string.IsNullOrEmpty(webHook.Secret))

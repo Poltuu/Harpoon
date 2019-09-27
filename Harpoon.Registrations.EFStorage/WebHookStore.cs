@@ -40,7 +40,6 @@ namespace Harpoon.Registrations.EFStorage
             foreach (var webHook in webHooks)
             {
                 webHook.Secret = _secretProtector.Unprotect(webHook.ProtectedSecret);
-                webHook.Callback = new Uri(_secretProtector.Unprotect(webHook.ProtectedCallback));
             }
             return webHooks;
         }
