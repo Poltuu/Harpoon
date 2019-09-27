@@ -100,7 +100,7 @@ namespace Harpoon.Tests
             var signatureService = new Mock<ISignatureService>();
             signatureService.Setup(s => s.GetSignature(It.IsAny<string>(), It.IsAny<string>())).Returns(signature);
 
-            var webHook = new WebHook { Callback = new Uri("http://www.example.com") };
+            var webHook = new WebHook { Callback = "http://www.example.com" };
             var notif = new WebHookNotification { TriggerId = "noun.verb", Payload = payload };
 
             var callbackHasBeenCalled = false;
@@ -108,7 +108,7 @@ namespace Harpoon.Tests
             {
                 callbackHasBeenCalled = true;
                 Assert.Equal(HttpMethod.Post, m.Method);
-                Assert.Equal(webHook.Callback, m.RequestUri);
+                Assert.Equal(new Uri(webHook.Callback), m.RequestUri);
 
                 var content = JsonConvert.DeserializeObject<Dictionary<string, object>>(await m.Content.ReadAsStringAsync());
 
@@ -144,7 +144,7 @@ namespace Harpoon.Tests
             var logger = new Mock<ILogger<DefaultWebHookSender>>();
             var signature = new Mock<ISignatureService>();
 
-            var webHook = new WebHook { Callback = new Uri("http://www.example.com") };
+            var webHook = new WebHook { Callback = "http://www.example.com" };
             var notif = new WebHookNotification { TriggerId = "noun.verb" };
 
             var httpClient = HttpClientMocker.Static(code, "");
@@ -161,7 +161,7 @@ namespace Harpoon.Tests
             var logger = new Mock<ILogger<DefaultWebHookSender>>();
             var signature = new Mock<ISignatureService>();
 
-            var webHook = new WebHook { Callback = new Uri("http://www.example.com") };
+            var webHook = new WebHook { Callback = "http://www.example.com" };
             var notif = new WebHookNotification { TriggerId = "noun.verb" };
 
             var httpClient = HttpClientMocker.AlwaysFail(new Exception());

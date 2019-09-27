@@ -62,44 +62,44 @@ namespace Harpoon.Tests
             await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Filters = new List<WebHookFilter>() }));
             await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Filters = new List<WebHookFilter> { new WebHookFilter { Trigger = "invalid" } } }));
             await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Filters = new List<WebHookFilter> { new WebHookFilter { Trigger = "valid" } } }));
-            await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Filters = new List<WebHookFilter> { new WebHookFilter { Trigger = "valid" } }, Callback = new Uri("c:/data") }));
-            await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Filters = new List<WebHookFilter> { new WebHookFilter { Trigger = "valid" } }, Callback = new Uri("ftp://data") }));
-            await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Filters = new List<WebHookFilter> { new WebHookFilter { Trigger = "valid" } }, Callback = new Uri("http://www.example.com") }));
+            await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Filters = new List<WebHookFilter> { new WebHookFilter { Trigger = "valid" } }, Callback = "c:/data" }));
+            await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Filters = new List<WebHookFilter> { new WebHookFilter { Trigger = "valid" } }, Callback = "ftp://data" }));
+            await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Filters = new List<WebHookFilter> { new WebHookFilter { Trigger = "valid" } }, Callback = "http://www.example.com" }));
 
             service = new DefaultWebHookValidator(triggers.Object, logger.Object, HttpClientMocker.AlwaysFail(new Exception()));
-            await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Filters = new List<WebHookFilter> { new WebHookFilter { Trigger = "valid" } }, Callback = new Uri("http://www.example.com") }));
+            await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Filters = new List<WebHookFilter> { new WebHookFilter { Trigger = "valid" } }, Callback = "http://www.example.com" }));
         }
 
         public static IEnumerable<object[]> ValidCasesData => new List<object[]>
         {
             new object[] { new WebHook {
                 Filters = new List<WebHookFilter> { new WebHookFilter { Trigger = "valid" } },
-                Callback = new Uri("http://www.example.com?noecho")
+                Callback = "http://www.example.com?noecho"
             } },
             new object[] { new WebHook {
                 Filters = new List<WebHookFilter> { new WebHookFilter { Trigger = "valid" } },
-                Callback = new Uri("https://www.example.com?noecho")
+                Callback = "https://www.example.com?noecho"
             } },
             new object[] { new WebHook {
                 Filters = new List<WebHookFilter> { new WebHookFilter { Trigger = "valid" } },
-                Callback = new Uri("http://www.example.com")
-            } },
-            new object[] { new WebHook {
-                Id = Guid.NewGuid(),
-                Filters = new List<WebHookFilter> { new WebHookFilter { Trigger = "valid" } },
-                Callback = new Uri("http://www.example.com")
+                Callback = "http://www.example.com"
             } },
             new object[] { new WebHook {
                 Id = Guid.NewGuid(),
-                Secret = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-_",
                 Filters = new List<WebHookFilter> { new WebHookFilter { Trigger = "valid" } },
-                Callback = new Uri("https://www.example.com")
+                Callback = "http://www.example.com"
             } },
             new object[] { new WebHook {
                 Id = Guid.NewGuid(),
                 Secret = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-_",
                 Filters = new List<WebHookFilter> { new WebHookFilter { Trigger = "valid" } },
-                Callback = new Uri("http://www.example.com")
+                Callback = "https://www.example.com"
+            } },
+            new object[] { new WebHook {
+                Id = Guid.NewGuid(),
+                Secret = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-_",
+                Filters = new List<WebHookFilter> { new WebHookFilter { Trigger = "valid" } },
+                Callback = "http://www.example.com"
             } },
         };
 
@@ -137,7 +137,7 @@ namespace Harpoon.Tests
                 Assert.True(triggersById.ContainsKey(filter.Trigger));
             }
             Assert.NotNull(validWebHook.Callback);
-            Assert.True(validWebHook.Callback.IsAbsoluteUri && validWebHook.Callback.ToString().ToLowerInvariant().StartsWith("http"));
+            Assert.True(((IWebHook)validWebHook).Callback.IsAbsoluteUri && validWebHook.Callback.ToString().ToLowerInvariant().StartsWith("http"));
         }
     }
 }

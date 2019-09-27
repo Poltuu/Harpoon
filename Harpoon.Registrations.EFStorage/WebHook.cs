@@ -12,7 +12,10 @@ namespace Harpoon.Registrations.EFStorage
         public Guid Id { get; set; }
 
         /// <inheritdoc />
-        public Uri Callback { get; set; }
+        Uri IWebHook.Callback => new Uri(Callback);
+
+        /// <inheritdoc />
+        public string Callback { get; set; }
 
         /// <inheritdoc />
         public string Secret { get; set; }

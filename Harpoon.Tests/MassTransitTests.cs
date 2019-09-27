@@ -136,7 +136,7 @@ namespace Harpoon.Tests
 
             var store = new Mock<IWebHookStore>();
             store.Setup(s => s.GetApplicableWebHooksAsync(It.IsAny<IWebHookNotification>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(() => Enumerable.Range(0, expectedWebHooksCount).Select(i => new WebHook { Callback = new Uri("http://www.example.org") }).ToList());
+                .ReturnsAsync(() => Enumerable.Range(0, expectedWebHooksCount).Select(i => new WebHook { Callback = "http://www.example.org" }).ToList());
             services.AddSingleton(store.Object);
 
             var protector = new Mock<ISignatureService>();

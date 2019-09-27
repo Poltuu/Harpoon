@@ -71,7 +71,7 @@ namespace Harpoon.Tests
                 Id = id,
                 PrincipalId = principal,
                 IsPaused = isPaused,
-                Callback = new Uri("http://www.example.org"),
+                Callback = "http://www.example.org",
                 ProtectedSecret = "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXpBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWjEyMzQ1Njc4OTAtXw",
                 Filters = new List<WebHookFilter>
                 {
@@ -180,7 +180,7 @@ namespace Harpoon.Tests
             var webHook = new WebHook
             {
                 Id = id,
-                Callback = callback,
+                Callback = callback.ToString(),
                 Secret = secret,
                 Filters = filters
             };
@@ -198,7 +198,7 @@ namespace Harpoon.Tests
             var webHook = new WebHook
             {
                 Id = Guid.NewGuid(),
-                Callback = new Uri("http://www.example.org"),
+                Callback = "http://www.example.org",
                 Secret = "secret",
                 Filters = new List<WebHookFilter> { }
             };
@@ -259,7 +259,7 @@ namespace Harpoon.Tests
             var webHook = new WebHook
             {
                 Id = Guid.NewGuid(),
-                Callback = new Uri("http://www.example.org"),
+                Callback = "http://www.example.org",
                 Secret = "secret",
                 Filters = new List<WebHookFilter>
                 {
@@ -271,7 +271,7 @@ namespace Harpoon.Tests
             var newWebHook = new WebHook
             {
                 Id = webHook.Id,
-                Callback = callback,
+                Callback = callback.ToString(),
                 IsPaused = paused,
                 Secret = secret,
                 Filters = filters
@@ -296,7 +296,7 @@ namespace Harpoon.Tests
             var webHook = new WebHook
             {
                 Id = Guid.NewGuid(),
-                Callback = new Uri("http://www.example.org"),
+                Callback = "http://www.example.org",
                 Secret = "secret",
                 Filters = new List<WebHookFilter>
                 {
@@ -326,7 +326,7 @@ namespace Harpoon.Tests
             var webHook = new WebHook
             {
                 Id = Guid.NewGuid(),
-                Callback = new Uri("http://www.example.org"),
+                Callback = "http://www.example.org",
                 Secret = "secret",
                 Filters = new List<WebHookFilter>
                 {
@@ -350,7 +350,7 @@ namespace Harpoon.Tests
 
             var context = _fixture.Provider.GetRequiredService<TestContext1>();
             var webHook = AddWebHook(context, Guid.NewGuid(), "myPrincipalxxx", "noun.verb", false);
-            webHook.Callback = new Uri("http://example.org");
+            webHook.Callback = "http://example.org";
             await context.SaveChangesAsync();
             var notif = new WebHookNotification { TriggerId = "noun.verb" };
 

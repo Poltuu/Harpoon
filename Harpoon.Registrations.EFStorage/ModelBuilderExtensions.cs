@@ -32,7 +32,7 @@ namespace Microsoft.EntityFrameworkCore
             modelBuilder.Entity<WebHook>().Ignore(w => w.Secret);
             modelBuilder.Entity<WebHook>().Property(r => r.PrincipalId).IsRequired();
             modelBuilder.Entity<WebHook>().Property(w => w.Id).ValueGeneratedOnAdd();
-            modelBuilder.Entity<WebHook>().Property(w => w.Callback).IsRequired().HasConversion(v => v.ToString(), v => new Uri(v));
+            modelBuilder.Entity<WebHook>().Property(w => w.Callback).IsRequired();
             modelBuilder.Entity<WebHook>().Property(w => w.ProtectedSecret).IsRequired();
             modelBuilder.Entity<WebHook>().HasMany(w => w.Filters).WithOne().IsRequired().OnDelete(DeleteBehavior.Cascade);
         }

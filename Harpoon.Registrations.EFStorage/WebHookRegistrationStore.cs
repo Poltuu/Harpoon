@@ -112,7 +112,7 @@ namespace Harpoon.Registrations.EFStorage
             {
                 Id = webHook.Id,
                 PrincipalId = key,
-                Callback = webHook.Callback,
+                Callback = webHook.Callback.ToString(),
                 ProtectedSecret = _secretProtector.Protect(webHook.Secret),
                 Filters = webHook.Filters.Select(f => new WebHookFilter { Trigger = f.Trigger }).ToList()
             };
@@ -153,7 +153,7 @@ namespace Harpoon.Registrations.EFStorage
 
             if (webHook.Callback != null)
             {
-                dbWebHook.Callback = webHook.Callback;
+                dbWebHook.Callback = webHook.Callback.ToString();
             }
 
             if (!string.IsNullOrEmpty(webHook.Secret))
