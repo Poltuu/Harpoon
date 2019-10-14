@@ -43,7 +43,7 @@ namespace Harpoon.Background
                 }
             }
 
-            _logger.LogInformation($"Queued Hosted Service of {typeof(TWorkItem).Name} is stopping.");
+            _logger.LogWarning($"Queued Hosted Service of {typeof(TWorkItem).Name} has been canceled by token.");
         }
     }
 }

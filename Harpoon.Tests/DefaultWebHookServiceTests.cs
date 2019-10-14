@@ -1,4 +1,5 @@
 using Harpoon.Background;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -15,12 +16,14 @@ namespace Harpoon.Tests
         {
             var store = new Mock<IWebHookStore>();
             var sender = new Mock<IWebHookSender>();
+            var logger = new Mock<ILogger<DefaultNotificationProcessor>>();
 
-            Assert.Throws<ArgumentNullException>(() => new DefaultNotificationProcessor(null, sender.Object));
-            Assert.Throws<ArgumentNullException>(() => new DefaultNotificationProcessor(store.Object, null));
+            Assert.Throws<ArgumentNullException>(() => new DefaultNotificationProcessor(null, sender.Object, logger.Object));
+            Assert.Throws<ArgumentNullException>(() => new DefaultNotificationProcessor(store.Object, null, logger.Object));
+            Assert.Throws<ArgumentNullException>(() => new DefaultNotificationProcessor(store.Object, sender.Object, null));
             Assert.Throws<ArgumentNullException>(() => new DefaultWebHookService(null));
 
-            var service = new DefaultNotificationProcessor(store.Object, sender.Object);
+            var service = new DefaultNotificationProcessor(store.Object, sender.Object, logger.Object);
             await Assert.ThrowsAsync<ArgumentNullException>(() => service.ProcessAsync(null, CancellationToken.None));
         }
 
@@ -43,8 +46,9 @@ namespace Harpoon.Tests
             var store = new Mock<IWebHookStore>();
             store.Setup(s => s.GetApplicableWebHooksAsync(It.IsAny<IWebHookNotification>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<IWebHook>());
             var sender = new Mock<IWebHookSender>();
+            var logger = new Mock<ILogger<DefaultNotificationProcessor>>();
 
-            var service = new DefaultNotificationProcessor(store.Object, sender.Object);
+            var service = new DefaultNotificationProcessor(store.Object, sender.Object, logger.Object);
             await service.ProcessAsync(new WebHookNotification(), CancellationToken.None);
 
             sender.Verify(s => s.SendAsync(It.IsAny<IWebHookWorkItem>(), It.IsAny<CancellationToken>()), Times.Never);
