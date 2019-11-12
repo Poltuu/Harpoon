@@ -54,10 +54,7 @@ namespace Harpoon.Tests.Fixtures
                 triggerProvider.Setup(s => s.GetAvailableTriggers()).Returns(new Dictionary<string, WebHookTrigger> { ["noun.verb"] = new WebHookTrigger("noun.verb") });
                 services.AddSingleton(triggerProvider.Object);
 
-                services.AddAuthentication(o =>
-                {
-                    o.DefaultScheme = "TEST";
-                }).AddScheme<AuthenticationSchemeOptions, TestAuthenticationHandler>("TEST", "TEST", o => { });
+                services.AddAuthentication(o => o.DefaultScheme = "TEST").AddScheme<AuthenticationSchemeOptions, TestAuthenticationHandler>("TEST", "TEST", o => { });
             }
 
             public void Configure(IApplicationBuilder app)

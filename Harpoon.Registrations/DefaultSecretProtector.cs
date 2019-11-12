@@ -22,10 +22,7 @@ namespace Harpoon.Registrations.EFStorage
         }
 
         /// <inheritdoc />
-        public string Protect(string plaintext)
-        {
-            return _dataProtector.Protect(plaintext);
-        }
+        public string Protect(string plaintext) => _dataProtector.Protect(plaintext);
 
         /// <inheritdoc />
         public string Unprotect(string protectedData)

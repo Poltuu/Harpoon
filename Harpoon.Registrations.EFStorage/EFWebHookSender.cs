@@ -32,15 +32,11 @@ namespace Harpoon.Sender.EF
 
         /// <inheritdoc />
         protected override Task OnFailureAsync(HttpResponseMessage response, Exception exception, IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken)
-        {
-            return AddLogAsync(webHookWorkItem, $"WebHook {webHookWorkItem.WebHook.Id} failed. [{webHookWorkItem.WebHook.Callback}]: {exception.Message}");
-        }
+            => AddLogAsync(webHookWorkItem, $"WebHook {webHookWorkItem.WebHook.Id} failed. [{webHookWorkItem.WebHook.Callback}]: {exception.Message}");
 
         /// <inheritdoc />
         protected override Task OnSuccessAsync(HttpResponseMessage response, IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken)
-        {
-            return AddLogAsync(webHookWorkItem);
-        }
+            => AddLogAsync(webHookWorkItem);
 
         /// <inheritdoc />
         protected override async Task OnNotFoundAsync(HttpResponseMessage response, IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken)

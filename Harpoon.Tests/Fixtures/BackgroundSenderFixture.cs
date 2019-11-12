@@ -38,9 +38,6 @@ namespace Harpoon.Tests.Fixtures
             _host.Start();
         }
 
-        public void Dispose()
-        {
-            Task.Run(() => _host.StopAsync());
-        }
+        public void Dispose() => Task.Run(() => _host.StopAsync());
     }
 }
