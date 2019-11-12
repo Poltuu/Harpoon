@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,7 +41,9 @@ namespace Harpoon
             }
 
             var webHooks = await _webHookStore.GetApplicableWebHooksAsync(notification, cancellationToken);
-            var tasks = webHooks.Select(w => new { Task = _webHookSender.SendAsync(new WebHookWorkItem(notification, w), cancellationToken), Name = w.Callback });
+            var id = await LogAsync(notification, webHooks, cancellationToken);
+
+            var tasks = webHooks.Select(w => new { Task = _webHookSender.SendAsync(new WebHookWorkItem(id, notification, w), cancellationToken), Name = w.Callback });
             try
             {
                 await Task.WhenAll(tasks.Select(t => t.Task));
@@ -56,5 +59,15 @@ namespace Harpoon
                 _logger.LogError("The following urls have not been called due to an error: " + string.Join(Environment.NewLine, canceledWebHooks));
             }
         }
+
+        /// <summary>
+        /// Logs the current request
+        /// </summary>
+        /// <param name="notification"></param>
+        /// <param name="webHooks"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        protected virtual Task<Guid> LogAsync(IWebHookNotification notification, IReadOnlyList<IWebHook> webHooks, CancellationToken cancellationToken)
+            => Task.FromResult(Guid.NewGuid());
     }
 }

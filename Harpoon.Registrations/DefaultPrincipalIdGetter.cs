@@ -12,9 +12,7 @@ namespace Harpoon.Registrations
         /// <inheritdoc />
         /// <exception cref="ArgumentException">Current principal id could not be found</exception>
         public Task<string> GetPrincipalIdAsync(IPrincipal principal, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(GetPrincipalIdForWebHookRegistration(principal));
-        }
+            => Task.FromResult(GetPrincipalIdForWebHookRegistration(principal));
 
         private string GetPrincipalIdForWebHookRegistration(IPrincipal principal)
         {

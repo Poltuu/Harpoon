@@ -19,6 +19,7 @@ namespace Harpoon.Registrations.EFStorage
 
         /// <inheritdoc />
         public string Secret { get; set; }
+
         /// <summary>
         /// Gets or sets protected secret
         /// </summary>
@@ -35,12 +36,18 @@ namespace Harpoon.Registrations.EFStorage
         /// </summary>
         public List<WebHookFilter> Filters { get; set; }
 
+        /// <summary>
+        /// Gets or sets the associated collection of <see cref="WebHookLog"/>
+        /// </summary>
+        public List<WebHookLog> WebHookLogs { get; set; }
+
         IReadOnlyCollection<IWebHookFilter> IWebHook.Filters => Filters;
 
         /// <summary>Initializes a new instance of the <see cref="WebHook"/> class.</summary>
         public WebHook()
         {
             Filters = new List<WebHookFilter>();
+            WebHookLogs = new List<WebHookLog>();
         }
     }
 }

@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -81,6 +80,19 @@ namespace Harpoon.Tests
                         Trigger = trigger
                     }
                 }
+            };
+
+            context.Add(result);
+            return result;
+        }
+
+        private Registrations.EFStorage.WebHookNotification AddNotification(TestContext1 context, Guid id, string trigger)
+        {
+            var result = new Registrations.EFStorage.WebHookNotification
+            {
+                Id = id,
+                TriggerId = trigger,
+                Payload = new List<int> { 1, 2 }
             };
 
             context.Add(result);
@@ -351,13 +363,15 @@ namespace Harpoon.Tests
             var context = _fixture.Provider.GetRequiredService<TestContext1>();
             var webHook = AddWebHook(context, Guid.NewGuid(), "myPrincipalxxx", "noun.verb", false);
             webHook.Callback = "http://example.org";
+
+            var dbNotif = AddNotification(context, Guid.NewGuid(), "noun.verb");
             await context.SaveChangesAsync();
             var notif = new WebHookNotification { TriggerId = "noun.verb" };
 
             var httpClient = HttpClientMocker.Static(code, "");
 
             var service = new EFWebHookSender<TestContext1>(httpClient, signature.Object, logger.Object, context);
-            await service.SendAsync(new WebHookWorkItem(notif, webHook), CancellationToken.None);
+            await service.SendAsync(new WebHookWorkItem(dbNotif.Id, notif, webHook), CancellationToken.None);
 
             Assert.True((await context.WebHooks.FirstAsync(w => w.Id == webHook.Id)).IsPaused);
         }

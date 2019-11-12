@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Harpoon
+﻿namespace Harpoon
 {
     /// <summary>
     /// Represents the content of an event that triggered

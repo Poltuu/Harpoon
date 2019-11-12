@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 namespace Harpoon.Sender.EF
 {
     /// <summary>
-    /// <see cref="IWebHookSender"/> that automatically pauses webhooks on NotFound responses
+    /// <see cref="IWebHookSender"/> implementation that automatically pauses webhooks on NotFound responses
     /// </summary>
     /// <typeparam name="TContext"></typeparam>
     public class EFWebHookSender<TContext> : DefaultWebHookSender
@@ -31,18 +31,57 @@ namespace Harpoon.Sender.EF
         }
 
         /// <inheritdoc />
-        protected override async Task OnNotFoundAsync(HttpResponseMessage response, IWebHookWorkItem workItem, CancellationToken cancellationToken)
+        protected override Task OnFailureAsync(HttpResponseMessage response, Exception exception, IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken)
         {
-            var dbWebHook = await _context.WebHooks.FirstOrDefaultAsync(w => w.Id == workItem.WebHook.Id, cancellationToken);
-            if (dbWebHook == null)
+            return AddLogAsync(webHookWorkItem, $"WebHook {webHookWorkItem.WebHook.Id} failed. [{webHookWorkItem.WebHook.Callback}]: {exception.Message}");
+        }
+
+        /// <inheritdoc />
+        protected override Task OnSuccessAsync(HttpResponseMessage response, IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken)
+        {
+            return AddLogAsync(webHookWorkItem);
+        }
+
+        /// <inheritdoc />
+        protected override async Task OnNotFoundAsync(HttpResponseMessage response, IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken)
+        {
+            var dbWebHook = await _context.WebHooks.FirstOrDefaultAsync(w => w.Id == webHookWorkItem.WebHook.Id);
+            if (dbWebHook != null)
             {
-                return;
+                dbWebHook.IsPaused = true;
             }
 
-            dbWebHook.IsPaused = true;
-            await _context.SaveChangesAsync(cancellationToken);
+            await AddLogAsync(webHookWorkItem, $"WebHook {webHookWorkItem.WebHook.Id} was paused. [{webHookWorkItem.WebHook.Callback}]");
+        }
 
-            Logger.LogInformation($"WebHook {workItem.WebHook.Id} was paused. [{workItem.WebHook.Callback}]");
+        private async Task AddLogAsync(IWebHookWorkItem workItem, string error = null)
+        {
+            var log = new WebHookLog
+            {
+                Error = error,
+                WebHookId = workItem.WebHook.Id,
+                WebHookNotificationId = workItem.Id
+            };
+            _context.Add(log);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+
+                if (!string.IsNullOrEmpty(error))
+                {
+                    Logger.LogInformation(error);
+                }
+            }
+            catch (Exception e)
+            {
+                if (!string.IsNullOrEmpty(error))
+                {
+                    Logger.LogError(error);
+                }
+
+                Logger.LogError($"Log failed for WebHook {workItem.WebHook.Id}. [{workItem.WebHook.Callback}]: {e.Message}");
+            }
         }
     }
 }

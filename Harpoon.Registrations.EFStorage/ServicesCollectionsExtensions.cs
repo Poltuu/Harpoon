@@ -125,5 +125,30 @@ namespace Microsoft.Extensions.DependencyInjection
             senderPolicy(builder);
             return harpoon;
         }
+
+        /// <summary>
+        /// Registers <see cref="EFNotificationProcessor{TContext}"/> as the default <see cref="IQueuedProcessor{IWebHookNotification}"/>.
+        /// </summary>
+        /// <typeparam name="TContext"></typeparam>
+        /// <param name="harpoon"></param>
+        /// <returns></returns>
+        public static IHarpoonBuilder UseDefaultEFNotificationProcessor<TContext>(this IHarpoonBuilder harpoon)
+            where TContext : DbContext, IRegistrationsContext
+        {
+            harpoon.Services.TryAddScoped<IQueuedProcessor<IWebHookNotification>, EFNotificationProcessor<TContext>>();
+            return harpoon;
+        }
+
+        /// <summary>
+        /// Registers <see cref="EFNotificationProcessor{TContext}"/> as the default <see cref="IWebHookService"/>, allowing for a synchronous treatment of <see cref="IWebHookNotification"/>
+        /// </summary>
+        /// <param name="harpoon"></param>
+        /// <returns></returns>
+        public static IHarpoonBuilder ProcessNotificationsSynchronouslyUsingEFDefault<TContext>(this IHarpoonBuilder harpoon)
+            where TContext : DbContext, IRegistrationsContext
+        {
+            harpoon.Services.TryAddScoped<IWebHookService, EFNotificationProcessor<TContext>>();
+            return harpoon;
+        }
     }
 }

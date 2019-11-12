@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Harpoon
+﻿namespace Harpoon
 {
     /// <inheritdoc />
     public class WebHookNotification : IWebHookNotification

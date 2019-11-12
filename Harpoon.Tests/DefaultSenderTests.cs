@@ -15,6 +15,38 @@ using Xunit;
 
 namespace Harpoon.Tests
 {
+    public class EFNotificationProcessorTests
+    {
+        [Fact]
+        public void ArgNullEfProcessor()
+        {
+            var store = new Mock<IWebHookStore>();
+            var sender = new Mock<IWebHookSender>();
+            var logger = new Mock<ILogger<EFNotificationProcessor<TestContext1>>>();
+            Assert.Throws<ArgumentNullException>(() => new EFNotificationProcessor<TestContext1>(null, store.Object, sender.Object, logger.Object));
+        }
+        public class MyPayload
+        {
+            public Guid NotificationId { get; set; }
+            public int Property { get; set; }
+        }
+
+        [Fact]
+        public async Task EfProcessorLogsAsync()
+        {
+            var store = new Mock<IWebHookStore>();
+            store.Setup(s => s.GetApplicableWebHooksAsync(It.IsAny<IWebHookNotification>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<IWebHook> { new WebHook { } });
+            var sender = new Mock<IWebHookSender>();
+            var logger = new Mock<ILogger<EFNotificationProcessor<InMemoryContext>>>();
+            var context = new InMemoryContext();
+            var processor = new EFNotificationProcessor<InMemoryContext>(context, store.Object, sender.Object, logger.Object);
+
+            await processor.ProcessAsync(new WebHookNotification { TriggerId = "trigger", Payload = new MyPayload { NotificationId = Guid.NewGuid(), Property = 23 } }, CancellationToken.None);
+
+            Assert.Single(context.WebHookNotifications);
+        }
+    }
+
     public class DefaultSenderTests
     {
         class CounterDefaultWebHookSender : DefaultWebHookSender
@@ -130,7 +162,7 @@ namespace Harpoon.Tests
             });
 
             var service = new CounterDefaultWebHookSender(httpClient, signatureService.Object, logger.Object);
-            await service.SendAsync(new WebHookWorkItem(notif, webHook), CancellationToken.None);
+            await service.SendAsync(new WebHookWorkItem(Guid.NewGuid(), notif, webHook), CancellationToken.None);
 
             Assert.True(callbackHasBeenCalled);
             Assert.Equal(1, service.Successes);
@@ -150,7 +182,7 @@ namespace Harpoon.Tests
             var httpClient = HttpClientMocker.Static(code, "");
 
             var service = new CounterDefaultWebHookSender(httpClient, signature.Object, logger.Object);
-            await service.SendAsync(new WebHookWorkItem(notif, webHook), CancellationToken.None);
+            await service.SendAsync(new WebHookWorkItem(Guid.NewGuid(), notif, webHook), CancellationToken.None);
 
             Assert.Equal(1, service.NotFounds);
         }
@@ -167,7 +199,7 @@ namespace Harpoon.Tests
             var httpClient = HttpClientMocker.AlwaysFail(new Exception());
 
             var service = new CounterDefaultWebHookSender(httpClient, signature.Object, logger.Object);
-            await service.SendAsync(new WebHookWorkItem(notif, webHook), CancellationToken.None);
+            await service.SendAsync(new WebHookWorkItem(Guid.NewGuid(), notif, webHook), CancellationToken.None);
 
             Assert.Equal(1, service.Failures);
         }

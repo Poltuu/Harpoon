@@ -99,7 +99,7 @@ namespace Harpoon.Tests
 
             var service = provider.GetRequiredService<IWebHookSender>();
 
-            await service.SendAsync(new WebHookWorkItem(new WebHookNotification(), new WebHook()), CancellationToken.None);
+            await service.SendAsync(new WebHookWorkItem(Guid.NewGuid(), new WebHookNotification(), new WebHook()), CancellationToken.None);
 
             await Task.Delay(10000);
 

@@ -17,12 +17,12 @@ namespace Harpoon
         /// <summary>
         /// Initializes a new instance of the <see cref="WebHookWorkItem"/> class.
         /// </summary>
-        public WebHookWorkItem(IWebHookNotification notification, IWebHook webHook)
+        public WebHookWorkItem(Guid id, IWebHookNotification notification, IWebHook webHook)
         {
             Notification = notification ?? throw new ArgumentNullException(nameof(notification));
             WebHook = webHook ?? throw new ArgumentNullException(nameof(webHook));
             Timestamp = DateTime.UtcNow;
-            Id = Guid.NewGuid();
+            Id = id;
         }
     }
 }

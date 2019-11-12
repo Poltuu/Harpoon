@@ -35,6 +35,8 @@ namespace Harpoon.Tests
 
             Assert.Throws<ArgumentNullException>(() => ModelBuilderExtensions.AddWebHookDefaultMapping(null));
             Assert.Throws<ArgumentNullException>(() => ModelBuilderExtensions.AddWebHookFilterDefaultMapping(null));
+            Assert.Throws<ArgumentNullException>(() => ModelBuilderExtensions.AddWebHookLogDefaultMapping(null));
+            Assert.Throws<ArgumentNullException>(() => ModelBuilderExtensions.AddWebHookNotificationDefaultMapping(null));
         }
 
         [Fact]
@@ -102,6 +104,32 @@ namespace Harpoon.Tests
             var provider = services.BuildServiceProvider();
             Assert.NotNull(provider.GetRequiredService<IQueuedProcessor<IWebHookWorkItem>>());
             Assert.NotNull(provider.GetRequiredService<ISignatureService>());
+        }
+
+        [Fact]
+        public void AddHarpoonWithEfProcessorTests()
+        {
+            var services = new ServiceCollection();
+            services.AddEntityFrameworkSqlServer().AddDbContext<TestContext1>();
+            services.AddHarpoon(h => h.UseDefaultEFNotificationProcessor<TestContext1>());
+            services.AddSingleton(new Mock<IWebHookStore>().Object);
+            services.AddSingleton(new Mock<IWebHookSender>().Object);
+
+            var provider = services.BuildServiceProvider();
+            Assert.NotNull(provider.GetRequiredService<IQueuedProcessor<IWebHookNotification>>());
+        }
+
+        [Fact]
+        public void AddHarpoonWithSynchronousEfProcessorTests()
+        {
+            var services = new ServiceCollection();
+            services.AddEntityFrameworkSqlServer().AddDbContext<TestContext1>();
+            services.AddHarpoon(h => h.ProcessNotificationsSynchronouslyUsingEFDefault<TestContext1>());
+            services.AddSingleton(new Mock<IWebHookStore>().Object);
+            services.AddSingleton(new Mock<IWebHookSender>().Object);
+
+            var provider = services.BuildServiceProvider();
+            Assert.NotNull(provider.GetRequiredService<IWebHookService>());
         }
 
         [Fact]

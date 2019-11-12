@@ -58,9 +58,16 @@ namespace Harpoon.Tests.Mocks
         public DbSet<WebHook> WebHooks { get; set; }
         IQueryable<WebHook> IRegistrationsContext.WebHooks => WebHooks;
 
+        public DbSet<Registrations.EFStorage.WebHookNotification> WebHookNotifications { get; set; }
+        IQueryable<Registrations.EFStorage.WebHookNotification> IRegistrationsContext.WebHookNotifications => WebHookNotifications;
+
+        public DbSet<WebHookLog> WebHookLogs { get; set; }
+        IQueryable<WebHookLog> IRegistrationsContext.WebHookLogs => WebHookLogs;
+
         public DbSet<WebHookFilter> WebHookFilters { get; set; }
 
         protected abstract Guid DbName { get; }
+
 
         public TestContext()
         {
@@ -88,9 +95,6 @@ namespace Harpoon.Tests.Mocks
             }
         }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.AddHarpoonDefaultMappings();
-        }
+        protected override void OnModelCreating(ModelBuilder modelBuilder) => modelBuilder.AddHarpoonDefaultMappings();
     }
 }
