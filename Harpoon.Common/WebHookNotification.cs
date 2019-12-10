@@ -1,6 +1,8 @@
 ﻿namespace Harpoon
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Represents the content of an event that triggered
+    /// </summary>
     public class WebHookNotification : IWebHookNotification
     {
         /// <inheritdoc />

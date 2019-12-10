@@ -4,7 +4,9 @@ using System.Text;
 
 namespace Harpoon.Sender
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// A class able to assign a signature to content using a secret
+    /// </summary>
     public class DefaultSignatureService : ISignatureService
     {
         /// <inheritdoc />

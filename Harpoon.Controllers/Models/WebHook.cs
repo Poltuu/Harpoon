@@ -4,7 +4,9 @@ using System.Linq;
 
 namespace Harpoon.Controllers.Models
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Represents a webhook, i.e. a subscription to certain internal events that need to translate to url callbacks
+    /// </summary>
     public class WebHook : IWebHook
     {
         /// <inheritdoc />

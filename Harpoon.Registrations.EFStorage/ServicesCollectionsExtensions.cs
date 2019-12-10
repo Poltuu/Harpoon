@@ -26,23 +26,9 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IHarpoonBuilder RegisterWebHooksUsingEfStorage<TContext, TWebHookTriggerProvider>(this IHarpoonBuilder harpoon)
             where TContext : DbContext, IRegistrationsContext
             where TWebHookTriggerProvider : class, IWebHookTriggerProvider
-            => harpoon.RegisterWebHooksUsingEfStorage<TContext, TWebHookTriggerProvider>(b => { });
-
-        /// <summary>
-        /// Registers <see cref="WebHookStore{TContext}"/> as <see cref="IWebHookStore"/> and <see cref="WebHookRegistrationStore{TContext}"/> as <see cref="IWebHookRegistrationStore"/>.
-        /// TWebHookTriggerProvider is registered as singleton
-        /// </summary>
-        /// <typeparam name="TContext"></typeparam>
-        /// <typeparam name="TWebHookTriggerProvider"></typeparam>
-        /// <param name="harpoon"></param>
-        /// <param name="validatorPolicy"></param>
-        /// <returns></returns>
-        public static IHarpoonBuilder RegisterWebHooksUsingEfStorage<TContext, TWebHookTriggerProvider>(this IHarpoonBuilder harpoon, Action<IHttpClientBuilder> validatorPolicy)
-            where TContext : DbContext, IRegistrationsContext
-            where TWebHookTriggerProvider : class, IWebHookTriggerProvider
         {
             harpoon.Services.TryAddSingleton<IWebHookTriggerProvider, TWebHookTriggerProvider>();
-            return harpoon.RegisterWebHooksUsingEfStorage<TContext>(validatorPolicy);
+            return harpoon.RegisterWebHooksUsingEfStorage<TContext>();
         }
 
         /// <summary>
@@ -54,24 +40,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static IHarpoonBuilder RegisterWebHooksUsingEfStorage<TContext>(this IHarpoonBuilder harpoon)
             where TContext : DbContext, IRegistrationsContext
-            => harpoon.RegisterWebHooksUsingEfStorage<TContext>(b => { });
-
-        /// <summary>
-        /// Registers <see cref="WebHookStore{TContext}"/> as <see cref="IWebHookStore"/> and <see cref="WebHookRegistrationStore{TContext}"/> as <see cref="IWebHookRegistrationStore"/>.
-        /// TWebHookTriggerProvider needs to be configured.
-        /// </summary>
-        /// <typeparam name="TContext"></typeparam>
-        /// <param name="harpoon"></param>
-        /// <param name="validatorPolicy"></param>
-        /// <returns></returns>
-        public static IHarpoonBuilder RegisterWebHooksUsingEfStorage<TContext>(this IHarpoonBuilder harpoon, Action<IHttpClientBuilder> validatorPolicy)
-            where TContext : DbContext, IRegistrationsContext
         {
             harpoon.Services.TryAddScoped<IPrincipalIdGetter, DefaultPrincipalIdGetter>();
             harpoon.Services.TryAddScoped<IWebHookStore, WebHookStore<TContext>>();
             harpoon.Services.TryAddScoped<IWebHookRegistrationStore, WebHookRegistrationStore<TContext>>();
-
-            harpoon.UseDefaultValidator(validatorPolicy);
 
             return harpoon;
         }

@@ -80,8 +80,9 @@ namespace Harpoon.Controllers
             }
             catch (ArgumentException ex)
             {
-                _logger.LogInformation($"New webhook validation failed: {ex.Message}");
-                return BadRequest(ex);
+                var message = $"New webhook validation failed: {ex.Message}";
+                _logger.LogInformation(message);
+                return BadRequest(new { Message = message });
             }
             catch (Exception ex)
             {
@@ -130,8 +131,9 @@ namespace Harpoon.Controllers
             }
             catch (ArgumentException ex)
             {
-                _logger.LogInformation($"Webhook {id} update validation failed: {ex.Message}");
-                return BadRequest(ex);
+                var message = $"Webhook {id} update validation failed: {ex.Message}";
+                _logger.LogInformation(message);
+                return BadRequest(new { Message = message });
             }
             catch (Exception ex)
             {
@@ -191,14 +193,11 @@ namespace Harpoon.Controllers
             }
         }
 
-        private ActionResult GetActionFromResult(WebHookRegistrationStoreResult result)
+        private ActionResult GetActionFromResult(WebHookRegistrationStoreResult result) => result switch
         {
-            switch (result)
-            {
-                case WebHookRegistrationStoreResult.Success: return Ok();
-                case WebHookRegistrationStoreResult.NotFound: return NotFound();
-                default: return StatusCode(500);
-            }
-        }
+            WebHookRegistrationStoreResult.Success => Ok(),
+            WebHookRegistrationStoreResult.NotFound => NotFound(),
+            _ => StatusCode(500),
+        };
     }
 }

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netcoreapp3.1</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <AssemblyVersion>0.1.5</AssemblyVersion>
     <Version>0.1.5</Version>
@@ -11,14 +11,19 @@
     <PackageIconUrl>https://raw.githubusercontent.com/Poltuu/Harpoon/master/icon.png</PackageIconUrl>
     <PackageTags>webhook</PackageTags>
     <RepositoryUrl>https://github.com/Poltuu/Harpoon</RepositoryUrl>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup>
-    <DocumentationFile>C:\Sites\Harpoon\Harpoon.Registrations.EFStorage\Harpoon.Registrations.EFStorage.xml</DocumentationFile>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.2.6" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.0" />
   </ItemGroup>
 
   <ItemGroup>

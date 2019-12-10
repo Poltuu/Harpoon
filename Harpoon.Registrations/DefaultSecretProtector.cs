@@ -4,7 +4,9 @@ using System.Text;
 
 namespace Harpoon.Registrations.EFStorage
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Default class able to protect and unprotect a piece of plain text data
+    /// </summary>
     public class DefaultSecretProtector : ISecretProtector
     {
         /// <summary>

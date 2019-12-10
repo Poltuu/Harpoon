@@ -19,6 +19,7 @@ namespace Harpoon.Registrations
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<IWebHook> GetWebHookAsync(IPrincipal user, Guid id, CancellationToken cancellationToken = default);
+
         /// <summary>
         /// Returns asynchronously a collection of <see cref="IWebHook"/> owned by the provided <see cref="IPrincipal"/>
         /// </summary>

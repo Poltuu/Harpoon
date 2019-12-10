@@ -1,4 +1,5 @@
 ﻿using Harpoon;
+using Harpoon.Controllers;
 using Harpoon.Controllers.Swashbuckle;
 using Harpoon.Registrations;
 using Microsoft.AspNetCore.Builder;
@@ -17,6 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         /// <summary>
         /// Registers necessary services for the controllers
+        /// <see cref="IWebHookValidator"/> needs to be manually added to the <see cref="IServiceCollection"/>
         /// </summary>
         /// <param name="harpoon"></param>
         /// <returns></returns>
@@ -26,6 +28,35 @@ namespace Microsoft.Extensions.DependencyInjection
             harpoon.Services.TryAddSingleton<IWebHookTriggerProvider, TWebHookTriggerProvider>();
             return harpoon;
         }
+
+        /// <summary>
+        /// Registers every necessary services for the controllers
+        /// </summary>
+        /// <param name="harpoon"></param>
+        /// <returns></returns>
+        public static IHarpoonBuilder AddControllersWithDefaultValidator<TWebHookTriggerProvider>(this IHarpoonBuilder harpoon)
+            where TWebHookTriggerProvider : class, IWebHookTriggerProvider
+        {
+            harpoon.Services.TryAddSingleton<IWebHookTriggerProvider, TWebHookTriggerProvider>();
+            harpoon.UseDefaultValidator();
+            return harpoon;
+        }
+
+        /// <summary>
+        /// Registers harpoon controllers into current <see cref="IMvcCoreBuilder"/>
+        /// </summary>
+        /// <param name="mvcBuilder"></param>
+        /// <returns></returns>
+        public static IMvcCoreBuilder AddHarpoonControllers(this IMvcCoreBuilder mvcBuilder)
+            => mvcBuilder.AddApplicationPart(typeof(WebHooksController).Assembly);
+
+        /// <summary>
+        /// Registers harpoon controllers into current <see cref="IMvcBuilder"/>
+        /// </summary>
+        /// <param name="mvcBuilder"></param>
+        /// <returns></returns>
+        public static IMvcBuilder AddHarpoonControllers(this IMvcBuilder mvcBuilder)
+            => mvcBuilder.AddApplicationPart(typeof(WebHooksController).Assembly);
 
         /// <summary>
         /// Generates a new doc for harpoon webhooks

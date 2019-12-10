@@ -4,7 +4,10 @@ using System.Threading.Tasks;
 
 namespace Harpoon.MassTransit
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Default message consumer
+    /// </summary>
+    /// <typeparam name="TMessage"></typeparam>
     public class Consumer<TMessage> : IConsumer<TMessage>
          where TMessage : class
     {

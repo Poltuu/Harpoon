@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netcoreapp3.1</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <AssemblyVersion>0.1.5</AssemblyVersion>
     <Version>0.1.5</Version>
@@ -11,17 +11,26 @@
     <PackageIconUrl>https://raw.githubusercontent.com/Poltuu/Harpoon/master/icon.png</PackageIconUrl>
     <PackageTags>webhook</PackageTags>
     <RepositoryUrl>https://github.com/Poltuu/Harpoon</RepositoryUrl>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup>
-    <DocumentationFile>C:\Sites\Harpoon\Harpoon.Controllers\Harpoon.Controllers.xml</DocumentationFile>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.0.0-beta" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Api.Analyzers" Version="2.2.6" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.0.0-rc2" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
+    <FrameworkReference Include="Microsoft.AspNetCore.App" Version="3.1.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="3.1.0" />
   </ItemGroup>
 
   <ItemGroup>

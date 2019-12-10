@@ -82,7 +82,9 @@ namespace Harpoon.Tests.Mocks
         {
             optionsBuilder.EnableSensitiveDataLogging();
             optionsBuilder.EnableDetailedErrors();
+#if NETCOREAPP2_2
             optionsBuilder.ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning));
+#endif
 
             var connectionString = Environment.GetEnvironmentVariable("Harpoon_Connection_String");
             if (connectionString == null)

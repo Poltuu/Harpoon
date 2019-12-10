@@ -9,13 +9,14 @@ namespace Microsoft.Extensions.DependencyInjection
     /// A set of extensions methods on <see cref="IHarpoonBuilder"/>
     /// </summary>
     public static class ServicesCollectionsExtensions
-    {   
+    {
         /// <summary>
         /// Registers services to use the default <see cref="IWebHookValidator"/> implementation. Necessary to use default controllers.
         /// </summary>
         /// <param name="harpoon"></param>
         /// <returns></returns>
         public static IHarpoonBuilder UseDefaultValidator(this IHarpoonBuilder harpoon) => harpoon.UseDefaultValidator(b => { });
+
         /// <summary>
         /// Registers services to use the default <see cref="IWebHookValidator"/> implementation. Necessary to use default controllers.
         /// </summary>
