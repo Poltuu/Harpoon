@@ -2,7 +2,6 @@
 using Harpoon.Registrations.EFStorage;
 using Harpoon.Tests.Mocks;
 using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Models;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -32,20 +31,6 @@ namespace Harpoon.Tests
         [Fact]
         public async Task InvalidCasesAsync()
         {
-            var schema = new OpenApiSchema
-            {
-                Properties = new Dictionary<string, OpenApiSchema>
-                {
-                    ["param1"] = new OpenApiSchema { Type = "integer" },
-                    ["param2"] = new OpenApiSchema { Type = "string" },
-                    ["param3"] = new OpenApiSchema { Type = "array", Items = new OpenApiSchema { Type = "integer" } },
-                    ["param4"] = new OpenApiSchema { Type = "array", Reference = new OpenApiReference() },
-                    ["number"] = new OpenApiSchema { Type = "number" },
-                    ["integer"] = new OpenApiSchema { Type = "integer" },
-                    ["bool"] = new OpenApiSchema { Type = "boolean" },
-                    ["object"] = new OpenApiSchema { Type = "object" },
-                }
-            };
             var triggersById = new Dictionary<string, WebHookTrigger>
             {
                 ["valid"] = new WebHookTrigger("valid")
@@ -56,7 +41,7 @@ namespace Harpoon.Tests
             var client = HttpClientMocker.Static(System.Net.HttpStatusCode.NotFound, "fail");
             var service = new DefaultWebHookValidator(triggers.Object, logger.Object, client);
 
-            await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Secret = "tooshort" }));
+            await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Secret = "too short" }));
             await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Secret = "toolong_toolong_toolong_toolong_toolong_toolong_toolong_toolong_toolong_toolong_toolong_toolong_toolong_toolong_toolong_toolong_toolong_toolong_toolong_toolong_" }));
             await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook()));
             await Assert.ThrowsAsync<ArgumentException>(() => service.ValidateAsync(new WebHook { Filters = new List<WebHookFilter>() }));
@@ -107,14 +92,6 @@ namespace Harpoon.Tests
         [MemberData(nameof(ValidCasesData))]
         public async Task ValidCasesAsync(WebHook validWebHook)
         {
-            var schema = new OpenApiSchema
-            {
-                Properties = new Dictionary<string, OpenApiSchema>
-                {
-                    ["param1"] = new OpenApiSchema { Type = "integer" },
-                    ["param2"] = new OpenApiSchema { Type = "string" },
-                }
-            };
             var triggersById = new Dictionary<string, WebHookTrigger>
             {
                 ["valid"] = new WebHookTrigger("valid"),
