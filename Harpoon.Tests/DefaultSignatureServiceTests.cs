@@ -12,13 +12,13 @@ namespace Harpoon.Tests
         public void BadSecret()
         {
             var service = new DefaultSignatureService();
-            Assert.Throws<ArgumentException>(() => service.GetSignature(null, "dzdazd"));
+            Assert.Throws<ArgumentException>(() => service.GetSignature(null, "content"));
         }
 
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        [InlineData("edzezed")]
+        [InlineData("content")]
         public void NormalScenario(string content)
         {
             var service = new DefaultSignatureService();

@@ -1,7 +1,9 @@
 ﻿using Harpoon.Controllers.Swashbuckle;
 using Harpoon.Registrations;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
+using Swashbuckle.AspNetCore.Newtonsoft;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
 using System.Collections.Generic;
@@ -24,7 +26,7 @@ namespace Harpoon.Tests
                 {
                     ["trigger"] = new WebHookTrigger<MyPayload>("trigger")
                     {
-                        Description = "decription"
+                        Description = "description"
                     }
                 };
         }
@@ -37,7 +39,11 @@ namespace Harpoon.Tests
         {
             var filter = new WebHookSubscriptionFilter(new TestWebHookTriggerProvider());
 
-            var context = new OperationFilterContext(null, new SchemaGenerator((SchemaGeneratorOptions)null, null), new SchemaRepository(), typeof(TestedController).GetMethod(nameof(TestedController.TestedMethod)));
+            var context = new OperationFilterContext(new ApiDescription()
+                , new SchemaGenerator(new NewtonsoftApiModelResolver(new JsonSerializerSettings(), new SchemaGeneratorOptions()), new SchemaGeneratorOptions())
+                , new SchemaRepository()
+                , typeof(TestedController).GetMethod(nameof(TestedController.TestedMethod)));
+
             var operation = new OpenApiOperation();
             filter.Apply(operation, context);
 
@@ -50,7 +56,7 @@ namespace Harpoon.Tests
             var op = operation.Callbacks["trigger"].PathItems.First().Value.Operations[OperationType.Post];
 
             Assert.Equal("trigger", op.OperationId);
-            Assert.Equal("decription", op.Description);
+            Assert.Equal("description", op.Description);
             Assert.Equal(4, op.Parameters.Count);
             Assert.Equal(4, op.Responses.Count);
         }
