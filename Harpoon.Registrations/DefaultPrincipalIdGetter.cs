@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace Harpoon.Registrations
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Default class able to extract a string from a principal, that will be later used as an id for webhook registration
+    /// </summary>
     public class DefaultPrincipalIdGetter : IPrincipalIdGetter
     {
         /// <inheritdoc />

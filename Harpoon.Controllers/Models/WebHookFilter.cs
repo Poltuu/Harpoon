@@ -2,7 +2,9 @@
 
 namespace Harpoon.Controllers.Models
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Represents a filter on triggered events, i.e. an event type to listen to
+    /// </summary>
     public class WebHookFilter : IWebHookFilter
     {
         /// <inheritdoc />

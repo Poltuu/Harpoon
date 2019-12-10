@@ -10,7 +10,7 @@ using System.Linq;
 namespace Harpoon.Controllers.Swashbuckle
 {
     /// <summary>
-    /// This filter sets operation's callbacks if the givent operation contains the <see cref="WebHookSubscriptionPointAttribute"/>
+    /// This filter sets operation's callbacks if the given operation contains the <see cref="WebHookSubscriptionPointAttribute"/>
     /// </summary>
     public class WebHookSubscriptionFilter : IOperationFilter
     {

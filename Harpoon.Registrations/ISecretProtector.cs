@@ -1,12 +1,12 @@
 ﻿namespace Harpoon.Registrations.EFStorage
 {
     /// <summary>
-    /// A class able to protect and unprotect a piece of plaintext data
+    /// A class able to protect and unprotect a piece of plain text data
     /// </summary>
     public interface ISecretProtector
     {
         /// <summary>
-        /// Protects a piece of plaintext data
+        /// Protects a piece of plain text data
         /// </summary>
         /// <param name="plaintext"></param>
         /// <returns></returns>
