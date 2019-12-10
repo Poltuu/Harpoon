@@ -82,7 +82,7 @@ namespace Harpoon.Controllers.Swashbuckle
         /// <returns></returns>
         protected OpenApiCallback Generate(WebHookTrigger trigger, OperationFilterContext context)
         {
-            var schema = context.SchemaGenerator.GenerateSchema(trigger.PayloadType, context.SchemaRepository);
+            var schema = context.SchemaRegistry.GetOrRegister(trigger.PayloadType);
             var result = new OpenApiCallback();
 
             result.AddPathItem(RuntimeExpression.Build($"{{$request.body#/{PseudoCamelCase(nameof(IWebHook.Callback))}}}"), new OpenApiPathItem

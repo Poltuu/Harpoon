@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Moq;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -36,31 +35,50 @@ namespace Harpoon.Tests.Fixtures
             }
         }
 
+        class MyWebHookTriggerProvider : IWebHookTriggerProvider
+        {
+            public IReadOnlyDictionary<string, WebHookTrigger> GetAvailableTriggers()
+                => new Dictionary<string, WebHookTrigger> { ["noun.verb"] = new WebHookTrigger("noun.verb") };
+        }
+
         public class DefaultStartup
         {
             public void ConfigureServices(IServiceCollection services)
             {
-                services.AddMvcCore().AddJsonFormatters();
+                var builder = services.AddMvcCore();
+#if NETCOREAPP2_2
+                builder.AddJsonFormatters();
+#endif
+#if NETCOREAPP3_1
+                builder.AddHarpoonControllers();
+                services.AddAuthorization();
+#endif
                 services.AddEntityFrameworkSqlServer().AddDbContext<TestContext2>();
 
                 services.AddHarpoon(h =>
                 {
+                    h.AddControllersWithDefaultValidator<MyWebHookTriggerProvider>();
                     h.RegisterWebHooksUsingEfStorage<TestContext2>();
                     h.UseDefaultDataProtection(p => { }, o => { });
-                    h.UseDefaultValidator();
                 });
 
-                var triggerProvider = new Mock<IWebHookTriggerProvider>();
-                triggerProvider.Setup(s => s.GetAvailableTriggers()).Returns(new Dictionary<string, WebHookTrigger> { ["noun.verb"] = new WebHookTrigger("noun.verb") });
-                services.AddSingleton(triggerProvider.Object);
-
-                services.AddAuthentication(o => o.DefaultScheme = "TEST").AddScheme<AuthenticationSchemeOptions, TestAuthenticationHandler>("TEST", "TEST", o => { });
+                services
+                    .AddAuthentication(o => o.DefaultScheme = "TEST")
+                    .AddScheme<AuthenticationSchemeOptions, TestAuthenticationHandler>("TEST", "TEST", o => { });
             }
 
             public void Configure(IApplicationBuilder app)
             {
+#if NETCOREAPP2_2
                 app.UseAuthentication();
                 app.UseMvc();
+#endif
+#if NETCOREAPP3_1
+                app.UseRouting();
+                app.UseAuthentication();
+                app.UseAuthorization();
+                app.UseEndpoints(e => e.MapControllers());
+#endif
 
                 using (var scope = app.ApplicationServices.CreateScope())
                 {

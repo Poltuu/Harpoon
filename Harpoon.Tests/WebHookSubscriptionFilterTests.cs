@@ -1,6 +1,7 @@
 ﻿using Harpoon.Controllers.Swashbuckle;
 using Harpoon.Registrations;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
 using System.Collections.Generic;
@@ -36,7 +37,7 @@ namespace Harpoon.Tests
         {
             var filter = new WebHookSubscriptionFilter(new TestWebHookTriggerProvider());
 
-            var context = new OperationFilterContext(null, new SchemaGenerator((SchemaGeneratorOptions)null, null), new SchemaRepository(), typeof(TestedController).GetMethod(nameof(TestedController.TestedMethod)));
+            var context = new OperationFilterContext(null, new SchemaRegistry(new JsonSerializerSettings()), typeof(TestedController).GetMethod(nameof(TestedController.TestedMethod)));
             var operation = new OpenApiOperation();
             filter.Apply(operation, context);
 
