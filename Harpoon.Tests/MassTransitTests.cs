@@ -59,20 +59,25 @@ namespace Harpoon.Tests
 
             var provider = services.BuildServiceProvider();
 
-            var token = new CancellationTokenSource();
-            await provider.GetRequiredService<IHostedService>().StartAsync(token.Token);
-
-            var service = provider.GetRequiredService<IWebHookService>();
-
-            await service.NotifyAsync(new WebHookNotification("trigger", new Dictionary<string, object>
+            try
             {
-                ["key"] = "value"
-            }));
+                await provider.GetRequiredService<IHostedService>().StartAsync(default);
 
-            await Task.Delay(10000);
+                var service = provider.GetRequiredService<IWebHookService>();
 
-            Assert.Equal(1, processor.Counter);
-            token.Cancel();
+                await service.NotifyAsync(new WebHookNotification("trigger", new Dictionary<string, object>
+                {
+                    ["key"] = "value"
+                }));
+
+                await Task.Delay(10000);
+
+                Assert.Equal(1, processor.Counter);
+            }
+            finally
+            {
+                await provider.GetRequiredService<IHostedService>().StopAsync(default);
+            }
         }
 
         [Fact]
@@ -102,17 +107,22 @@ namespace Harpoon.Tests
 
             var provider = services.BuildServiceProvider();
 
-            var token = new CancellationTokenSource();
-            await provider.GetRequiredService<IHostedService>().StartAsync(token.Token);
+            try
+            {
+                await provider.GetRequiredService<IHostedService>().StartAsync(default);
 
-            var service = provider.GetRequiredService<IWebHookSender>();
+                var service = provider.GetRequiredService<IWebHookSender>();
 
-            await service.SendAsync(new WebHookWorkItem(Guid.NewGuid(), new WebHookNotification("", new object()), new WebHook()), CancellationToken.None);
+                await service.SendAsync(new WebHookWorkItem(Guid.NewGuid(), new WebHookNotification("", new object()), new WebHook()), CancellationToken.None);
 
-            await Task.Delay(10000);
+                await Task.Delay(10000);
 
-            Assert.Equal(1, processor.Counter);
-            token.Cancel();
+                Assert.Equal(1, processor.Counter);
+            }
+            finally
+            {
+                await provider.GetRequiredService<IHostedService>().StopAsync(default);
+            }
         }
 
         class MyPayload
@@ -172,25 +182,34 @@ namespace Harpoon.Tests
 
             var provider = services.BuildServiceProvider();
 
-            var token = new CancellationTokenSource();
-            var hosts = provider.GetRequiredService<IEnumerable<IHostedService>>();
-            foreach (var host in hosts)
+            try
             {
-                await host.StartAsync(token.Token);
+                var hosts = provider.GetRequiredService<IEnumerable<IHostedService>>();
+                foreach (var host in hosts)
+                {
+                    await host.StartAsync(default);
+                }
+
+                var notif = new WebHookNotification("noun.verb", new MyPayload
+                {
+                    NotificationId = guid,
+                    Property = 23
+                });
+
+                await provider.GetRequiredService<IWebHookService>().NotifyAsync(notif);
+
+                await Task.Delay(10000);
+
+                Assert.Equal(expectedWebHooksCount, counter);
             }
-
-            var notif = new WebHookNotification("noun.verb", new MyPayload
+            finally
             {
-                NotificationId = guid,
-                Property = 23
-            });
-
-            await provider.GetRequiredService<IWebHookService>().NotifyAsync(notif);
-
-            await Task.Delay(10000);
-
-            Assert.Equal(expectedWebHooksCount, counter);
-            token.Cancel();
+                var hosts = provider.GetRequiredService<IEnumerable<IHostedService>>();
+                foreach (var host in hosts)
+                {
+                    await host.StopAsync(default);
+                }
+            }
         }
     }
 }
