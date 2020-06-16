@@ -14,12 +14,14 @@ namespace Harpoon.Registrations.EFStorage
     {
         private readonly TContext _context;
         private readonly IWebHookSender _sender;
+        private readonly ISecretProtector _secretProtector;
 
         /// <summary>Initializes a new instance of the <see cref="WebHookReplayService{TContext}"/> class.</summary>
-        public WebHookReplayService(TContext context, IWebHookSender sender)
+        public WebHookReplayService(TContext context, IWebHookSender sender, ISecretProtector secretProtector)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _sender = sender ?? throw new ArgumentNullException(nameof(sender));
+            _secretProtector = secretProtector ?? throw new ArgumentNullException(nameof(secretProtector));
         }
 
         /// <summary>
@@ -33,11 +35,22 @@ namespace Harpoon.Registrations.EFStorage
                 .Where(l => l.Error != null && l.CreatedAt >= start)
                 .Include(e => e.WebHookNotification)
                 .Include(e => e.WebHook)
+                .AsNoTracking()
                 .ToListAsync();
 
             foreach (var fail in failedNotifications)
             {
-                await _sender.SendAsync(new WebHookWorkItem(fail.WebHookNotificationId, fail.WebHookNotification, fail.WebHook), default);
+                var hasSuccesfulLogs = await _context.WebHookLogs
+                    .Where(l => l.WebHookNotificationId == fail.WebHookNotificationId
+                        && l.WebHookId == fail.WebHookId
+                        && l.CreatedAt > fail.CreatedAt
+                        && l.Error == null).AnyAsync();
+
+                if (!hasSuccesfulLogs)
+                {
+                    fail.WebHook.Secret = _secretProtector.Unprotect(fail.WebHook.ProtectedSecret);
+                    await _sender.SendAsync(new WebHookWorkItem(fail.WebHookNotificationId, fail.WebHookNotification, fail.WebHook), default);
+                }
             }
         }
     }
