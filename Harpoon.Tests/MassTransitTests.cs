@@ -1,8 +1,10 @@
-﻿using Harpoon.Registrations.EFStorage;
+﻿using Harpoon.MassTransit;
+using Harpoon.Registrations.EFStorage;
 using Harpoon.Sender;
 using Harpoon.Tests.Mocks;
 using MassTransit;
 using MassTransit.AspNetCoreIntegration;
+using MassTransit.ExtensionsDependencyInjectionIntegration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Moq;
@@ -36,16 +38,21 @@ namespace Harpoon.Tests
             var services = new ServiceCollection();
             services.AddHarpoon(c => c.SendNotificationsUsingMassTransit());
 
-            services.AddMassTransit(p => Bus.Factory.CreateUsingRabbitMq(cfg =>
+            services.AddMassTransit((IServiceCollectionConfigurator p) =>
             {
-                var host = cfg.Host(new Uri("rabbitmq://localhost:5672"), hostConfigurator =>
+                p.ReceiveNotificationsUsingMassTransit();
+                p.AddBus(p => Bus.Factory.CreateUsingRabbitMq(cfg =>
                 {
-                    hostConfigurator.Username("guest");
-                    hostConfigurator.Password("guest");
-                });
+                    var host = cfg.Host(new Uri("rabbitmq://localhost:5672"), hostConfigurator =>
+                    {
+                        hostConfigurator.Username("guest");
+                        hostConfigurator.Password("guest");
+                    });
 
-                cfg.ConfigureNotificationsConsumer(p, "NotificationsQueue");
-            }), x => x.ReceiveNotificationsUsingMassTransit());
+                    cfg.ConfigureNotificationsConsumer(p, "NotificationsQueue");
+                }));
+            });
+            services.AddMassTransitHostedService();
 
             var processor = new QueuedProcessor<IWebHookNotification>();
             services.AddSingleton(typeof(IQueuedProcessor<IWebHookNotification>), processor);
@@ -78,16 +85,21 @@ namespace Harpoon.Tests
             var services = new ServiceCollection();
             services.AddHarpoon(c => c.SendWebHookWorkItemsUsingMassTransit());
 
-            services.AddMassTransit(p => Bus.Factory.CreateUsingRabbitMq(cfg =>
+            services.AddMassTransit((IServiceCollectionConfigurator p) =>
             {
-                var host = cfg.Host(new Uri("rabbitmq://localhost:5672"), hostConfigurator =>
-                {
-                    hostConfigurator.Username("guest");
-                    hostConfigurator.Password("guest");
-                });
+                p.ReceiveWebHookWorkItemsUsingMassTransit();
+                p.AddBus(p => Bus.Factory.CreateUsingRabbitMq(cfg =>
+                  {
+                      var host = cfg.Host(new Uri("rabbitmq://localhost:5672"), hostConfigurator =>
+                      {
+                          hostConfigurator.Username("guest");
+                          hostConfigurator.Password("guest");
+                      });
 
-                cfg.ConfigureWebHookWorkItemsConsumer(p, "WebHookWorkItemsQueue");
-            }), x => x.ReceiveWebHookWorkItemsUsingMassTransit());
+                      cfg.ConfigureWebHookWorkItemsConsumer(p, "WebHookWorkItemsQueue");
+                  }));
+            });
+            services.AddMassTransitHostedService();
 
             var processor = new QueuedProcessor<IWebHookWorkItem>();
             services.AddSingleton(typeof(IQueuedProcessor<IWebHookWorkItem>), processor);
@@ -144,17 +156,23 @@ namespace Harpoon.Tests
             services.AddSingleton(protector.Object);
 
             services.AddHarpoon(c => c.UseAllMassTransitDefaults(a => a.AddHttpMessageHandler(() => handler)));
-            services.AddMassTransit(p => Bus.Factory.CreateUsingRabbitMq(cfg =>
-            {
-                var host = cfg.Host(new Uri("rabbitmq://localhost:5672"), hostConfigurator =>
-                {
-                    hostConfigurator.Username("guest");
-                    hostConfigurator.Password("guest");
-                });
 
-                cfg.ConfigureNotificationsConsumer(p, "NotificationsFullTestsQueue");
-                cfg.ConfigureWebHookWorkItemsConsumer(p, "WebHookWorkItemsFullTestsQueue");
-            }), x => x.UseAllMassTransitDefaults());
+            services.AddMassTransit((IServiceCollectionConfigurator p) =>
+            {
+                p.UseAllMassTransitDefaults();
+                p.AddBus(p => Bus.Factory.CreateUsingRabbitMq(cfg =>
+                {
+                    var host = cfg.Host(new Uri("rabbitmq://localhost:5672"), hostConfigurator =>
+                    {
+                        hostConfigurator.Username("guest");
+                        hostConfigurator.Password("guest");
+                    });
+
+                    cfg.ConfigureNotificationsConsumer(p, "NotificationsFullTestsQueue");
+                    cfg.ConfigureWebHookWorkItemsConsumer(p, "WebHookWorkItemsFullTestsQueue");
+                }));
+            });
+            services.AddMassTransitHostedService();
 
             var provider = services.BuildServiceProvider();
 
