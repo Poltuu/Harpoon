@@ -33,7 +33,7 @@ namespace Harpoon.Tests
             var service = new BackgroundSender(queue);
             var count = 0;
 
-            await service.SendAsync(new WebHookWorkItem(Guid.NewGuid(), new WebHookNotification(), new WebHook()), CancellationToken.None);
+            await service.SendAsync(new WebHookWorkItem(Guid.NewGuid(), new WebHookNotification("", new object()), new WebHook()), CancellationToken.None);
             await queue.DequeueAsync(CancellationToken.None).ContinueWith(t => count++);
 
             Assert.Equal(1, count);
@@ -43,7 +43,7 @@ namespace Harpoon.Tests
         public async Task NormalWithHostedServiceAsync()
         {
             var service = new BackgroundSender(_fixture.Services.GetRequiredService<BackgroundQueue<IWebHookWorkItem>>());
-            await service.SendAsync(new WebHookWorkItem(Guid.NewGuid(), new WebHookNotification(), new WebHook()), CancellationToken.None);
+            await service.SendAsync(new WebHookWorkItem(Guid.NewGuid(), new WebHookNotification("", new object()), new WebHook()), CancellationToken.None);
 
             await Task.Delay(10000);
             Assert.Equal(1, BackgroundSenderFixture.FakeWebHookSenderCount);

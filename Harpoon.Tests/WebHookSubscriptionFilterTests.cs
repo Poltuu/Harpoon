@@ -2,12 +2,11 @@
 using Harpoon.Registrations;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.OpenApi.Models;
-using Newtonsoft.Json;
-using Swashbuckle.AspNetCore.Newtonsoft;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using Xunit;
 
 namespace Harpoon.Tests
@@ -24,10 +23,7 @@ namespace Harpoon.Tests
             public IReadOnlyDictionary<string, WebHookTrigger> GetAvailableTriggers()
                 => new Dictionary<string, WebHookTrigger>
                 {
-                    ["trigger"] = new WebHookTrigger<MyPayload>("trigger")
-                    {
-                        Description = "description"
-                    }
+                    ["trigger"] = new WebHookTrigger<MyPayload>("trigger", "description")
                 };
         }
 
@@ -40,7 +36,7 @@ namespace Harpoon.Tests
             var filter = new WebHookSubscriptionFilter(new TestWebHookTriggerProvider());
 
             var context = new OperationFilterContext(new ApiDescription()
-                , new SchemaGenerator(new NewtonsoftApiModelResolver(new JsonSerializerSettings(), new SchemaGeneratorOptions()), new SchemaGeneratorOptions())
+                , new SchemaGenerator(new SchemaGeneratorOptions(),  new JsonSerializerDataContractResolver(new JsonSerializerOptions()))
                 , new SchemaRepository()
                 , typeof(TestedController).GetMethod(nameof(TestedController.TestedMethod)));
 

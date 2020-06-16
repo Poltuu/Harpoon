@@ -130,7 +130,7 @@ namespace Harpoon.Sender
         /// <param name="webHookWorkItem"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected virtual Task OnFailureAsync(HttpResponseMessage response, Exception exception, IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken)
+        protected virtual Task OnFailureAsync(HttpResponseMessage? response, Exception? exception, IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken)
             => Task.CompletedTask;
 
         /// <summary>

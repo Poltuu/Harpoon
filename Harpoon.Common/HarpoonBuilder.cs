@@ -4,8 +4,11 @@ namespace Harpoon
 {
     class HarpoonBuilder : IHarpoonBuilder
     {
-        public IServiceCollection Services { get; set; }
+        public IServiceCollection Services { get; }
 
-        internal HarpoonBuilder() { }
+        internal HarpoonBuilder(IServiceCollection services)
+        {
+            Services = services;
+        }
     }
 }

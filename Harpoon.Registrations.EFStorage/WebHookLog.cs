@@ -20,7 +20,7 @@ namespace Harpoon.Registrations.EFStorage
         /// <summary>
         /// Gets or sets an error message
         /// </summary>
-        public string Error { get; set; }
+        public string? Error { get; set; }
 
         /// <summary>
         /// Gets a value representing if the log is in error

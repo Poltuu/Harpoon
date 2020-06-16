@@ -16,7 +16,7 @@ namespace Harpoon
         /// <summary>
         /// Gets the url to be called in case an event matching the <see cref="Filters"/> is triggered
         /// </summary>
-        Uri Callback { get; }
+        Uri? Callback { get; }
 
         /// <summary>
         /// Gets or sets the <see cref="IWebHook"/> shared secret. The secret must be 64 character in default implementation.

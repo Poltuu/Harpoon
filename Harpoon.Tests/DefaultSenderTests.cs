@@ -41,7 +41,7 @@ namespace Harpoon.Tests
             var context = new InMemoryContext();
             var processor = new EFNotificationProcessor<InMemoryContext>(context, store.Object, sender.Object, logger.Object);
 
-            await processor.ProcessAsync(new WebHookNotification { TriggerId = "trigger", Payload = new MyPayload { NotificationId = Guid.NewGuid(), Property = 23 } }, CancellationToken.None);
+            await processor.ProcessAsync(new WebHookNotification("trigger", new MyPayload { NotificationId = Guid.NewGuid(), Property = 23 }), CancellationToken.None);
 
             Assert.Single(context.WebHookNotifications);
         }
@@ -133,7 +133,7 @@ namespace Harpoon.Tests
             signatureService.Setup(s => s.GetSignature(It.IsAny<string>(), It.IsAny<string>())).Returns(signature);
 
             var webHook = new WebHook { Callback = "http://www.example.com" };
-            var notif = new WebHookNotification { TriggerId = "noun.verb", Payload = payload };
+            var notif = new WebHookNotification("noun.verb",  payload);
 
             var callbackHasBeenCalled = false;
             var httpClient = HttpClientMocker.Callback(async m =>
@@ -177,7 +177,7 @@ namespace Harpoon.Tests
             var signature = new Mock<ISignatureService>();
 
             var webHook = new WebHook { Callback = "http://www.example.com" };
-            var notif = new WebHookNotification { TriggerId = "noun.verb" };
+            var notif = new WebHookNotification("noun.verb", new object());
 
             var httpClient = HttpClientMocker.Static(code, "");
 
@@ -194,7 +194,7 @@ namespace Harpoon.Tests
             var signature = new Mock<ISignatureService>();
 
             var webHook = new WebHook { Callback = "http://www.example.com" };
-            var notif = new WebHookNotification { TriggerId = "noun.verb" };
+            var notif = new WebHookNotification("noun.verb", new object());
 
             var httpClient = HttpClientMocker.AlwaysFail(new Exception());
 

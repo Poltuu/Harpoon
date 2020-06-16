@@ -31,8 +31,8 @@ namespace Harpoon.Sender.EF
         }
 
         /// <inheritdoc />
-        protected override Task OnFailureAsync(HttpResponseMessage response, Exception exception, IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken)
-            => AddLogAsync(webHookWorkItem, $"WebHook {webHookWorkItem.WebHook.Id} failed. [{webHookWorkItem.WebHook.Callback}]: {exception.Message}");
+        protected override Task OnFailureAsync(HttpResponseMessage? response, Exception? exception, IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken)
+            => AddLogAsync(webHookWorkItem, $"WebHook {webHookWorkItem.WebHook.Id} failed. [{webHookWorkItem.WebHook.Callback}]: {exception?.Message}");
 
         /// <inheritdoc />
         protected override Task OnSuccessAsync(HttpResponseMessage response, IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken)
@@ -50,7 +50,7 @@ namespace Harpoon.Sender.EF
             await AddLogAsync(webHookWorkItem, $"WebHook {webHookWorkItem.WebHook.Id} was paused. [{webHookWorkItem.WebHook.Callback}]");
         }
 
-        private async Task AddLogAsync(IWebHookWorkItem workItem, string error = null)
+        private async Task AddLogAsync(IWebHookWorkItem workItem, string? error = null)
         {
             var log = new WebHookLog
             {

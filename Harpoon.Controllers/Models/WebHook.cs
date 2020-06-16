@@ -12,14 +12,14 @@ namespace Harpoon.Controllers.Models
         /// <inheritdoc />
         public Guid Id { get; set; }
         /// <inheritdoc />
-        public Uri Callback { get; set; }
+        public Uri? Callback { get; set; }
         /// <inheritdoc />
-        public string Secret { get; set; }
+        public string? Secret { get; set; }
         /// <inheritdoc />
         public bool IsPaused { get; set; }
 
         /// <inheritdoc />
-        public List<WebHookFilter> Filters { get; set; }
+        public List<WebHookFilter> Filters { get; set; } = new List<WebHookFilter>();
 
         IReadOnlyCollection<IWebHookFilter> IWebHook.Filters => Filters;
 
@@ -38,7 +38,7 @@ namespace Harpoon.Controllers.Models
             Secret = webHook.Secret;
             IsPaused = webHook.IsPaused;
 
-            Filters = webHook.Filters?.Select(f => new WebHookFilter(f)).ToList();
+            Filters = webHook.Filters.Select(f => new WebHookFilter(f)).ToList();
         }
     }
 }

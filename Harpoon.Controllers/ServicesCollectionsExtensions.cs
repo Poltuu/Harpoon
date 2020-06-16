@@ -99,7 +99,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="options"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        public static SwaggerUIOptions AddHarpoonEndpoint(this SwaggerUIOptions options, string name = null)
+        public static SwaggerUIOptions AddHarpoonEndpoint(this SwaggerUIOptions options, string? name = null)
         {
             options.SwaggerEndpoint($"/swagger/{Harpoon.Controllers.OpenApi.GroupName}/swagger.json", name ?? "WebHooks documentation");
             return options;

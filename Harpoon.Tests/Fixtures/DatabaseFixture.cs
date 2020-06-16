@@ -16,7 +16,7 @@ namespace Harpoon.Tests.Fixtures
     {
         private IServiceProvider _provider;
 
-        public IServiceProvider Provider => _provider ?? (_provider = GetProvider());
+        public IServiceProvider Provider => _provider ??= GetProvider();
 
         private IServiceProvider GetProvider()
         {

@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddLogging();
 
-            var harpoon = new HarpoonBuilder { Services = services };
+            var harpoon = new HarpoonBuilder(services);
 
             configure(harpoon);
 

@@ -31,7 +31,7 @@ namespace Harpoon.Registrations.EFStorage
         }
 
         /// <inheritdoc />
-        public async Task<IWebHook> GetWebHookAsync(IPrincipal user, Guid id, CancellationToken cancellationToken = default)
+        public async Task<IWebHook?> GetWebHookAsync(IPrincipal user, Guid id, CancellationToken cancellationToken = default)
         {
             var key = await _idGetter.GetPrincipalIdAsync(user, cancellationToken);
             var webHook = await _context.WebHooks

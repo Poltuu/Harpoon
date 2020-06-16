@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
     <AssemblyVersion>0.1.5</AssemblyVersion>
     <Version>0.1.5</Version>
     <Authors>Romain V</Authors>
@@ -19,9 +20,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" Version="3.1.0" PrivateAssets="all" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.0.0-rc4" />
-    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="3.1.0" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" Version="3.1.3" PrivateAssets="all" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.4.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="3.1.3" />
   </ItemGroup>
 
   <ItemGroup>

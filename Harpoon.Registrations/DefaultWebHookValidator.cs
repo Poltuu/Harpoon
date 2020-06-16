@@ -131,7 +131,7 @@ namespace Harpoon.Registrations
             {
                 if (!triggers.ContainsKey(filter.Trigger))
                 {
-                    errors.Add($" - Trigger {filter.Trigger} is not valid.");
+                    errors.Add($" - Trigger '{filter.Trigger}' is not valid.");
                     continue;
                 }
             }

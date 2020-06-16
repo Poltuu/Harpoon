@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading;
@@ -44,7 +45,7 @@ namespace Harpoon.Registrations
             throw new ArgumentException("Current principal id could not be found.");
         }
 
-        private bool TryGetNotNullClaimValue(ClaimsPrincipal principal, string claimType, out string result)
+        private bool TryGetNotNullClaimValue(ClaimsPrincipal principal, string claimType, [NotNullWhen(true)] out string? result)
         {
             result = principal.FindFirst(claimType)?.Value;
             return result != null;

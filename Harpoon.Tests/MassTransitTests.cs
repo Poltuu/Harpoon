@@ -1,8 +1,10 @@
-﻿using Harpoon.Registrations.EFStorage;
+﻿using Harpoon.MassTransit;
+using Harpoon.Registrations.EFStorage;
 using Harpoon.Sender;
 using Harpoon.Tests.Mocks;
 using MassTransit;
 using MassTransit.AspNetCoreIntegration;
+using MassTransit.ExtensionsDependencyInjectionIntegration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Moq;
@@ -30,81 +32,97 @@ namespace Harpoon.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "does not work on CI")]
         public async Task NotificationSendTests()
         {
             var services = new ServiceCollection();
             services.AddHarpoon(c => c.SendNotificationsUsingMassTransit());
 
-            services.AddMassTransit(p => Bus.Factory.CreateUsingRabbitMq(cfg =>
+            services.AddMassTransit((IServiceCollectionConfigurator p) =>
             {
-                var host = cfg.Host(new Uri("rabbitmq://localhost:5672"), hostConfigurator =>
+                p.ReceiveNotificationsUsingMassTransit();
+                p.AddBus(p => Bus.Factory.CreateUsingRabbitMq(cfg =>
                 {
-                    hostConfigurator.Username("guest");
-                    hostConfigurator.Password("guest");
-                });
+                    var host = cfg.Host(new Uri("rabbitmq://localhost:5672"), hostConfigurator =>
+                    {
+                        hostConfigurator.Username("guest");
+                        hostConfigurator.Password("guest");
+                    });
 
-                cfg.ConfigureNotificationsConsumer(p, "NotificationsQueue");
-            }), x => x.ReceiveNotificationsUsingMassTransit());
+                    cfg.ConfigureNotificationsConsumer(p, "NotificationsQueue");
+                }));
+            });
+            services.AddMassTransitHostedService();
 
             var processor = new QueuedProcessor<IWebHookNotification>();
             services.AddSingleton(typeof(IQueuedProcessor<IWebHookNotification>), processor);
 
             var provider = services.BuildServiceProvider();
 
-            var token = new CancellationTokenSource();
-            await provider.GetRequiredService<IHostedService>().StartAsync(token.Token);
-
-            var service = provider.GetRequiredService<IWebHookService>();
-
-            await service.NotifyAsync(new WebHookNotification
+            try
             {
-                TriggerId = "trigger",
-                Payload = new Dictionary<string, object>
+                await provider.GetRequiredService<IHostedService>().StartAsync(default);
+
+                var service = provider.GetRequiredService<IWebHookService>();
+
+                await service.NotifyAsync(new WebHookNotification("trigger", new Dictionary<string, object>
                 {
                     ["key"] = "value"
-                }
-            });
+                }));
 
-            await Task.Delay(10000);
+                await Task.Delay(10000);
+            }
+            finally
+            {
+                await provider.GetRequiredService<IHostedService>().StopAsync(default);
+            }
 
             Assert.Equal(1, processor.Counter);
-            token.Cancel();
         }
 
-        [Fact]
+        [Fact(Skip = "does not work on CI")]
         public async Task WebHookWorkItemSendTests()
         {
             var services = new ServiceCollection();
             services.AddHarpoon(c => c.SendWebHookWorkItemsUsingMassTransit());
 
-            services.AddMassTransit(p => Bus.Factory.CreateUsingRabbitMq(cfg =>
+            services.AddMassTransit((IServiceCollectionConfigurator p) =>
             {
-                var host = cfg.Host(new Uri("rabbitmq://localhost:5672"), hostConfigurator =>
-                {
-                    hostConfigurator.Username("guest");
-                    hostConfigurator.Password("guest");
-                });
+                p.ReceiveWebHookWorkItemsUsingMassTransit();
+                p.AddBus(p => Bus.Factory.CreateUsingRabbitMq(cfg =>
+                  {
+                      var host = cfg.Host(new Uri("rabbitmq://localhost:5672"), hostConfigurator =>
+                      {
+                          hostConfigurator.Username("guest");
+                          hostConfigurator.Password("guest");
+                      });
 
-                cfg.ConfigureWebHookWorkItemsConsumer(p, "WebHookWorkItemsQueue");
-            }), x => x.ReceiveWebHookWorkItemsUsingMassTransit());
+                      cfg.ConfigureWebHookWorkItemsConsumer(p, "WebHookWorkItemsQueue");
+                  }));
+            });
+            services.AddMassTransitHostedService();
 
             var processor = new QueuedProcessor<IWebHookWorkItem>();
             services.AddSingleton(typeof(IQueuedProcessor<IWebHookWorkItem>), processor);
 
             var provider = services.BuildServiceProvider();
 
-            var token = new CancellationTokenSource();
-            await provider.GetRequiredService<IHostedService>().StartAsync(token.Token);
+            try
+            {
+                await provider.GetRequiredService<IHostedService>().StartAsync(default);
 
-            var service = provider.GetRequiredService<IWebHookSender>();
+                var service = provider.GetRequiredService<IWebHookSender>();
 
-            await service.SendAsync(new WebHookWorkItem(Guid.NewGuid(), new WebHookNotification(), new WebHook()), CancellationToken.None);
+                await service.SendAsync(new WebHookWorkItem(Guid.NewGuid(), new WebHookNotification("", new object()), new WebHook()), CancellationToken.None);
 
-            await Task.Delay(10000);
+                await Task.Delay(10000);
+            }
+            finally
+            {
+                await provider.GetRequiredService<IHostedService>().StopAsync(default);
+            }
 
             Assert.Equal(1, processor.Counter);
-            token.Cancel();
         }
 
         class MyPayload
@@ -113,7 +131,7 @@ namespace Harpoon.Tests
             public int Property { get; set; }
         }
 
-        [Fact]
+        [Fact(Skip ="does not work on CI")]
         public async Task FullIntegrationMassTransitTests()
         {
             var guid = Guid.NewGuid();
@@ -144,42 +162,54 @@ namespace Harpoon.Tests
             services.AddSingleton(protector.Object);
 
             services.AddHarpoon(c => c.UseAllMassTransitDefaults(a => a.AddHttpMessageHandler(() => handler)));
-            services.AddMassTransit(p => Bus.Factory.CreateUsingRabbitMq(cfg =>
-            {
-                var host = cfg.Host(new Uri("rabbitmq://localhost:5672"), hostConfigurator =>
-                {
-                    hostConfigurator.Username("guest");
-                    hostConfigurator.Password("guest");
-                });
 
-                cfg.ConfigureNotificationsConsumer(p, "NotificationsFullTestsQueue");
-                cfg.ConfigureWebHookWorkItemsConsumer(p, "WebHookWorkItemsFullTestsQueue");
-            }), x => x.UseAllMassTransitDefaults());
+            services.AddMassTransit((IServiceCollectionConfigurator p) =>
+            {
+                p.UseAllMassTransitDefaults();
+                p.AddBus(p => Bus.Factory.CreateUsingRabbitMq(cfg =>
+                {
+                    var host = cfg.Host(new Uri("rabbitmq://localhost:5672"), hostConfigurator =>
+                    {
+                        hostConfigurator.Username("guest");
+                        hostConfigurator.Password("guest");
+                    });
+
+                    cfg.ConfigureNotificationsConsumer(p, "NotificationsFullTestsQueue");
+                    cfg.ConfigureWebHookWorkItemsConsumer(p, "WebHookWorkItemsFullTestsQueue");
+                }));
+            });
+            services.AddMassTransitHostedService();
 
             var provider = services.BuildServiceProvider();
 
-            var token = new CancellationTokenSource();
-            var hosts = provider.GetRequiredService<IEnumerable<IHostedService>>();
-            foreach (var host in hosts)
+            try
             {
-                await host.StartAsync(token.Token);
-            }
+                var hosts = provider.GetRequiredService<IEnumerable<IHostedService>>();
+                foreach (var host in hosts)
+                {
+                    await host.StartAsync(default);
+                }
 
-            var notif = new WebHookNotification
-            {
-                TriggerId = "noun.verb",
-                Payload = new MyPayload
+                var notif = new WebHookNotification("noun.verb", new MyPayload
                 {
                     NotificationId = guid,
                     Property = 23
-                }
-            };
-            await provider.GetRequiredService<IWebHookService>().NotifyAsync(notif);
+                });
 
-            await Task.Delay(10000);
+                await provider.GetRequiredService<IWebHookService>().NotifyAsync(notif);
+
+                await Task.Delay(15000);
+            }
+            finally
+            {
+                var hosts = provider.GetRequiredService<IEnumerable<IHostedService>>();
+                foreach (var host in hosts)
+                {
+                    await host.StopAsync(default);
+                }
+            }
 
             Assert.Equal(expectedWebHooksCount, counter);
-            token.Cancel();
         }
     }
 }

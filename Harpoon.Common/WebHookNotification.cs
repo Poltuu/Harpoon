@@ -10,5 +10,16 @@
 
         /// <inheritdoc />
         public object Payload { get; set; }
+
+        /// <summary>
+        /// <summary>Initializes a new instance of the <see cref="WebHookNotification"/> class.</summary>
+        /// </summary>
+        /// <param name="trigger"></param>
+        /// <param name="payload"></param>
+        public WebHookNotification(string trigger, object payload)
+        {
+            TriggerId = trigger;
+            Payload = payload;
+        }
     }
 }

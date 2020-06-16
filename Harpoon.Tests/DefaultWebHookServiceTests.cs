@@ -34,7 +34,7 @@ namespace Harpoon.Tests
             var service = new DefaultWebHookService(queue);
             var count = 0;
 
-            await service.NotifyAsync(new WebHookNotification());
+            await service.NotifyAsync(new WebHookNotification("", new object()));
             await queue.DequeueAsync(CancellationToken.None).ContinueWith(t => count++);
 
             Assert.Equal(1, count);
@@ -49,7 +49,7 @@ namespace Harpoon.Tests
             var logger = new Mock<ILogger<DefaultNotificationProcessor>>();
 
             var service = new DefaultNotificationProcessor(store.Object, sender.Object, logger.Object);
-            await service.ProcessAsync(new WebHookNotification(), CancellationToken.None);
+            await service.ProcessAsync(new WebHookNotification("", new object()), CancellationToken.None);
 
             sender.Verify(s => s.SendAsync(It.IsAny<IWebHookWorkItem>(), It.IsAny<CancellationToken>()), Times.Never);
         }

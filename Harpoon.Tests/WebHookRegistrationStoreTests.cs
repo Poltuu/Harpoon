@@ -115,16 +115,13 @@ namespace Harpoon.Tests
             await SeedAsync(context);
             var store = services.GetRequiredService<WebHookStore<TestContext1>>();
 
-            var payload = new WebHookNotification
+            var payload = new WebHookNotification("noun.verb", new Payload
             {
-                TriggerId = "noun.verb",
-                Payload = new Payload
-                {
-                    Property = 2,
-                    OtherProperty = "value",
-                    ThirdProperty = "nope"
-                }
-            };
+                Property = 2,
+                OtherProperty = "value",
+                ThirdProperty = "nope"
+            });
+
             var webHooks = await store.GetApplicableWebHooksAsync(payload);
 
             Assert.All(webHooks, t =>
@@ -366,7 +363,7 @@ namespace Harpoon.Tests
 
             var dbNotif = AddNotification(context, Guid.NewGuid(), "noun.verb");
             await context.SaveChangesAsync();
-            var notif = new WebHookNotification { TriggerId = "noun.verb" };
+            var notif = new WebHookNotification("noun.verb", new object());
 
             var httpClient = HttpClientMocker.Static(code, "");
 
