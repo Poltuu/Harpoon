@@ -10,7 +10,7 @@ namespace Harpoon.Controllers.Models
         /// <inheritdoc />
         public Guid Id { get; set; }
         /// <inheritdoc />
-        public string Trigger { get; set; }
+        public string? Trigger { get; set; }
 
         /// <summary>Initializes a new instance of the <see cref="WebHookFilter"/> class.</summary>
         public WebHookFilter() { }

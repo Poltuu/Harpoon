@@ -38,7 +38,7 @@ namespace Harpoon.Tests.Fixtures
         class MyWebHookTriggerProvider : IWebHookTriggerProvider
         {
             public IReadOnlyDictionary<string, WebHookTrigger> GetAvailableTriggers()
-                => new Dictionary<string, WebHookTrigger> { ["noun.verb"] = new WebHookTrigger("noun.verb") };
+                => new Dictionary<string, WebHookTrigger> { ["noun.verb"] = new WebHookTrigger("noun.verb", "desc", typeof(object)) };
         }
 
         public class DefaultStartup

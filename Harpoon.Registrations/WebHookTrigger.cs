@@ -11,9 +11,9 @@ namespace Harpoon.Registrations
         /// <summary>
         /// Initializes a new instance of the <see cref="WebHookTrigger{TPayload}"/> class.
         /// </summary>
-        public WebHookTrigger(string id) : base(id)
+        public WebHookTrigger(string id, string description)
+            : base(id, description, typeof(TPayload))
         {
-            PayloadType = typeof(TPayload);
         }
     }
 
@@ -42,9 +42,11 @@ namespace Harpoon.Registrations
         /// <summary>
         /// Initializes a new instance of the <see cref="WebHookTrigger"/> class.
         /// </summary>
-        public WebHookTrigger(string id)
+        public WebHookTrigger(string id, string description, Type payloadType)
         {
-            Id = id ?? throw new ArgumentNullException(nameof(id));
+            Id = id;
+            Description = description;
+            PayloadType = payloadType;
         }
     }
 }

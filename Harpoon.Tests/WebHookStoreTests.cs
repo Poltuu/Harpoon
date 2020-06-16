@@ -24,7 +24,7 @@ namespace Harpoon.Tests
         [Fact]
         public async Task TriggerMatchingTests()
         {
-            var notification = new WebHookNotification { TriggerId = "something.interesting.happened" };
+            var notification = new WebHookNotification("something.interesting.happened", new object());
 
             var context = new InMemoryContext();
             context.Add(new WebHook

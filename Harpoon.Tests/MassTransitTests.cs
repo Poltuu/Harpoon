@@ -64,14 +64,10 @@ namespace Harpoon.Tests
 
             var service = provider.GetRequiredService<IWebHookService>();
 
-            await service.NotifyAsync(new WebHookNotification
+            await service.NotifyAsync(new WebHookNotification("trigger", new Dictionary<string, object>
             {
-                TriggerId = "trigger",
-                Payload = new Dictionary<string, object>
-                {
-                    ["key"] = "value"
-                }
-            });
+                ["key"] = "value"
+            }));
 
             await Task.Delay(10000);
 
@@ -111,7 +107,7 @@ namespace Harpoon.Tests
 
             var service = provider.GetRequiredService<IWebHookSender>();
 
-            await service.SendAsync(new WebHookWorkItem(Guid.NewGuid(), new WebHookNotification(), new WebHook()), CancellationToken.None);
+            await service.SendAsync(new WebHookWorkItem(Guid.NewGuid(), new WebHookNotification("", new object()), new WebHook()), CancellationToken.None);
 
             await Task.Delay(10000);
 
@@ -183,15 +179,12 @@ namespace Harpoon.Tests
                 await host.StartAsync(token.Token);
             }
 
-            var notif = new WebHookNotification
+            var notif = new WebHookNotification("noun.verb", new MyPayload
             {
-                TriggerId = "noun.verb",
-                Payload = new MyPayload
-                {
-                    NotificationId = guid,
-                    Property = 23
-                }
-            };
+                NotificationId = guid,
+                Property = 23
+            });
+
             await provider.GetRequiredService<IWebHookService>().NotifyAsync(notif);
 
             await Task.Delay(10000);

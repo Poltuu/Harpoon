@@ -23,10 +23,7 @@ namespace Harpoon.Tests
             public IReadOnlyDictionary<string, WebHookTrigger> GetAvailableTriggers()
                 => new Dictionary<string, WebHookTrigger>
                 {
-                    ["trigger"] = new WebHookTrigger<MyPayload>("trigger")
-                    {
-                        Description = "description"
-                    }
+                    ["trigger"] = new WebHookTrigger<MyPayload>("trigger", "description")
                 };
         }
 

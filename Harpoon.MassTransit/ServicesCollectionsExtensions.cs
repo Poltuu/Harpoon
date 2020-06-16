@@ -60,7 +60,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="x"></param>
         /// <param name="configure"></param>
         /// <returns></returns>
-        public static IServiceCollectionConfigurator ReceiveNotificationsUsingMassTransit(this IServiceCollectionConfigurator x, Action<IConsumerConfigurator<Consumer<IWebHookNotification>>> configure = null)
+        public static IServiceCollectionConfigurator ReceiveNotificationsUsingMassTransit(this IServiceCollectionConfigurator x, Action<IConsumerConfigurator<Consumer<IWebHookNotification>>>? configure = null)
         {
             x.AddConsumer(configure);
             return x;
@@ -73,7 +73,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="p"></param>
         /// <param name="queueName"></param>
         /// <param name="configure"></param>
-        public static void ConfigureNotificationsConsumer(this IBusFactoryConfigurator cfg, IServiceProvider p, string queueName, Action<IConsumerConfigurator<Consumer<IWebHookNotification>>> configure = null)
+        public static void ConfigureNotificationsConsumer(this IBusFactoryConfigurator cfg, IServiceProvider p, string queueName, Action<IConsumerConfigurator<Consumer<IWebHookNotification>>>? configure = null)
             => cfg.ReceiveEndpoint(queueName, e => e.ConfigureConsumer(p, configure));
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="x"></param>
         /// <param name="configure"></param>
         /// <returns></returns>
-        public static IServiceCollectionConfigurator ReceiveWebHookWorkItemsUsingMassTransit(this IServiceCollectionConfigurator x, Action<IConsumerConfigurator<Consumer<IWebHookWorkItem>>> configure = null)
+        public static IServiceCollectionConfigurator ReceiveWebHookWorkItemsUsingMassTransit(this IServiceCollectionConfigurator x, Action<IConsumerConfigurator<Consumer<IWebHookWorkItem>>>? configure = null)
         {
             x.AddConsumer(configure);
             return x;
@@ -106,7 +106,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="p"></param>
         /// <param name="queueName"></param>
         /// <param name="configure"></param>
-        public static void ConfigureWebHookWorkItemsConsumer(this IBusFactoryConfigurator cfg, IServiceProvider p, string queueName, Action<IConsumerConfigurator<Consumer<IWebHookWorkItem>>> configure = null)
+        public static void ConfigureWebHookWorkItemsConsumer(this IBusFactoryConfigurator cfg, IServiceProvider p, string queueName, Action<IConsumerConfigurator<Consumer<IWebHookWorkItem>>>? configure = null)
             => cfg.ReceiveEndpoint(queueName, e => e.ConfigureConsumer(p, configure));
     }
 }
