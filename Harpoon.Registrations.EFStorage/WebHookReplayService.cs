@@ -35,6 +35,7 @@ namespace Harpoon.Registrations.EFStorage
                 .Where(l => l.Error != null && l.CreatedAt >= start)
                 .Include(e => e.WebHookNotification)
                 .Include(e => e.WebHook)
+                .AsNoTracking()
                 .ToListAsync();
 
             foreach (var fail in failedNotifications)
