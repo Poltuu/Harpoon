@@ -45,6 +45,8 @@ namespace Microsoft.Extensions.DependencyInjection
             harpoon.Services.TryAddScoped<IWebHookStore, WebHookStore<TContext>>();
             harpoon.Services.TryAddScoped<IWebHookRegistrationStore, WebHookRegistrationStore<TContext>>();
 
+            harpoon.Services.TryAddScoped<WebHookReplayService<TContext>>();            
+
             return harpoon;
         }
 
