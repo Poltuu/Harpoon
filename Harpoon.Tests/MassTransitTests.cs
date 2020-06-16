@@ -71,13 +71,13 @@ namespace Harpoon.Tests
                 }));
 
                 await Task.Delay(10000);
-
-                Assert.Equal(1, processor.Counter);
             }
             finally
             {
                 await provider.GetRequiredService<IHostedService>().StopAsync(default);
             }
+
+            Assert.Equal(1, processor.Counter);
         }
 
         [Fact]
@@ -116,13 +116,13 @@ namespace Harpoon.Tests
                 await service.SendAsync(new WebHookWorkItem(Guid.NewGuid(), new WebHookNotification("", new object()), new WebHook()), CancellationToken.None);
 
                 await Task.Delay(10000);
-
-                Assert.Equal(1, processor.Counter);
             }
             finally
             {
                 await provider.GetRequiredService<IHostedService>().StopAsync(default);
             }
+
+            Assert.Equal(1, processor.Counter);
         }
 
         class MyPayload
@@ -198,9 +198,7 @@ namespace Harpoon.Tests
 
                 await provider.GetRequiredService<IWebHookService>().NotifyAsync(notif);
 
-                await Task.Delay(10000);
-
-                Assert.Equal(expectedWebHooksCount, counter);
+                await Task.Delay(15000);
             }
             finally
             {
@@ -210,6 +208,8 @@ namespace Harpoon.Tests
                     await host.StopAsync(default);
                 }
             }
+
+            Assert.Equal(expectedWebHooksCount, counter);
         }
     }
 }
