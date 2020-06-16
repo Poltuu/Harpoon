@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 
 namespace Harpoon.Registrations
 {
@@ -33,11 +32,7 @@ namespace Harpoon.Registrations
         /// </summary>
         public string Description { get; set; }
 
-        /// <summary>
-        /// Gets or sets the payload type for this trigger
-        /// </summary>
-        [JsonIgnore]
-        public Type PayloadType { get; set; }
+        private readonly Type _payloadType;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebHookTrigger"/> class.
@@ -46,7 +41,12 @@ namespace Harpoon.Registrations
         {
             Id = id;
             Description = description;
-            PayloadType = payloadType;
+            _payloadType = payloadType;
         }
+
+        /// <summary>
+        /// Gets the payload type for this trigger
+        /// </summary>
+        public Type GetPayloadType() => _payloadType;
     }
 }
