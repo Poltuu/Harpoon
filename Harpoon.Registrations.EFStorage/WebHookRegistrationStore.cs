@@ -117,6 +117,11 @@ namespace Harpoon.Registrations.EFStorage
                 Filters = webHook.Filters.Select(f => new WebHookFilter { Trigger = f.Trigger }).ToList()
             };
 
+            if (!OnBeforeAdd(dbWebHook))
+            {
+                return WebHookRegistrationStoreResult.Success;
+            }
+
             try
             {
                 _context.Add(dbWebHook);
@@ -129,6 +134,13 @@ namespace Harpoon.Registrations.EFStorage
                 return WebHookRegistrationStoreResult.InternalError;
             }
         }
+
+        /// <summary>
+        /// Returns a value indicating if the webhook should be added. Give the opportunity to modify the webhook as well.
+        /// </summary>
+        /// <param name="webhook"></param>
+        /// <returns></returns>
+        protected virtual bool OnBeforeAdd(WebHook webhook) => true;
 
         /// <inheritdoc />
         public async Task<WebHookRegistrationStoreResult> UpdateWebHookAsync(IPrincipal user, IWebHook webHook, CancellationToken cancellationToken = default)
