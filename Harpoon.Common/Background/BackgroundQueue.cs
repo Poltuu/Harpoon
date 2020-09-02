@@ -1,32 +1,31 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace Harpoon.Background
 {
     internal class BackgroundQueue<T>
     {
-        private readonly ConcurrentQueue<T> _workItems = new ConcurrentQueue<T>();
-        private readonly SemaphoreSlim _signal = new SemaphoreSlim(0);
+        private readonly Channel<T> _channel = Channel.CreateUnbounded<T>(new UnboundedChannelOptions
+        {
+            SingleReader = true,
+            SingleWriter = true
+        });
 
-        public void QueueWebHook(T workItem)
+        public ValueTask QueueWebHookAsync(T workItem)
         {
             if (workItem == null)
             {
                 throw new ArgumentException(nameof(workItem));
             }
 
-            _workItems.Enqueue(workItem);
-            _signal.Release();
+            return _channel.Writer.WriteAsync(workItem);
         }
 
-        public async Task<T> DequeueAsync(CancellationToken cancellationToken)
+        public ValueTask<T> DequeueAsync(CancellationToken cancellationToken)
         {
-            await _signal.WaitAsync(cancellationToken);
-            _workItems.TryDequeue(out var workItem);
-
-            return workItem;
+            return _channel.Reader.ReadAsync(cancellationToken);
         }
     }
 }

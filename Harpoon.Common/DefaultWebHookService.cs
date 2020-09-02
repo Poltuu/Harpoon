@@ -14,15 +14,14 @@ namespace Harpoon
             _webHooksQueue = webHooksQueue ?? throw new ArgumentNullException(nameof(webHooksQueue));
         }
 
-        public Task NotifyAsync(IWebHookNotification notification, CancellationToken cancellationToken = default)
+        public async Task NotifyAsync(IWebHookNotification notification, CancellationToken cancellationToken = default)
         {
             if (notification == null)
             {
                 throw new ArgumentNullException(nameof(notification));
             }
 
-            _webHooksQueue.QueueWebHook(notification);
-            return Task.CompletedTask;
+            await _webHooksQueue.QueueWebHookAsync(notification);
         }
     }
 }

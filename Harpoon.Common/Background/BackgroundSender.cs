@@ -13,15 +13,14 @@ namespace Harpoon.Background
             _webHooksQueue = webHooksQueue ?? throw new ArgumentNullException(nameof(webHooksQueue));
         }
 
-        public Task SendAsync(IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken = default)
+        public async Task SendAsync(IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken = default)
         {
             if (webHookWorkItem == null)
             {
                 throw new ArgumentNullException(nameof(webHookWorkItem));
             }
 
-            _webHooksQueue.QueueWebHook(webHookWorkItem);
-            return Task.CompletedTask;
+            await _webHooksQueue.QueueWebHookAsync(webHookWorkItem);
         }
     }
 }

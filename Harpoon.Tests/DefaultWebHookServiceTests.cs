@@ -35,7 +35,7 @@ namespace Harpoon.Tests
             var count = 0;
 
             await service.NotifyAsync(new WebHookNotification("", new object()));
-            await queue.DequeueAsync(CancellationToken.None).ContinueWith(t => count++);
+            await queue.DequeueAsync(CancellationToken.None).AsTask().ContinueWith(t => count++);
 
             Assert.Equal(1, count);
         }
