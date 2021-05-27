@@ -4,7 +4,7 @@
 
 [![logo](https://github.com/Poltuu/Harpoon/blob/master/icon.png?raw=true)](logo)
 
-DISCLAIMER : this library is still experimental, and should not be considered production-ready until version 1.0.0.
+DISCLAIMER: this library is still experimental, and should not be considered production-ready until version 1.0.0.
 
 Harpoon provides support for sending your own WebHooks. The general philosophy is to let you design each step your way, while providing strong default solutions. The modularity lets you split the process into n microservices if you deem necessary.
 
@@ -17,9 +17,9 @@ Harpoon strongly separates each necessary component to register and retrieve web
 
 [![schema](https://github.com/Poltuu/Harpoon/blob/master/docs/schema.png?raw=true)](schema)
 
-To start a notification procees, you need to call the `NotifyAsync` method on the `IWebHookService` with the appropriate `IWebHookNotification`.
+To start a notification process, you need to call the `NotifyAsync` method on the `IWebHookService` with the appropriate `IWebHookNotification`.
 
-`IWebHookNotification` exposes a id for the event `string TriggerId` and a payload (`object Payload`).
+`IWebHookNotification` exposes an id for the event `string TriggerId` and a payload (`object Payload`).
 
 Depending on your configuration, the `IWebHookNotification` can be passed synchronously (on the current thread), via a `QueuedHostedService` (defers the local treatment of the notification the a background service) or via a messaging service if you use `Harpoon.MassTransit` (lets you potentially treat the notification on another application) to the next handler, `IQueuedProcessor<IWebHookNotification>`.
 
@@ -27,7 +27,7 @@ Depending on your configuration, the `IWebHookNotification` can be passed synchr
 
 Once again, the treatment of the `IWebHookWorkItem` can be done synchronously (on the current thread), via a `QueuedHostedService` (to defer the local treatment) or via a messaging service (using `Harpoon.MassTransit`) to the next handler `IQueuedProcessor<IWebHookWorkItem>` (to potentially treat the IWebHookWorkItem on another application).
 
-Finally, the `IWebHookWorkItem` are sent via the `IQueuedProcessor<IWebHookWorkItem>`. The general retry policy and failures policy should be configured using `Polly` during the dependency injection registration, as the `IHttpClientBuilder` is exposed; the default in cas of problem is to do nothing. Those behaviors can also be overriden directly.
+Finally, the `IWebHookWorkItem` are sent via the `IQueuedProcessor<IWebHookWorkItem>`. The general retry policy and failures policy should be configured using `Polly` during the dependency injection registration, as the `IHttpClientBuilder` is exposed; the default in case of a problem is to do nothing. Those behaviors can also be overridden directly.
 
 ## General Q/A
 
@@ -35,12 +35,12 @@ Finally, the `IWebHookWorkItem` are sent via the `IQueuedProcessor<IWebHookWorkI
 
 The ``DefaultWebHookValidator`` expects the following things:
 
-- `Id` must be a non default ``Guid``. If not, a new `Guid` is assigned.
+- `Id` must be a non-default ``Guid``. If not, a new `Guid` is assigned.
 - `Secret` must be a 64 characters long string. If empty, a new string is assigned.
 - `Filters` must be valid, which means:
   - the `WebHook` must contain at least one filter
   - the ``Trigger`` must match one of the available trigger, obtained by the `IWebHookTriggerProvider`. (see below to allow pattern matching)
-- the `callback` url must be a valid http(s) url. If the url contains the `noecho` parameter, the url is not tested.
+- the `callback` URL must be a valid HTTP(S) URL. If the URL contains the `noecho` parameter, the URL is not tested.
 If not, the validator will send a `GET` request to the callback with an ``echo`` query parameter, and expect to see the given `echo` returned in the body.
 
 ### How data protection works on expired keys
@@ -95,7 +95,7 @@ new WebHookFilter //matches because of triggerId
 The default `ISignatureService` calculates an `HMACSHA256` over the JSON send, using the shared secret. To verify the secret validity, the consumer may use the following c# snippet
 
 ```c#
-//code from DefaultSignatureService.cs
+// code from DefaultSignatureService.cs
 public bool VerifySignature(string foundSignature, string sharedSecret, string jsonContent)
 {
     var secretBytes = Encoding.UTF8.GetBytes(sharedSecret);
@@ -125,29 +125,37 @@ private string ToHex(byte[] data)
 }
 ```
 
-### What's the default behavior if a delivery fails
+### What's the default behavior if delivery fails
 
 The default behavior is to do nothing. If you wish to change it, you may:
 
 - Create our own `IWebHookSender`, potentially by inheriting from `DefaultWebHookSender` or `EFWebHookSender`. Those classes expose the following methods to help you deal with errors
 
 ```c#
-protected virtual Task OnSuccessAsync(HttpResponseMessage response, IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken);
-protected virtual Task OnNotFoundAsync(HttpResponseMessage response, IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken);
-protected virtual Task OnFailureAsync(HttpResponseMessage response, Exception exception, IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken)
+protected virtual Task OnSuccessAsync(HttpResponseMessage response, IWebHookWorkItem webHookWorkItem, 
+   CancellationToken cancellationToken);
+protected virtual Task OnNotFoundAsync(HttpResponseMessage response, IWebHookWorkItem webHookWorkItem, 
+   CancellationToken cancellationToken);
+protected virtual Task OnFailureAsync(HttpResponseMessage response, Exception exception, 
+   IWebHookWorkItem webHookWorkItem, CancellationToken cancellationToken)
 ```
 
 - Use the `EFWebHookSender`, that automatically pauses webhooks in case of 404 and 410. Please notice that the given `WebHookWorkItem` is NOT attached to the current `DbContext`.
 - During services configuration, use the exposed `IHttpClientBuilder` to apply a retry/failures policy. You may use the following extensions method on `IHarpoonBuilder`:
 
 ```c#
-h.UseDefaultWebHookWorkItemProcessor(Action<IHttpClientBuilder> senderPolicy); //when using the default processor
-h.UseDefaultEFWebHookWorkItemProcessor(Action<IHttpClientBuilder> senderPolicy); //when using the default ef processor
-h.UseDefaultValidator(Action<IHttpClientBuilder> validatorPolicy); //during the validation process
-
-h.UseAllSynchronousDefaults(Action<IHttpClientBuilder> senderPolicy); //when using synchronous all defaults
-h.UseAllLocalDefaults(Action<IHttpClientBuilder> senderPolicy); //when using background service all defaults
-h.UseAllMassTransitDefaults(Action<IHttpClientBuilder> senderPolicy); //when using masstransit all defaults
+// when using the default processor
+h.UseDefaultWebHookWorkItemProcessor(Action<IHttpClientBuilder> senderPolicy); 
+// when using the default ef processor
+h.UseDefaultEFWebHookWorkItemProcessor(Action<IHttpClientBuilder> senderPolicy); 
+// during the validation process
+h.UseDefaultValidator(Action<IHttpClientBuilder> validatorPolicy); 
+// when using synchronous all defaults
+h.UseAllSynchronousDefaults(Action<IHttpClientBuilder> senderPolicy); 
+// when using background service all defaults
+h.UseAllLocalDefaults(Action<IHttpClientBuilder> senderPolicy); 
+// when using MassTransit all defaults
+h.UseAllMassTransitDefaults(Action<IHttpClientBuilder> senderPolicy); 
 ```
 
 ## Tutorials
@@ -178,31 +186,35 @@ public class MyClass
             }
         };
 
-         //what this precisely does depends on you configuration
+         // what this precisely does depends on your configuration
         await _webHookService.NotifyAsync();
     }
 }
 ```
 
-### How to treat everything locally and synchronously (using a mock storage)
+### How to treat everything locally and synchronously (using mock storage)
 
 ```c#
 //Startup.cs
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddHarpoon(h => h.UseAllSynchronousDefaults()); //everything is done locally and synchronously
-    services.AddSingleton(new Mock<IWebHookStore>().Object); //mock storage, see below for EF storage
+    //everything is done locally and synchronously
+    services.AddHarpoon(h => h.UseAllSynchronousDefaults()); 
+    //mock storage, see below for EF storage
+    services.AddSingleton(new Mock<IWebHookStore>().Object); 
 }
 ```
 
-### How to treat everything locally and in the background using background services (using a mock storage)
+### How to treat everything locally and in the background using background services (using mock storage)
 
 ```c#
-//Startup.cs
+// Startup.cs
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddHarpoon(h => h.UseAllLocalDefaults()); //everything is done locally via background services
-    services.AddSingleton(new Mock<IWebHookStore>().Object); //mock storage, see below for EF storage
+    // everything is done locally via background services
+    services.AddHarpoon(h => h.UseAllLocalDefaults()); 
+    // mock storage, see below for EF storage
+    services.AddSingleton(new Mock<IWebHookStore>().Object); 
 }
 ```
 
@@ -223,7 +235,7 @@ public void ConfigureServices(IServiceCollection services)
 ```
 
 ```c#
-//App2.Startup.cs
+// App2.Startup.cs
 using Microsoft.Extensions.DependencyInjection;
 
 public void ConfigureServices(IServiceCollection services)
@@ -234,10 +246,10 @@ public void ConfigureServices(IServiceCollection services)
         .UseDefaultWebHookWorkItemProcessor()
     );
 
-    //register webhooks storage here
+    // register webhooks storage here
     services.AddSingleton(new Mock<IWebHookStore>().Object);
 
-    //configuration example uses RabbitMq, but other bus factories are usable
+    // configuration example uses RabbitMq, but other bus factories are usable
     services.AddMassTransit(p => Bus.Factory.CreateUsingRabbitMq(cfg =>
     {
         var host = cfg.Host(new Uri("rabbitmq://localhost:5672"), hostConfigurator =>
@@ -251,7 +263,7 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
-### How to treat the notification synchronously and locally, but let another application actually do the http calls, via a messaging service
+### How to treat the notification synchronously and locally, but let another application do the HTTP calls, via a messaging service
 
 You need to include via nuget `Harpoon.MassTransit` in App1 and App2 for this to work.
 
@@ -275,14 +287,14 @@ public void ConfigureServices(IServiceCollection services)
 ```
 
 ```c#
-//App2.Startup.cs
+// App2.Startup.cs
 using Microsoft.Extensions.DependencyInjection;
 
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddHarpoon(c => c.UseDefaultWebHookWorkItemProcessor());
 
-    //configuration example uses RabbitMq, but other bus factories are usable
+    // configuration example uses RabbitMq, but other bus factories are usable
     services.AddMassTransit(p => Bus.Factory.CreateUsingRabbitMq(cfg =>
     {
         var host = cfg.Host(new Uri("rabbitmq://localhost:5672"), hostConfigurator =>
@@ -301,18 +313,21 @@ public void ConfigureServices(IServiceCollection services)
 You need to include `Harpoon.Registrations.EFStorage` via nuget.
 
 ```c#
-//Startup.cs
+// Startup.cs
 using Microsoft.Extensions.DependencyInjection;
 
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddEntityFrameworkSqlServer().AddDbContext<MyContext>(); // register EF and your context as you normally would
+    // register EF and your context as you normally would
+    services.AddEntityFrameworkSqlServer().AddDbContext<MyContext>(); 
 
     services.AddHarpoon(h =>
     {
-        // MyContext needs to implement IRegistrationsContext, MyWebHookTriggerProvider to implement IWebHookTriggerProvider
+        // MyContext needs to implement IRegistrationsContext, 
+        // MyWebHookTriggerProvider to implement IWebHookTriggerProvider
         h.RegisterWebHooksUsingEfStorage<MyContext, MyWebHookTriggerProvider>();
-        h.UseDefaultDataProtection(p => { }, o => { }); // the default data protection uses System.DataProtection
+        // the default data protection uses System.DataProtection
+        h.UseDefaultDataProtection(p => { }, o => { }); 
     });
 }
 ```
@@ -329,14 +344,15 @@ public class TestContext : DbContext, IRegistrationsContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.AddHarpoonDefaultMappings(); //optional. this lets you apply default mappings and constraints.
+        // optional. This lets you apply default mappings and constraints.
+        modelBuilder.AddHarpoonDefaultMappings(); 
     }
 }
 ```
 
 ### How to use default REST controllers
 
-To use the default mvc controllers to provide REST operations on your webhooks, add the nuget package `Harpoon.Controllers`. The controlelrs should be automatically added to your application.
+To use the default MVC controllers to provide REST operations on your webhooks, add the nuget package `Harpoon.Controllers`. The controllers should be automatically added to your application.
 You also need to register a `IWebHookValidator` in your DI; you may use `.UseDefaultValidator()` or provide your own.
 
 ```c#
@@ -345,36 +361,42 @@ using Microsoft.Extensions.DependencyInjection;
 
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddEntityFrameworkSqlServer().AddDbContext<MyContext>(); // register EF and your context
+    // register EF and your context
+    services.AddEntityFrameworkSqlServer().AddDbContext<MyContext>(); 
 
     services.AddHarpoon(h =>
     {
-        h.RegisterWebHooksUsingEfStorage<MyContext>(); //MyContext needs to implement IRegistrationsContext.
-        h.UseDefaultDataProtection(p => { }, o => { }); //the default data protection uses System.DataProtection.
-        h.UseDefaultValidator(); //the default validator is necessary for Write operations. This is necessary for WebHookRegistrationStore but not for WebHookStore.
+        // MyContext needs to implement IRegistrationsContext.
+        h.RegisterWebHooksUsingEfStorage<MyContext>(); 
+        // the default data protection uses System.DataProtection.
+        h.UseDefaultDataProtection(p => { }, o => { }); 
+        // The default validator is necessary for Write operations. 
+        // This is necessary for WebHookRegistrationStore but not for WebHookStore.
+        h.UseDefaultValidator(); 
     });
 }
 ```
 
 ### How to setup your retry policy on your sender
 
-To prefered way to setup you retry policy is to use [Polly](https://github.com/App-vNext/Polly), by adding `Microsoft.Extensions.Http.Polly`. [The general help is here.](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/http-requests?view=aspnetcore-2.1)
+The preferred way to setup your retry policy is to use [Polly](https://github.com/App-vNext/Polly), by adding `Microsoft.Extensions.Http.Polly`. [The general help is here.](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/http-requests?view=aspnetcore-2.1)
 
 ```c#
-//Startup.cs
+// Startup.cs
 using Microsoft.Extensions.DependencyInjection;
 
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddEntityFrameworkSqlServer().AddDbContext<MyContext>(); // register EF and your context
+    // register EF and your context
+    services.AddEntityFrameworkSqlServer().AddDbContext<MyContext>(); 
 
     services.AddHarpoon(h =>
     {
-        //most methods let you configure via a Action<IHttpClientBuilder>
+        // most methods let you configure via a Action<IHttpClientBuilder>
         h.UseAllSynchronousDefaults(b =>
         {
             b.AddTransientHttpErrorPolicy(p => p.WaitAndRetryAsync(6, index => TimeSpan.FromMinutes(index * index * index * 10)))
-                .AddTransientHttpErrorPolicy(p => p.CircuitBreakerAsync(5, TimeSpan.FromSeconds(30)))
+                .AddTransientHttpErrorPolicy(p => p.CircuitBreakerAsync(5, TimeSpan.FromSeconds(30)));
         });
     });
 }
@@ -390,7 +412,7 @@ If you want to allow users to registers webhooks on triggers (which is not on by
 The following example is based on overrides of the default implementations, but other approaches are possible.
 
 ```c#
-public static class TriggerHerlper
+public static class TriggerHelper
 {
     public static IEnumerable<string> GetPotentialTriggers(string trigger)
     {
@@ -416,20 +438,20 @@ public static class TriggerHerlper
 public class MyWebHookStore<TContext> : WebHookStore<TContext>
     where TContext : DbContext, IRegistrationsContext
 {
-    //...ctr
+    // ...ctr
 
     protected override IQueryable<WebHook> FilterQuery(IQueryable<WebHook> query, IWebHookNotification notification)
     {
-        var validTriggers = TriggerHerlper.GetPotentialTriggers(notification.TriggerId).ToArray();
+        var validTriggers = TriggerHelper.GetPotentialTriggers(notification.TriggerId).ToArray();
         return query.Where(w => w.Filters == null || w.Filters.Count == 0 || w.Filters.Any(f => validTriggers.Contains(f.Trigger)));
     }
 }
 
 public class MyWebHookValidator : DefaultWebHookValidator
 {
-    //...ctr
+    // ...ctr
 
-    //This implementation is basically a copy of the default one
+    // This implementation is a copy of the default one
     protected override Task VerifyFiltersAsync(IWebHook webHook, CancellationToken cancellationToken)
     {
         if (webHook.Filters == null || webHook.Filters.Count == 0)
@@ -468,12 +490,12 @@ public void ConfigureServices(IServiceCollection services)
 {
     services.AddHarpoon(h =>
     {
-        //h.UseDefaultValidator(); can be used without breaking anything, but is completely unecessary
+        //h.UseDefaultValidator(); can be used without breaking anything but is completely unnecessary
 
-        // this adds other MyWebHookStore dependencies so can still be used fo convenience
+        // this adds other MyWebHookStore dependencies so can still be used for convenience
         h.RegisterWebHooksUsingEfStorage<MyContext>();
 
-        //customize your services as you usually would otherwise
+        // customize your services as you usually would otherwise
     });
 
     services.AddScoped<IWebHookStore, MyWebHookStore<MyContext>>();
@@ -482,33 +504,33 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
-### How to describe you available triggers
+### How to describe your available triggers
 
-The class `WebHookTrigger` represents your available events for consumer to subscribe to. It contains the following properties:
+The class `WebHookTrigger` represents your available events for the consumer to subscribe to. It contains the following properties:
 
 - `string Id`: a unique string, typically in the form of `noun.verb`
 - `string Description`: a short description for your interface
 - `Type PayloadType`: the type of the payload. This is necessary for the documentation auto-generation.
-The documentation regarding your webhooks can later on be auto-generated, using the ``[WebHookSubscriptionFilter]`` on your subscription endpoint of your API. This is the default if you use `Harpoon.Controllers`.
+The documentation regarding your webhooks can later be auto-generated, using the ``[WebHookSubscriptionFilter]`` on the subscription endpoint of your API. This is the default if you use `Harpoon.Controllers`.
 
-The following code exposes the default way to benefit from the auto generated Open Api documentation via swagger.
+The following code exposes the default way to benefit from the auto-generated Open API documentation via swagger.
 
 ```c#
-//Startup.cs
+// Startup.cs
 
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddHarpoon(h =>
     {
-         // your configuration here
-        //...
+        // your configuration here
+        // ...
          h.AddControllers<MyWebHookTriggerProvider>();
     });
 
     services.AddSwaggerGen(c =>
     {
-        // configuration of your own apis
-        //...
+        // configuration of your own APIs
+        // ...
         c.AddHarpoonDocumentation();
     });
 }
@@ -517,7 +539,7 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 {
     app.UseSwaggerUI(c =>
     {
-        //your configuration...
+        // your configuration...
         c.AddHarpoonEndpoint();
     });
 }
