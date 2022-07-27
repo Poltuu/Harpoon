@@ -38,12 +38,12 @@ namespace Harpoon.Tests
             var services = new ServiceCollection();
             services.AddHarpoon(c => c.SendNotificationsUsingMassTransit());
 
-            services.AddMassTransit((IServiceCollectionConfigurator p) =>
+            services.AddMassTransit((IServiceCollectionBusConfigurator p) =>
             {
                 p.ReceiveNotificationsUsingMassTransit();
                 p.AddBus(p => Bus.Factory.CreateUsingRabbitMq(cfg =>
                 {
-                    var host = cfg.Host(new Uri("rabbitmq://localhost:5672"), hostConfigurator =>
+                    cfg.Host(new Uri("rabbitmq://localhost:5672"), hostConfigurator =>
                     {
                         hostConfigurator.Username("guest");
                         hostConfigurator.Password("guest");
@@ -86,12 +86,12 @@ namespace Harpoon.Tests
             var services = new ServiceCollection();
             services.AddHarpoon(c => c.SendWebHookWorkItemsUsingMassTransit());
 
-            services.AddMassTransit((IServiceCollectionConfigurator p) =>
+            services.AddMassTransit((IServiceCollectionBusConfigurator p) =>
             {
                 p.ReceiveWebHookWorkItemsUsingMassTransit();
                 p.AddBus(p => Bus.Factory.CreateUsingRabbitMq(cfg =>
                   {
-                      var host = cfg.Host(new Uri("rabbitmq://localhost:5672"), hostConfigurator =>
+                      cfg.Host(new Uri("rabbitmq://localhost:5672"), hostConfigurator =>
                       {
                           hostConfigurator.Username("guest");
                           hostConfigurator.Password("guest");
@@ -163,12 +163,12 @@ namespace Harpoon.Tests
 
             services.AddHarpoon(c => c.UseAllMassTransitDefaults(a => a.AddHttpMessageHandler(() => handler)));
 
-            services.AddMassTransit((IServiceCollectionConfigurator p) =>
+            services.AddMassTransit((IServiceCollectionBusConfigurator p) =>
             {
                 p.UseAllMassTransitDefaults();
                 p.AddBus(p => Bus.Factory.CreateUsingRabbitMq(cfg =>
                 {
-                    var host = cfg.Host(new Uri("rabbitmq://localhost:5672"), hostConfigurator =>
+                    cfg.Host(new Uri("rabbitmq://localhost:5672"), hostConfigurator =>
                     {
                         hostConfigurator.Username("guest");
                         hostConfigurator.Password("guest");

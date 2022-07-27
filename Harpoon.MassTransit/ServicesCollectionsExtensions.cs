@@ -14,14 +14,14 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         /// <summary>
         /// Registers every services allowing for a pipeline to treat webhooks via a messaging service.
-        /// Some configuration that require a <see cref="IServiceCollectionConfigurator"/> and/or a <see cref="IBusFactoryConfigurator"/> might still be needed.
+        /// Some configuration that require a <see cref="IServiceCollectionBusConfigurator"/> and/or a <see cref="IBusFactoryConfigurator"/> might still be needed.
         /// </summary>
         /// <param name="harpoon"></param>
         /// <returns></returns>
         public static IServiceCollection UseAllMassTransitDefaults(this IHarpoonBuilder harpoon) => harpoon.UseAllMassTransitDefaults(b => { });
         /// <summary>
         /// Registers every services allowing for a pipeline to treat webhooks via a messaging service, while allowing sender retry policy configuration
-        /// Some configuration that require a <see cref="IServiceCollectionConfigurator"/> and/or a <see cref="IBusFactoryConfigurator"/> might still be needed.
+        /// Some configuration that require a <see cref="IServiceCollectionBusConfigurator"/> and/or a <see cref="IBusFactoryConfigurator"/> might still be needed.
         /// </summary>
         /// <param name="harpoon"></param>
         /// <param name="senderPolicy"></param>
@@ -39,7 +39,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="x"></param>
         /// <returns></returns>
-        public static IServiceCollectionConfigurator UseAllMassTransitDefaults(this IServiceCollectionConfigurator x)
+        public static IServiceCollectionBusConfigurator UseAllMassTransitDefaults(this IServiceCollectionBusConfigurator x)
             => x.ReceiveNotificationsUsingMassTransit()
                 .ReceiveWebHookWorkItemsUsingMassTransit();
 
@@ -60,7 +60,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="x"></param>
         /// <param name="configure"></param>
         /// <returns></returns>
-        public static IServiceCollectionConfigurator ReceiveNotificationsUsingMassTransit(this IServiceCollectionConfigurator x, Action<IConsumerConfigurator<Consumer<IWebHookNotification>>>? configure = null)
+        public static IServiceCollectionBusConfigurator ReceiveNotificationsUsingMassTransit(this IServiceCollectionBusConfigurator x, Action<IConsumerConfigurator<Consumer<IWebHookNotification>>>? configure = null)
         {
             x.AddConsumer(configure);
             return x;
@@ -73,7 +73,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="p"></param>
         /// <param name="queueName"></param>
         /// <param name="configure"></param>
-        public static void ConfigureNotificationsConsumer(this IBusFactoryConfigurator cfg, IServiceProvider p, string queueName, Action<IConsumerConfigurator<Consumer<IWebHookNotification>>>? configure = null)
+        public static void ConfigureNotificationsConsumer(this IBusFactoryConfigurator cfg, IRegistration p, string queueName, Action<IConsumerConfigurator<Consumer<IWebHookNotification>>>? configure = null)
             => cfg.ReceiveEndpoint(queueName, e => e.ConfigureConsumer(p, configure));
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="x"></param>
         /// <param name="configure"></param>
         /// <returns></returns>
-        public static IServiceCollectionConfigurator ReceiveWebHookWorkItemsUsingMassTransit(this IServiceCollectionConfigurator x, Action<IConsumerConfigurator<Consumer<IWebHookWorkItem>>>? configure = null)
+        public static IServiceCollectionBusConfigurator ReceiveWebHookWorkItemsUsingMassTransit(this IServiceCollectionBusConfigurator x, Action<IConsumerConfigurator<Consumer<IWebHookWorkItem>>>? configure = null)
         {
             x.AddConsumer(configure);
             return x;
@@ -106,7 +106,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="p"></param>
         /// <param name="queueName"></param>
         /// <param name="configure"></param>
-        public static void ConfigureWebHookWorkItemsConsumer(this IBusFactoryConfigurator cfg, IServiceProvider p, string queueName, Action<IConsumerConfigurator<Consumer<IWebHookWorkItem>>>? configure = null)
+        public static void ConfigureWebHookWorkItemsConsumer(this IBusFactoryConfigurator cfg, IRegistration p, string queueName, Action<IConsumerConfigurator<Consumer<IWebHookWorkItem>>>? configure = null)
             => cfg.ReceiveEndpoint(queueName, e => e.ConfigureConsumer(p, configure));
     }
 }
